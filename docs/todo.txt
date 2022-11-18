@@ -1,0 +1,45 @@
+Bard's Tale 3
+=============
+
+- Calculations (ok)
+  3 Disks: 524544 (assuming no hidden data)
+  Character disk unknown content (seems to be nearly empty)
+  should be enough for character storage
+  
+- prodos analyse (ok)
+  + io access to all files
+  + how are savegames and gamestates stored?
+
+- loader with modified util64
+  do the import of characters at another place
+
+- simple loader of all files
+  jumptable for loading of the different files
+
+- disable disk switches
+  + diskswitch request sets the current disk to properly load sectors
+
+Startup
+=======
+
+load "PRODOS" loader
+load "2.0" (contains basic os routines)
+initialize
+load BARD64.SYSTEM from prodos filesystem to $2000
+load MAINPIC64 from prodos filesystem to $0800
+load DMUSIC64 from prodos filesystem to $e000
+load SPLASH64 from prodos filesystem to $4000
+intro running
+load game
+load UTIL64 from prodos filesystem to $2000 (6652)
+load BARD3.PIC64 from prodos filesystem to $2000 (9600)
+load MUSIC64 from prodos filesystem to $4800 (2168)
+load BARDSUBS2 from prodos filesystem to $cd00 (13000)
+load BARDSUBS1 from prodos filesystem to $6600 (11511)
+  2.0 partially overwritten
+
+important subs
+
+JSR 6aa4 : load sector (20 a4 6a)
+
+

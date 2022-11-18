@@ -1,0 +1,584 @@
+Original Code
+-------------
+
+$2000:  4C 04 20   jmp label_2004
+$2003:!byte $20
+$2004: 
+$2004: label_2004
+$2004:  AD 03 20   lda $2003           ;
+$2007:  8D 4E 03   sta $034e
+$200A:  D8         cld
+$200B:  A2 FF      ldx #$ff            ; clear stack pointer
+$200D:  9A         txs
+$200E:  A9 36      lda #$36
+$2010:  85 01      sta $01             ; set memory visibility
+$2012:  A9 2F      lda #$2f
+$2014:  85 00      sta $00             ; port direction
+$2016:  A2 08      ldx #$08
+$2018:  A0 00      ldy #$00
+$201A: 
+$201A: label_201a
+$201A:  B9 2F 20   lda $202f, y        ; copy from $202f 8x256 bytes
+$201D:  99 00 18   sta $1800, y
+$2020:  C8         iny
+$2021:  D0 F7      bne label_201a
+$2023:  EE 1C 20   inc $201c
+$2026:  EE 1F 20   inc $201f
+$2029:  CA         dex
+$202A:  D0 EE      bne label_201a
+$202C:  4C 00 18   jmp $1800
+$202F:!byte $20,$77,$19,$A2,$00,$BD,$1E,$1A
+$2037:!byte $9D,$00,$BE,$E8,$D0,$F7,$A2,$6D
+$203F:!byte $A0,$19,$20,$02,$BE,$B0,$5C,$A2
+$2047:!byte $5B,$A0,$19,$20,$02,$BE,$B0,$53
+$204F:!byte $A2,$64,$A0,$19,$20,$02,$BE,$B0
+$2057:!byte $4A,$20,$00,$40,$48,$A9,$35,$85
+$205F:!byte $01,$A9,$07,$8D,$11,$D0,$A9,$34
+$2067:!byte $85,$01,$A2,$4C,$A0,$19,$20,$02
+$206F:!byte $BE,$B0,$30,$68,$20,$00,$20,$B0
+$2077:!byte $C5,$A2,$2C,$A0,$19,$20,$02,$BE
+$207F:!byte $B0,$21,$A2,$53,$A0,$19,$20,$02
+$2087:!byte $BE,$B0,$18,$A2,$42,$A0,$19,$20
+$208F:!byte $02,$BE,$B0,$0F,$A2,$38,$A0,$19
+$2097:!byte $20,$02,$BE,$B0,$06,$20,$7A,$18
+$209F:!byte $4C,$EE,$18,$A9,$37,$85,$01,$6C
+$20A7:!byte $FC,$FF,$A9,$35,$85,$01,$A2,$00
+$20AF:!byte $BD,$00,$3E,$9D,$00,$04,$BD,$00
+$20B7:!byte $3F,$9D,$00,$05,$BD,$00,$40,$9D
+$20BF:!byte $00,$06,$BD,$00,$41,$9D,$00,$07
+$20C7:!byte $BD,$C0,$41,$9D,$00,$D8,$BD,$C0
+$20CF:!byte $42,$9D,$00,$D9,$BD,$C0,$43,$9D
+$20D7:!byte $00,$DA,$BD,$C0,$44,$9D,$00,$DB
+$20DF:!byte $BD,$00,$48,$9D,$80,$C4,$BD,$00
+$20E7:!byte $49,$9D,$80,$C5,$BD,$00,$4A,$9D
+$20EF:!byte $80,$C6,$BD,$00,$4B,$9D,$80,$C7
+$20F7:!byte $BD,$00,$4C,$9D,$80,$C8,$BD,$00
+$20FF:!byte $4D,$9D,$80,$C9,$BD,$00,$4E,$9D
+$2107:!byte $80,$CA,$BD,$00,$4F,$9D,$80,$CB
+$210F:!byte $BD,$80,$4F,$9D,$00,$CC,$E8,$D0
+$2117:!byte $97,$A9,$34,$85,$01,$60,$A2,$00
+$211F:!byte $8A,$4A,$A9,$FF,$B0,$02,$A9,$FE
+$2127:!byte $9D,$00,$40,$9D,$00,$41,$9D,$00
+$212F:!byte $42,$E0,$FE,$B0,$0B,$A9,$00,$95
+$2137:!byte $02,$E0,$E0,$B0,$03,$9D,$00,$03
+$213F:!byte $E8,$D0,$DD,$A9,$41,$8D,$4E,$03
+$2147:!byte $CA,$9A,$58,$D8,$A9,$35,$85,$01
+$214F:!byte $A9,$37,$8D,$11,$D0,$A9,$34,$85
+$2157:!byte $01,$4C,$5B,$FF,$0B,$C2,$C1,$D2
+$215F:!byte $C4,$B3,$AE,$D0,$C9,$C3,$B6,$B4
+$2167:!byte $09,$C2,$C1,$D2,$C4,$D3,$D5,$C2
+$216F:!byte $D3,$B1,$09,$C2,$C1,$D2,$C4,$D3
+$2177:!byte $D5,$C2,$D3,$B2,$06,$D5,$D4,$C9
+$217F:!byte $CC,$B6,$B4,$07,$CD,$D5,$D3,$C9
+$2187:!byte $C3,$B6,$B4,$08,$C4,$CD,$D5,$D3
+$218F:!byte $C9,$C3,$B6,$B4,$08,$D3,$D0,$CC
+$2197:!byte $C1,$D3,$C8,$B6,$B4,$09,$CD,$C1
+$219F:!byte $C9,$CE,$D0,$C9,$C3,$B6,$B4,$78
+$21A7:!byte $A9,$35,$85,$01,$A9,$2F,$85,$00
+$21AF:!byte $A2,$00,$A0,$18,$8E,$FC,$FF,$8C
+$21B7:!byte $FD,$FF,$A2,$1D,$A0,$1A,$8E,$FA
+$21BF:!byte $FF,$8C,$FB,$FF,$8E,$FE,$FF,$8C
+$21C7:!byte $FF,$FF,$A9,$7F,$8D,$0D,$DC,$8D
+$21CF:!byte $0D,$DD,$AD,$0D,$DC,$AD,$0D,$DD
+$21D7:!byte $A2,$00,$A9,$01,$9D,$00,$D8,$9D
+$21DF:!byte $00,$D9,$9D,$00,$DA,$9D,$00,$DB
+$21E7:!byte $A9,$86,$9D,$00,$04,$9D,$00,$05
+$21EF:!byte $9D,$00,$06,$9D,$00,$07,$E0,$2E
+$21F7:!byte $B0,$0F,$BD,$EE,$19,$9D,$00,$D0
+$21FF:!byte $E0,$1D,$B0,$05,$A9,$00,$9D,$00
+$2207:!byte $D4,$E8,$D0,$CE,$AD,$00,$DD,$09
+$220F:!byte $03,$8D,$00,$DD,$A9,$3F,$8D,$02
+$2217:!byte $DD,$A9,$34,$85,$01,$60,$00,$00
+$221F:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$2227:!byte $00,$00,$00,$00,$00,$00,$00,$07
+$222F:!byte $00,$00,$00,$00,$18,$00,$18,$00
+$2237:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$223F:!byte $02,$03,$04,$00,$01,$07,$08,$09
+$2247:!byte $0A,$0B,$0C,$0D,$0E,$40,$18,$60
+$224F:!byte $8E,$22,$BE,$A2,$1F,$B5,$30,$9D
+$2257:!byte $23,$BE,$CA,$10,$F8,$AE,$22,$BE
+$225F:!byte $20,$0B,$C2,$08,$A2,$1F,$BD,$23
+$2267:!byte $BE,$95,$30,$CA,$10,$F8,$28,$60
+$226F:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$2277:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$227F:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$2287:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$228F:!byte $00,$03,$7E,$BE,$00,$BA,$00,$04
+$2297:!byte $00,$00,$00,$00,$00,$00,$00,$01
+$229F:!byte $00,$02,$00,$00,$00,$00,$0A,$7E
+$22A7:!byte $BE,$C3,$06,$00,$00,$00,$00,$00
+$22AF:!byte $00,$00,$00,$00,$00,$00,$00,$00
+$22B7:!byte $03,$60,$00,$BA,$00,$00,$01,$7E
+$22BF:!byte $BE,$04,$00,$00,$00,$00,$00,$00
+$22C7:!byte $20,$08,$C2,$60
+
+
+Transferred code at $1800
+-------------------------
+
+; load all files
+1800   20 77 19             JSR L1977                   ; initialise stuff
+1803   A2 00                LDX #$00                    
+1805   BD 1E 1A   L1805     LDA $1A1E,X                 ; copy from $1a1e to be00
+1808   9D 00 BE             STA $BE00,X                 
+180B   E8                   INX                         
+180C   D0 F7                BNE L1805                   
+180E   A2 6D      L180E     LDX #$6D                    
+1810   A0 19                LDY #$19                    
+1812   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $196d MAINPIC64)
+1815   B0 5C                BCS L1873                   ; error case
+1817   A2 5B                LDX #$5B                    
+1819   A0 19                LDY #$19                    
+181B   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $195B DMUSIC64)
+181E   B0 53                BCS L1873                   ; error case
+1820   A2 64                LDX #$64                    
+1822   A0 19                LDY #$19                    
+1824   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $1964 SPLASH64)
+1827   B0 4A                BCS L1873                   ; error case
+1829   20 00 40             JSR $4000                   ; jump to splash64
+182C   48                   PHA                         ; return from intro for normal
+182D   A9 35                LDA #$35                    ; memory mapping
+182F   85 01                STA $01                     
+1831   A9 07                LDA #$07                    ; screen off
+1833   8D 11 D0             STA $D011                   
+1836   A9 34                LDA #$34                    ; restore mapping
+1838   85 01                STA $01                     
+183A   A2 4C                LDX #$4C                    
+183C   A0 19                LDY #$19                    
+183E   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $194C UTIL64)
+1841   B0 30                BCS L1873                   ; error case
+1843   68                   PLA                         
+1844   20 00 20             JSR $2000                   ; jump to util64 (quick initialization maybe disk utility)
+1847   B0 C5                BCS L180E                   ; reload all if error
+1849   A2 2C                LDX #$2C                    
+184B   A0 19                LDY #$19                    
+184D   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $192C BARD3.PIC64)
+1850   B0 21                BCS L1873                   ; error case
+1852   A2 53                LDX #$53                    
+1854   A0 19                LDY #$19                    
+1856   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $1953 MUSIC64)
+1859   B0 18                BCS L1873                   ; error case
+185B   A2 42                LDX #$42                    
+185D   A0 19                LDY #$19                    
+185F   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $1942 BARDSUBS2)
+1862   B0 0F                BCS L1873                   ; error case
+1864   A2 38                LDX #$38                    
+1866   A0 19                LDY #$19                    
+1868   20 02 BE             JSR $BE02                   ; jump to temporary be00 (load file at $1938 BARDSUBS1)
+186B   B0 06                BCS L1873                   ; error case
+186D   20 7A 18             JSR L187A                   ; init
+1870   4C EE 18             JMP L18EE                   
+1873   A9 37      L1873     LDA #$37                    ; error case, restore memory and do cold reset
+1875   85 01                STA $01                     
+1877   6C FC FF             JMP ($FFFC)                 
+
+; init memory and code
+187A   A9 35      L187A     LDA #$35                    ; memory mapping: I/O area visible at $D000-$DFFF, RAM visible at $A000-$BFFF and $E000-$FFFF
+187C   85 01                STA $01                     
+187E   A2 00                LDX #$00                    
+1880   BD 00 3E   L1880     LDA $3E00,X                 ; transfer all kinds of data or code to different areas
+1883   9D 00 04             STA $0400,X                 
+1886   BD 00 3F             LDA $3F00,X                 
+1889   9D 00 05             STA $0500,X                 
+188C   BD 00 40             LDA $4000,X                 
+188F   9D 00 06             STA $0600,X                 
+1892   BD 00 41             LDA $4100,X                 
+1895   9D 00 07             STA $0700,X                 
+1898   BD C0 41             LDA $41C0,X                 
+189B   9D 00 D8             STA $D800,X                 
+189E   BD C0 42             LDA $42C0,X                 
+18A1   9D 00 D9             STA $D900,X                 
+18A4   BD C0 43             LDA $43C0,X                 
+18A7   9D 00 DA             STA $DA00,X                 
+18AA   BD C0 44             LDA $44C0,X                 
+18AD   9D 00 DB             STA $DB00,X                 
+18B0   BD 00 48             LDA $4800,X                 ; partially overwrite prodos 2.0 with MUSIC
+18B3   9D 80 C4             STA $C480,X                 
+18B6   BD 00 49             LDA $4900,X                 
+18B9   9D 80 C5             STA $C580,X                 
+18BC   BD 00 4A             LDA $4A00,X                 
+18BF   9D 80 C6             STA $C680,X                 
+18C2   BD 00 4B             LDA $4B00,X                 
+18C5   9D 80 C7             STA $C780,X                 
+18C8   BD 00 4C             LDA $4C00,X                 
+18CB   9D 80 C8             STA $C880,X                 
+18CE   BD 00 4D             LDA $4D00,X                 
+18D1   9D 80 C9             STA $C980,X                 
+18D4   BD 00 4E             LDA $4E00,X                 
+18D7   9D 80 CA             STA $CA80,X                 
+18DA   BD 00 4F             LDA $4F00,X                 
+18DD   9D 80 CB             STA $CB80,X                 
+18E0   BD 80 4F             LDA $4F80,X                 
+18E3   9D 00 CC             STA $CC00,X                 
+18E6   E8                   INX                         
+18E7   D0 97                BNE L1880                   
+18E9   A9 34                LDA #$34                    ; memory mapping: RAM visible in all three areas.
+18EB   85 01                STA $01                     
+18ED   60                   RTS                         
+
+; continue load all
+18EE   A2 00      L18EE     LDX #$00                    ; continue to initialize memory
+18F0   8A         L18F0     TXA                         
+18F1   4A                   LSR A                       
+18F2   A9 FF                LDA #$FF                    
+18F4   B0 02                BCS L18F8                   
+18F6   A9 FE                LDA #$FE                    
+18F8   9D 00 40   L18F8     STA $4000,X                 ; clear memory
+18FB   9D 00 41             STA $4100,X                 
+18FE   9D 00 42             STA $4200,X                 
+1901   E0 FE                CPX #$FE                    
+1903   B0 0B                BCS L1910                   
+1905   A9 00                LDA #$00                    
+1907   95 02                STA $02,X                   ; clear zero page with exceptions
+1909   E0 E0                CPX #$E0                    
+190B   B0 03                BCS L1910                   
+190D   9D 00 03             STA $0300,X                 ; clear $0300 page with exceptions
+1910   E8         L1910     INX                         
+1911   D0 DD                BNE L18F0                   
+1913   A9 41                LDA #$41                    
+1915   8D 4E 03             STA $034E                   
+1918   CA                   DEX                         
+1919   9A                   TXS                         
+191A   58                   CLI                         
+191B   D8                   CLD                         ; no decimal
+191C   A9 35                LDA #$35                    
+191E   85 01                STA $01                     ; memory mapping: I/O area visible at $D000-$DFFF, RAM visible at $A000-$BFFF and $E000-$FFFF
+1920   A9 37                LDA #$37                    
+1922   8D 11 D0             STA $D011                   ; set vicii mode (still off)
+1925   A9 34                LDA #$34                    ; memory mapping: RAM visible in all three areas.
+1927   85 01                STA $01                     
+1929   4C 5B FF             JMP $FF5B                   ; start game
+                   
+192C   0B C2 C1 D2 C4 B3 AE D0 C9 C3 B6 B4              ; BARD3.PIC64
+1938   09 C2 C1 D2 C4 D3 D5 C2 D3 B1                    ; BARDSUBS1
+1942   09 C2 C1 D2 C4 D3 D5 C2 D3 B2                    ; BARDSUBS2
+194C   06 D5 D4 C9 CC B6 B4                             ; UTIL64
+1953   07 CD D5 D3 C9 C3 B6 B4                          ; MUSIC64
+195B   08 C4 CD D5 D3 C9 C3 B6 B4                       ; DMUSIC64
+1964   08 D3 D0 CC C1 D3 C8 B6 B4                       ; SPLASH64
+196D   09 CD C1 C9 CE D0 C9 C3 B6 B4                    ; MAINPIC64
+
+1977   78         L1977     SEI                         
+1978   A9 35                LDA #$35                    ; memory 
+197A   85 01                STA $01                     
+197C   A9 2F                LDA #$2F                    
+197E   85 00                STA $00                     
+1980   A2 00                LDX #$00                    ; set cold reset vector to 1800
+1982   A0 18                LDY #$18                    
+1984   8E FC FF             STX $FFFC                   
+1987   8C FD FF             STY $FFFD                   
+198A   A2 1D                LDX #$1D                    ; set reset and interrupt vector to 1a1d
+198C   A0 1A                LDY #$1A                    
+198E   8E FA FF             STX $FFFA                   
+1991   8C FB FF             STY $FFFB                   
+1994   8E FE FF             STX $FFFE                   
+1997   8C FF FF             STY $FFFF                   
+199A   A9 7F                LDA #$7F                    ;   enable interrupts
+199C   8D 0D DC             STA $DC0D                   
+199F   8D 0D DD             STA $DD0D                   
+19A2   AD 0D DC             LDA $DC0D                   
+19A5   AD 0D DD             LDA $DD0D                   
+19A8   A2 00                LDX #$00                    
+19AA   A9 01      L19AA     LDA #$01                    ; init color ram
+19AC   9D 00 D8             STA $D800,X                 
+19AF   9D 00 D9             STA $D900,X                 
+19B2   9D 00 DA             STA $DA00,X                 
+19B5   9D 00 DB             STA $DB00,X                 
+19B8   A9 86                LDA #$86                    ; init screen
+19BA   9D 00 04             STA $0400,X                 
+19BD   9D 00 05             STA $0500,X                 
+19C0   9D 00 06             STA $0600,X                 
+19C3   9D 00 07             STA $0700,X                 
+19C6   E0 2E                CPX #$2E                    
+19C8   B0 0F                BCS L19D9                   
+19CA   BD EE 19             LDA $19EE,X                 ; write to vicii (from 19ee on, max $2e bytes)
+19CD   9D 00 D0             STA $D000,X                 
+19D0   E0 1D                CPX #$1D                    
+19D2   B0 05                BCS L19D9                   
+19D4   A9 00                LDA #$00                    
+19D6   9D 00 D4             STA $D400,X                 ; write 0 to sid, max $1d bytes
+19D9   E8         L19D9     INX                         
+19DA   D0 CE                BNE L19AA                   
+19DC   AD 00 DD             LDA $DD00                   ; init cia2 (?)
+19DF   09 03                ORA #$03                    
+19E1   8D 00 DD             STA $DD00                   
+19E4   A9 3F                LDA #$3F                    
+19E6   8D 02 DD             STA $DD02                   
+19E9   A9 34                LDA #$34                    ; set port direction
+19EB   85 01                STA $01                     
+19ED   60                   RTS                         
+
+19EE   00                   BRK                         
+19EF   00                   BRK                         
+19F0   00                   BRK                         
+19F1   00                   BRK                         
+19F2   00                   BRK                         
+19F3   00                   BRK                         
+19F4   00                   BRK                         
+19F5   00                   BRK                         
+19F6   00                   BRK                         
+19F7   00                   BRK                         
+19F8   00                   BRK                         
+19F9   00                   BRK                         
+19FA   00                   BRK                         
+19FB   00                   BRK                         
+19FC   00                   BRK                         
+19FD   00                   BRK                         
+19FE   00                   BRK                         
+19FF   07                   ???                ;00000111
+1A00   00                   BRK                         
+1A01   00                   BRK                         
+1A02   00                   BRK                         
+1A03   00                   BRK                         
+1A04   18                   CLC                         
+1A05   00                   BRK                         
+1A06   18                   CLC                         
+1A07   00                   BRK                         
+1A08   00                   BRK                         
+1A09   00                   BRK                         
+1A0A   00                   BRK                         
+1A0B   00                   BRK                         
+1A0C   00                   BRK                         
+1A0D   00                   BRK                         
+1A0E   00                   BRK                         
+1A0F   00                   BRK                         
+1A10   02                   ???                ;00000010
+1A11   03                   ???                ;00000011
+1A12   04                   ???                ;00000100
+1A13   00                   BRK                         
+1A14   01 07                ORA ($07,X)                 
+1A16   08                   PHP                         
+1A17   09 0A                ORA #$0A                    
+1A19   0B                   ???                ;00001011
+1A1A   0C                   ???                ;00001100
+1A1B   0D 0E 40             ORA $400E                   
+
+1A1E   18                   CLC                         ; code to copy to $be00
+1A1F   60                   RTS                         
+1A20   8E 22 BE             STX $BE22                   
+1A23   A2 1F                LDX #$1F                    
+1A25   B5 30      L1A25     LDA $30,X                   
+1A27   9D 23 BE             STA $BE23,X                 
+1A2A   CA                   DEX                         
+1A2B   10 F8                BPL L1A25                   
+1A2D   AE 22 BE             LDX $BE22                   
+1A30   20 0B C2             JSR $C20B                   
+1A33   08                   PHP                         
+1A34   A2 1F                LDX #$1F                    
+1A36   BD 23 BE   L1A36     LDA $BE23,X                 
+1A39   95 30                STA $30,X                   
+1A3B   CA                   DEX                         
+1A3C   10 F8                BPL L1A36                   
+1A3E   28                   PLP                         
+1A3F   60                   RTS                         
+1A40   00                   BRK                         
+1A41   00                   BRK                         
+1A42   00                   BRK                         
+1A43   00                   BRK                         
+1A44   00                   BRK                         
+1A45   00                   BRK                         
+1A46   00                   BRK                         
+1A47   00                   BRK                         
+1A48   00                   BRK                         
+1A49   00                   BRK                         
+1A4A   00                   BRK                         
+1A4B   00                   BRK                         
+1A4C   00                   BRK                         
+1A4D   00                   BRK                         
+1A4E   00                   BRK                         
+1A4F   00                   BRK                         
+1A50   00                   BRK                         
+1A51   00                   BRK                         
+1A52   00                   BRK                         
+1A53   00                   BRK                         
+1A54   00                   BRK                         
+1A55   00                   BRK                         
+1A56   00                   BRK                         
+1A57   00                   BRK                         
+1A58   00                   BRK                         
+1A59   00                   BRK                         
+1A5A   00                   BRK                         
+1A5B   00                   BRK                         
+1A5C   00                   BRK                         
+1A5D   00                   BRK                         
+1A5E   00                   BRK                         
+1A5F   00                   BRK                         
+1A60   00                   BRK                         
+1A61   03                   ???                ;00000011
+1A62   7E BE 00             ROR $00BE,X                 
+1A65   BA                   TSX                         
+1A66   00                   BRK                         
+1A67   04                   ???                ;00000100
+1A68   00                   BRK                         
+1A69   00                   BRK                         
+1A6A   00                   BRK                         
+1A6B   00                   BRK                         
+1A6C   00                   BRK                         
+1A6D   00                   BRK                         
+1A6E   00                   BRK                         
+1A6F   01 00                ORA ($00,X)                 
+1A71   02                   ???                ;00000010
+1A72   00                   BRK                         
+1A73   00                   BRK                         
+1A74   00                   BRK                         
+1A75   00                   BRK                         
+1A76   0A                   ASL A                       
+1A77   7E BE C3             ROR $C3BE,X                 
+1A7A   06 00                ASL $00                     
+1A7C   00                   BRK                         
+1A7D   00                   BRK                         
+1A7E   00                   BRK                         
+1A7F   00                   BRK                         
+1A80   00                   BRK                         
+1A81   00                   BRK                         
+1A82   00                   BRK                         
+1A83   00                   BRK                         
+1A84   00                   BRK                         
+1A85   00                   BRK                         
+1A86   00                   BRK                         
+1A87   00                   BRK                         
+1A88   03                   ???                ;00000011
+1A89   60                   RTS                         
+1A8A   00                   BRK                         
+1A8B   BA                   TSX                         
+1A8C   00                   BRK                         
+1A8D   00                   BRK                         
+1A8E   01 7E                ORA ($7E,X)                 
+1A90   BE 04 00             LDX $0004,Y                 
+1A93   00                   BRK                         
+1A94   00                   BRK                         
+1A95   00                   BRK                         
+1A96   00                   BRK                         
+1A97   00                   BRK                         
+1A98   20 08 C2             JSR $C208                   
+1A9B   60                   RTS                         
+                            .END                        
+                                                        
+;auto-generated symbols and labels                      
+ L1805      $1805                                       
+ L1873      $1873                                       
+ L1880      $1880                                       
+ L1910      $1910                                       
+ L1934      $1934                                       
+ L1977      $1977                                       
+ L180E      $180E                                       
+ L187A      $187A                                       
+ L18EE      $18EE                                       
+ L18F8      $18F8                                       
+ L18F0      $18F0                                       
+ L19D9      $19D9                                       
+ L19AA      $19AA                                       
+ L1A25      $1A25                                       
+ L1A36      $1A36                                
+ 
+ 
+Code copied to be00
+-------------------
+
+BE00   18                   CLC
+BE01   60                   RTS
+BE02   8E 22 BE             STX $BE22                   ; address in y/x
+BE05   A2 1F                LDX #$1F                    ; save zero page
+BE07   B5 30      LBE07     LDA $30,X
+BE09   9D 23 BE             STA $BE23,X
+BE0C   CA                   DEX
+BE0D   10 F8                BPL LBE07
+BE0F   AE 22 BE             LDX $BE22                   ; reload x
+BE12   20 0B C2             JSR $C20B                   ; load file in y/x
+BE15   08                   PHP
+BE16   A2 1F                LDX #$1F                    ; restore zero page
+BE18   BD 23 BE   LBE18     LDA $BE23,X
+BE1B   95 30                STA $30,X
+BE1D   CA                   DEX
+BE1E   10 F8                BPL LBE18
+BE20   28                   PLP                         ; 
+BE21   60                   RTS                         ; return
+BE22   00                   BRK                         ; temp var for x register
+BE23   00                   BRK                         ; temp var for zero page
+BE24   00                   BRK
+BE25   00                   BRK
+BE26   00                   BRK
+BE27   00                   BRK
+BE28   00                   BRK
+BE29   00                   BRK
+BE2A   00                   BRK
+BE2B   00                   BRK
+BE2C   00                   BRK
+BE2D   00                   BRK
+BE2E   00                   BRK
+BE2F   00                   BRK
+BE30   00                   BRK
+BE31   00                   BRK
+BE32   00                   BRK
+BE33   00                   BRK
+BE34   00                   BRK
+BE35   00                   BRK
+BE36   00                   BRK
+BE37   00                   BRK
+BE38   00                   BRK
+BE39   00                   BRK
+BE3A   00                   BRK
+BE3B   00                   BRK
+BE3C   00                   BRK
+BE3D   00                   BRK
+BE3E   00                   BRK
+BE3F   00                   BRK
+BE40   00                   BRK
+BE41   00                   BRK
+BE42   00                   BRK
+BE43   03                   ???                ;00000011
+BE44   7E BE 00             ROR $00BE,X
+BE47   BA                   TSX
+BE48   00                   BRK
+BE49   04                   ???                ;00000100
+BE4A   00                   BRK
+BE4B   00                   BRK
+BE4C   00                   BRK
+BE4D   00                   BRK
+BE4E   00                   BRK
+BE4F   00                   BRK
+BE50   00                   BRK
+BE51   01 00                ORA ($00,X)
+BE53   02                   ???                ;00000010
+BE54   00                   BRK
+BE55   00                   BRK
+BE56   00                   BRK
+BE57   00                   BRK
+BE58   0A                   ASL A
+BE59   7E BE C3             ROR $C3BE,X
+BE5C   06 00                ASL $00
+BE5E   00                   BRK
+BE5F   00                   BRK
+BE60   00                   BRK
+BE61   00                   BRK
+BE62   00                   BRK
+BE63   00                   BRK
+BE64   00                   BRK
+BE65   00                   BRK
+BE66   00                   BRK
+BE67   00                   BRK
+BE68   00                   BRK
+BE69   00                   BRK
+BE6A   03                   ???                ;00000011
+BE6B   60                   RTS
+BE6C   00                   BRK
+BE6D   BA                   TSX
+BE6E   00                   BRK
+BE6F   00                   BRK
+BE70   01 7E                ORA ($7E,X)
+BE72   BE 04 00             LDX $0004,Y
+BE75   00                   BRK
+BE76   00                   BRK
+BE77   00                   BRK
+BE78   00                   BRK
+BE79   00                   BRK
+
+; load sector (be7a)
+BE7A   20 08 C2             JSR $C208                   ; load prodos sector (sector no in $46/$47)
+BE7D   60                   RTS
+                            .END
+
+;auto-generated symbols and labels
+ LBE07      $BE07
+ LBE18      $BE18
+       

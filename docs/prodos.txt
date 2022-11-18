@@ -1,0 +1,35 @@
+Basic Line
+----------
+$02BC/$0801:  12 08        ; 2-byte pointer to the next line of BASIC code ($0812).
+$02BE/$0803:  0A 00        ; 2-byte line number ($000A = 10).
+$02C0/$0805:  93           ; byte code LOAD
+$02C1/$0806:  20 22 50 52 4F 44 4F 53 22 2C 38 2C 31  ; > "PRODOS",8,1<
+$02CE/$0813:  00           ; end of line
+$02CF/$0814:  00 00        ; end of program
+
+
+Startup Code
+------------
+$02D1:  32 2E 30               ; filename "2.0"
+$02D4:  A9 00      lda #$00
+$02D6:  8D 11 D0   sta $d011   ; screen off
+$02D9:  8D 20 D0   sta $d020   ; border color black
+$02DC:  A9 02      lda #$02
+$02DE:  A2 08      ldx #$08
+$02E0:  A0 01      ldy #$01
+$02E2:  20 BA FF   jsr $ffba   ; SETLFS. Set file parameters. Input: A = Logical number; X = Device number; Y = Secondary address.
+$02E5:  A9 03      lda #$03
+$02E7:  A2 D1      ldx #$d1
+$02E9:  A0 02      ldy #$02
+$02EB:  20 BD FF   jsr $ffbd   ; SETNAM. Set file name parameters. Input: A = File name length; X/Y = Pointer to file name. (length 3; pointer $02D1)
+$02EE:  A9 00      lda #$00
+$02F0:  20 D5 FF   jsr $ffd5   ; LOAD. Load or verify file. (Must call SETLFS and SETNAM beforehands). Input: A: 0 = Load
+$02F3:  A9 36      lda #$36
+$02F5:  85 01      sta $01     ; processor port: 00110110 (RAM visible at $A000-$BFFF; KERNAL ROM visible at $E000-$FFFF.)
+$02F7:  A9 2F      lda #$2f
+$02F9:  85 00      sta $00     ; processor port data direction: default
+$02FB:  A9 00      lda #$00    ; reset data
+$02FD:  4C 0E C2   jmp $c20e   ; jump
+
+$0300:  D4 02              ; Jump to $02D4. Execution address of warm reset, displaying optional BASIC error message and entering BASIC idle loop. Default: $E38B.
+$0302:  D4 02              ; Jump to $02D4. Execution address of BASIC idle loop. Default: $A483.
