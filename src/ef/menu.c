@@ -32,16 +32,23 @@ static void draw_game_info(void) {
     textcolor(COLOR_GRAY2);
     cputs("    Bard's Tale III: Thief of Fate\r\n"
           "\r\n"
-          "               Designed by\r\n"
-          "      Rebecca Heineman, Bruce Schlickbernd,\r\n"
-          "          and Michael A. Stackpole\r\n"
+          "             Designed by\r\n"
+          "           Rebecca Heineman,\r\n"
+          "          Bruce Schlickbernd,\r\n"
+          "         Michael A. Stackpole\r\n"
           "\r\n");
     //textcolor(COLOR_GRAY1);
     cputs("\r\n"
-          " Copyright (c) 1988 InterPlay Productions.\r\n"
+          "Copyright (c) 1988 InterPlay Productions\r\n"
           "\r\n"
           "     EasyFlash version by Drunella\r\n"
           "\r\n");
+}
+
+static void startup_game(void)
+{
+    // load file and execute
+    load_file(1);
 }
 
 
@@ -50,7 +57,7 @@ void main(void)
     static bool repaint;
     
     //  initialize_basic files: eapi for later
-    // ### load_basicfiles();
+    load_eapi(0xc0);
     
     repaint = true;
     bgcolor(COLOR_BLACK);
@@ -67,7 +74,7 @@ void main(void)
             clear_menu();
             menu_option('G', "Start game");
             cputs("\r\n");
-            menu_option('S', "Manage savegames");
+            menu_option('U', "Savegame utility");
             cputs("\r\n");
             menu_option('Q', "Quit to basic");
         }
@@ -78,12 +85,12 @@ void main(void)
         case ' ':
         case 'g':
             clear_menu();
-            startupgame(); // does not return
-            return;
+            startup_game(); // does not return
+            break;
 
-        case 's':
+        case 'u':
             clear_menu();
-            managesavegames(); // does not return
+//            startup_utility(); // does not return
             break;
         
         case 'q':

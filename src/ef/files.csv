@@ -1,0 +1,11 @@
+filename, loadaddress, initaddress
+BARD64.SYSTEM, 0x0000, 0
+BARD3.PIC64,   0x2000, 0
+BARDSUBS1,     0x6600, 0
+BARDSUBS2,     0xcd00, 0
+MAINPIC64,     0x0800, 0
+SPLASH64,      0x4000, 0
+UTIL64,        0x2000, 0
+MUSIC64,       0x4800, 0
+DMUSIC64,      0xe000, 0
+BARD.SYSTEM,   0x0000, 0

@@ -1,0 +1,10 @@
+# loader, init, exomizer and eapi
+0 f loader.prg addr 0x8000
+0 f init.prg addr 0xbf00
+0 f eapi-am29f040.prg addr 0xb800
+
+# data file
+
+# sector files
+
+# automatic additions

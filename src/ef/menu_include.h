@@ -24,8 +24,11 @@ void menu_option(char key, char *desc);
 void cart_kill(void);
 void cart_bankin(void);
 void cart_bankout(void);
-void __fastcall__ void managesavegames(void);
-void __fastcall__ startupgame(void);
+//void __fastcall__ startup_utility(void);
+//void __fastcall__ startup_game(void);
+
+void __fastcall__ load_eapi(uint8_t high);
+void __fastcall__ load_file(uint8_t filenumber);
 
 /*
 bool disk_save_file(uint8_t device, char *filename, uint16_t loadaddr, void *buffer, uint16_t length);
