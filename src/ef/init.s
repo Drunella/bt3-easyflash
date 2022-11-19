@@ -111,7 +111,7 @@ LOADER_DEST = $2000
         jsr $fda3  ; initialize i/o
         jsr $fd50  ; initialize memory
         jsr $fd15  ; set io vectors
-        jsr $ff5b  ; more init ; necesary?
+        jsr $ff5b  ; more init ; necessary?
         cli
 
         ; screen black again
