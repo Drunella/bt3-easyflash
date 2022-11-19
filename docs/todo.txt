@@ -39,7 +39,34 @@ load BARDSUBS1 from prodos filesystem to $6600 (11511)
   2.0 partially overwritten
 
 important subs
+- JSR 6aa4 : load sector (20 a4 6a)
 
-JSR 6aa4 : load sector (20 a4 6a)
+Save game
+=========
+saving sectors: 010b, 010c, 010d
+save game:
+block 267.0: track=28, sector=9
+block 267.5: track=28, sector=2
+block 268.0: track=28, sector=13
+block 268.5: track=28, sector=6
+block 269.0: track=28, sector=17
+block 269.5: track=28, sector=10
 
+characters:
+block 272.0: track=29, sector=11
+block 272.5: track=29, sector=4
+block 273.0: track=29, sector=15
+block 273.5: track=29, sector=8
+block 274.0: track=29, sector=1
+block 274.5: track=29, sector=12
+block 275.0: track=29, sector=5
+block 275.5: track=29, sector=16
+block 276.0: track=29, sector=9
+block 276.5: track=29, sector=2
+block 277.0: track=29, sector=13
+block 277.5: track=29, sector=6
+block 278.0: track=29, sector=17
+block 278.5: track=29, sector=10
+block 279.0: track=29, sector=3
+block 279.5: track=29, sector=14
 
