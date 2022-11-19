@@ -123,20 +123,22 @@ build/ef/loader.prg: $(EF_LOADER_FILES)
 #	tools/crunch.py -v -t level -b ./build/ef.f
 #	touch build/ef.f/crunched.done
 
-# build efs
-#build/ef/directory.data.prg build/ef/files.data.prg: build/ef.f/crunched.done
-#	tools/mkefs.py -v -o ./src/disks.cfg  -x ./src/ef/exclude.cfg -f ./build/ef.f -e crunch -d ./build/ef
+# build image dir and data
+build/ef/files.dir.bin build/ef/files.data.bin: build/source/files.list
+	cp src/ef/files.csv build/ef/files.csv
+	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef.f/ -o build/ef/files.data.bin -d build/ef/files.dir.bin -s 131072
 
 # build blocks
 #build/ef/crt.blocks.map: build/ef.f/files.list
 #	tools/mkblocks.py -v -o ./src/disks.cfg -b ./src/ef/block.map -f ./build/ef.f -m ./build/ef/crt.blocks.map -d ./build/ef
 
 # cartridge binary
-build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg
-#build/ef/directory.data.prg build/ef/files.data.prg build/ef/exodecrunch.prg build/ef/init.prg 
-#build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/crt.blocks.map build/ef/music_rom.aprg
+build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/source/character.prodos build/source/dungeona.prodos build/source/dungeonb.prodos
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
+	cp ./build/source/character.prodos build/ef/character.bin
+	cp ./build/source/dungeona.prodos build/ef/dungeona.bin
+	cp ./build/source/dungeonb.prodos build/ef/dungeonb.bin
 	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin
 
 # cartdridge crt
@@ -147,68 +149,18 @@ build/bd3-easyflash.crt: build/ef/bd3-easyflash.bin
 # ------------------------------------------------------------------------
 # d81
 
-# io-replacement d81
-#build/d81/io-replacement.prg build/d81/io-replacement.map: build/d81/io-code.o build/exo/exodecrunch.o
-#	$(LD65) $(LD65FLAGS) -vm -m ./build/d81/io-replacement.map -o build/d81/io-replacement.prg -C ./src/d81/io-replacement.cfg $^
-
-# loader
-#build/d81/loader.prg: build/d81/loader.o
-#	$(LD65) $(LD65FLAGS) -vm -m ./build/d81/loader.map -o build/d81/loader.prg -C ./src/d81/loader.cfg $^
-
-#build/d81.f/loader.prg: build/d81/loader.prg
-#	cp ./build/d81/loader.prg build/d81.f/loader.prg
-
-# exomizer for d81 todo
-#build/d81/exodecrunch.prg: build/exo/exodecrunch.o build/d81/io-code.o
-#	$(LD65) $(LD65FLAGS) -o $@ -C ./src/d81/exodecrunch.cfg $^
-
-#build/d81.f/exodecrunch.prg: build/d81/exodecrunch.prg
-#	cp ./build/d81/exodecrunch.prg ./build/d81.f/exodecrunch.prg
-
-# files with additional items
-#build/d81.f/files.list: build/source/files.list
-#	cp ./build/source/* ./build/d81.f/
-
-# crunch
-#build/d81.f/crunched.done: build/d81.f/patched.done
-#	tools/crunch.py -v -t mem -b ./build/d81.f
-#	touch build/d81.f/crunched.done
-
-# patch
-#build/d81.f/patched.done: build/d81.f/files.list build/d81/io-replacement.map build/d81/io-replacement.prg
-#	tools/u5patch.py -v -l ./build/d81.f/files.list -f ./build/d81.f -m build/d81/io-replacement.map ./patches/d81/*.patch ./patches/*.patch
-#	touch ./build/d81.f/patched.done
-
-# build disk
-#build/u5remastered.d81: build/d81.f/crunched.done build/d81.f/loader.prg build/d81.f/exodecrunch.prg
-#	tools/mkd81.py -v -o ./build/u5remastered.d81 -x ./src/d81/exclude.cfg -i ./src/d81/io.i -d ./src/disks.cfg -f ./build/d81.f
-
-# ------------------------------------------------------------------------
-
 subdirs:
 	@mkdir -p ./build/temp 
-#	@mkdir -p ./build/exo
-#	@mkdir -p ./build/d81.f
-#	@mkdir -p ./build/d81
-#	@mkdir -p ./build/backbit.f
-#	@mkdir -p ./build/backbit
 	@mkdir -p ./build/source
 	@mkdir -p ./build/ef.f
 	@mkdir -p ./build/ef
 
 clean:
 	rm -rf build/ef
-#	rm -rf build/d81
-#	rm -rf build/backbit
 	rm -rf build/ef.f 
-#	rm -rf build/d81.f
-#	rm -rf build/backbit.f
 	rm -rf build/temp
-#	rm -rf build/exo
 	rm -rf build/source
 	rm -f build/bd3-easyflash.crt
-#	rm -f build/u5remastered.d81
-#	rm -f build/u5remastered-BackBit.d81
 
 mrproper:
 	rm -rf build

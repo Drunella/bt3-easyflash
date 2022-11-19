@@ -1,10 +1,15 @@
-# loader, init, exomizer and eapi
+# loader, init, eapi
 0 f loader.prg addr 0x8000
 0 f init.prg addr 0xbf00
 0 f eapi-am29f040.prg addr 0xb800
 
-# data file
+# file and dir data
+0 f files.dir.bin addr 0xbc00
+1 f files.data.bin addr 0x8000
 
 # sector files
+8 f character.bin addr 0x8000
+18 f dungeona.bin addr 0x8000
+28 f dungeonb.bin addr 0x8000
 
 # automatic additions
