@@ -45,12 +45,6 @@ static void draw_game_info(void) {
           "\r\n");
 }
 
-static void startup_game(void)
-{
-    // load file and execute
-    load_file(1);
-}
-
 
 void main(void)
 {
@@ -58,6 +52,8 @@ void main(void)
     
     //  initialize_basic files: eapi for later
     load_eapi(0xc0);
+    cart_bankout();
+    init_io();
     
     repaint = true;
     bgcolor(COLOR_BLACK);
@@ -90,7 +86,7 @@ void main(void)
 
         case 'u':
             clear_menu();
-//            startup_utility(); // does not return
+            startup_utility(); // does not return
             break;
         
         case 'q':

@@ -19,33 +19,19 @@
 
 #include <stdint.h>
 
+
 void clear_menu(void);
 void menu_option(char key, char *desc);
 void cart_kill(void);
 void cart_bankin(void);
 void cart_bankout(void);
-//void __fastcall__ startup_utility(void);
-//void __fastcall__ startup_game(void);
 
 void __fastcall__ load_eapi(uint8_t high);
-void __fastcall__ load_file(uint8_t filenumber);
-
-/*
-bool disk_save_file(uint8_t device, char *filename, uint16_t loadaddr, void *buffer, uint16_t length);
-
-bool __fastcall__ loadgame_prtydata(void);
-bool __fastcall__ loadgame_slist(void);
-bool __fastcall__ loadgame_list(void);
-bool __fastcall__ loadgame_roster(void);
-bool __fastcall__ savegame_prtydata(void);
-bool __fastcall__ savegame_list(void);
-bool __fastcall__ savegame_slist(void);
-bool __fastcall__ savegame_roster(void);
-
-void __fastcall__ IO_request_disk_char_entry(uint8_t disk);
-
-void __fastcall__ load_basicfiles(void);*/
-
+//void __fastcall__ load_file(uint8_t filenumber);
+//void __fastcall__ load_sector(uint8_t filenumber);
+void __fastcall__ init_io(void);
+void __fastcall__ startup_game(void);
+void __fastcall__ startup_utility(void);
 
 
 #endif

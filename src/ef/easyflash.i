@@ -18,6 +18,15 @@
 
 EAPI_SOURCE  = $B800  ; $A000 (hirom) + 1800
 
+FILES_DIR_BANK = 0
+FILES_DIR_START = $bc00
+FILES_DATA_BANK = 1
+FILES_DATA_START = $8000
+
+CHARACTER_DISK_BANK = 8
+DUNGEONA_DISK_BANK = 18
+DUNGEONB_DISK_BANK = 28
+
 ;EAPI_DESTINATION  = $7800
 ;EXO_SOURCE = $bc00
 ;EXO_DESTINATION = $7b00
@@ -56,34 +65,24 @@ EAPISetSlot       = $df98
 EAPIGetSlot       = $df9b
 
 
-; efs struct
+; data struct
 
-;.struct efs_directory
-;    .struct name
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;        .byte
-;    .endstruct
-;    flags .byte
-;    bank .byte
-;    reserved .byte
-;    offset_low .byte
-;    offset_high .byte
-;    size_low .byte
-;    size_high .byte
-;    size_upper .byte
-;.endstruct
+.struct data_directory
+    id .byte
+    bank .byte
+    offset_low .byte
+    offset_high .byte
+    size_low .byte
+    size_high .byte
+    size_upper .byte
+    load_low .byte
+    load_high .byte
+    init_low .byte
+    init_high .byte
+    reserved1 .byte 
+    reserved2 .byte 
+    reserved3 .byte 
+    reserved4 .byte 
+    reserved5 .byte 
+.endstruct
         

@@ -20,7 +20,7 @@
 .export _load_eapi
 
 
-.segment "LOADEAPI"
+.segment "LOAD_EAPI"
 
     ; load_eapi(high address)
     _load_eapi: 

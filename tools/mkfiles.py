@@ -42,35 +42,43 @@ def data_write24(data, position, value):
     data[position+2] = (value & 0xff0000) >> 16
 
 
-def add_file(path, id, loadaddress, initaddress):
+def add_file(path, id, loadaddress, initaddress, prg):
     global image_data_max
     global image_dir_max
     global image_data
     global image_dir
     global image_data_cursor
     global image_dir_cursor
+    global start_bank
     
     with open(path, "rb") as file:
         contents = file.read()
-        size = len(contents)
+        size = len(contents) - prg
     
     dc = image_dir_cursor * 16;
-    banknum = image_data_cursor // 16384
+    banknum = start_bank + image_data_cursor // 16384
     bankaddress = image_data_cursor % 16384
+    if bankaddress < 8192:
+        bankaddress = bankaddress + 0x8000
+    else:
+        bankaddress = bankaddress + 0xA000 - 0x2000
     
+    if prg > 0:
+        loadaddress = contents[0] + contents[1]*256
+
     # write directory entry
     dc = image_dir_cursor;
     data_writebyte(image_dir, dc, id)
     image_dir_cursor = image_dir_cursor + 16
     data_writeword(image_dir, dc+1, banknum)
-    data_writeword(image_dir, dc+3, bankaddress)
-    data_write24(image_dir, dc+5, size)
-    data_writeword(image_dir, dc+8, loadaddress)
-    data_writeword(image_dir, dc+10, initaddress)
+    data_writeword(image_dir, dc+2, bankaddress)
+    data_write24(image_dir, dc+4, size)
+    data_writeword(image_dir, dc+7, loadaddress)
+    data_writeword(image_dir, dc+9, initaddress)
     
     # write data
     for i in range(0, size):
-        image_data[image_data_cursor] = contents[i]
+        image_data[image_data_cursor+i] = contents[prg + i]
     image_data_cursor = image_data_cursor + size    
     #print(path + ": id="+str(id)+" size="+str(size)+" load="+str(loadaddress)+" init="+str(initaddress))
 
@@ -82,6 +90,7 @@ def main(argv):
     global image_dir
     global image_data_cursor
     global image_dir_cursor
+    global start_bank
 
     p = argparse.ArgumentParser()
     p.add_argument("-v", dest="verbose", action="store_true", help="Verbose output.")
@@ -90,6 +99,7 @@ def main(argv):
     p.add_argument("-o", dest="dest_image", action="store", required=True, help="destination binary image.")
     p.add_argument("-d", dest="dest_dir", action="store", required=True, help="destination binary directory.")
     p.add_argument("-s", dest="image_size", action="store", required=True, help="destination binary image size in bytes.")
+    p.add_argument("-b", dest="start_bank", action="store", required=True, help="start bank.")
 
     args = p.parse_args()
     verbose = args.verbose
@@ -100,6 +110,7 @@ def main(argv):
     dest_dir = args.dest_dir
     os.makedirs(os.path.dirname(dest_dir), exist_ok=True)
     image_size = args.image_size
+    start_bank = int(args.start_bank, 0)
 
     image_data_max = int(image_size, 0)
     image_dir_max = 256
@@ -120,12 +131,14 @@ def main(argv):
                 continue
             loadaddress = int(row[2].strip(), 0)
             initaddress = int(row[3].strip(), 0)
+            prg = int(row[4].strip(), 0)
+            
             path = os.path.join(files_dir, name)
             if not os.path.isfile(path):
                 if verbose:
                     print("WARNING: file " + path + " does not exist")
                 continue
-            add_file(os.path.join(files_dir, name), id, loadaddress, initaddress)
+            add_file(os.path.join(files_dir, name), id, loadaddress, initaddress, prg)
             if verbose:
                 print("file " + path + " included into file image")
 

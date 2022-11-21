@@ -30,7 +30,7 @@ export LD65_LIB=/opt/cc65/share/cc65/lib
 .SUFFIXES: .prg .s .c
 .PHONY: clean subdirs all easyflash mrproper
 
-EF_LOADER_FILES=build/ef/menu.o build/ef/menu_util.o build/ef/loadeapi.o build/ef/loadfile.o
+EF_LOADER_FILES=build/ef/menu.o build/ef/menu_util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o
 #build/ef/loader.o
 #build/ef/io-data.o
 #build/ef/io-rw.o
@@ -48,12 +48,6 @@ all: easyflash
 # easyflash
 easyflash: subdirs build/bd3-easyflash.crt
 
-# d81
-#d81: subdirs build/u5remastered.d81
-
-# backbit
-#backbit: subdirs build/u5remastered-BackBit.d81
-
 # assemble
 build/%.o: src/%.s
 	$(CA65) $(CA65FLAGS) -o $@ $<
@@ -70,13 +64,13 @@ build/%.o: build/%.s
 # ------------------------------------------------------------------------
 # easyflash
 
-# exomizer for ef
-#build/ef/exodecrunch.prg: build/exo/exodecrunch.o build/ef/io-rw.o build/ef/io-data.o
-#	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/exodecrunch.cfg $^
-
 # easyflash init.prg
 build/ef/init.prg: build/ef/init.o
 	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/init.cfg $^
+
+# easyflash loadfile.prg
+#build/ef/loadfile.prg: build/ef/loadfile.o
+#	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/loadfile.cfg $^
 
 # easyflash loader.prg
 build/ef/loader.prg: $(EF_LOADER_FILES)
@@ -126,7 +120,7 @@ build/ef/loader.prg: $(EF_LOADER_FILES)
 # build image dir and data
 build/ef/files.dir.bin build/ef/files.data.bin: build/source/files.list
 	cp src/ef/files.csv build/ef/files.csv
-	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef.f/ -o build/ef/files.data.bin -d build/ef/files.dir.bin -s 131072
+	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin -s 131072 -b 1
 
 # build blocks
 #build/ef/crt.blocks.map: build/ef.f/files.list
@@ -152,12 +146,12 @@ build/bd3-easyflash.crt: build/ef/bd3-easyflash.bin
 subdirs:
 	@mkdir -p ./build/temp 
 	@mkdir -p ./build/source
-	@mkdir -p ./build/ef.f
+#	@mkdir -p ./build/ef.f
 	@mkdir -p ./build/ef
 
 clean:
 	rm -rf build/ef
-	rm -rf build/ef.f 
+#	rm -rf build/ef.f 
 	rm -rf build/temp
 	rm -rf build/source
 	rm -f build/bd3-easyflash.crt
@@ -187,7 +181,7 @@ build/source/dungeonb.prodos: subdirs
 # application files
 build/source/files.list: subdirs build/source/boot.prodos build/prodos/prodos
 	build/prodos/prodos -i ./build/source/boot.prodos ls > build/source/files.list
-	tools/extract.sh build/source/files.list build/ef.f
+	tools/extract.sh build/source/files.list build/ef
 
 # get m.prg	
 #build/source/m.prg:
