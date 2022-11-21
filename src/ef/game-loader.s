@@ -175,7 +175,7 @@
 
         ; splash
         cli
-        jsr $4000        
+; ###        jsr $4000             
         ;pha                  ; we ignore the pressed key
 
         lda #$35 
