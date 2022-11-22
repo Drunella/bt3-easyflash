@@ -31,16 +31,6 @@ export LD65_LIB=/opt/cc65/share/cc65/lib
 .PHONY: clean subdirs all easyflash mrproper
 
 EF_LOADER_FILES=build/ef/menu.o build/ef/menu_util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o
-#build/ef/loader.o
-#build/ef/io-data.o
-#build/ef/io-rw.o
-#build/ef/io-code.o
-#build/exo/exodecrunch.o
-#build/ef/menu_savegame.o
-#build/ef/menu_backup.o
-#build/ef/music-base.o
-#build/ef/music-disassemble.o
-
 
 # all
 all: easyflash
@@ -118,7 +108,7 @@ build/ef/loader.prg: $(EF_LOADER_FILES)
 #	touch build/ef.f/crunched.done
 
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: build/source/files.list
+build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin -s 131072 -b 1
 
@@ -127,12 +117,9 @@ build/ef/files.dir.bin build/ef/files.data.bin: build/source/files.list
 #	tools/mkblocks.py -v -o ./src/disks.cfg -b ./src/ef/block.map -f ./build/ef.f -m ./build/ef/crt.blocks.map -d ./build/ef
 
 # cartridge binary
-build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/source/character.prodos build/source/dungeona.prodos build/source/dungeonb.prodos
+build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
-	cp ./build/source/character.prodos build/ef/character.bin
-	cp ./build/source/dungeona.prodos build/ef/dungeona.bin
-	cp ./build/source/dungeonb.prodos build/ef/dungeonb.bin
 	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin
 
 # cartdridge crt
@@ -145,7 +132,7 @@ build/bd3-easyflash.crt: build/ef/bd3-easyflash.bin
 
 subdirs:
 	@mkdir -p ./build/temp 
-	@mkdir -p ./build/source
+#	@mkdir -p ./build/source
 #	@mkdir -p ./build/ef.f
 	@mkdir -p ./build/ef
 
@@ -153,7 +140,7 @@ clean:
 	rm -rf build/ef
 #	rm -rf build/ef.f 
 	rm -rf build/temp
-	rm -rf build/source
+#	rm -rf build/source
 	rm -f build/bd3-easyflash.crt
 
 mrproper:
@@ -166,22 +153,22 @@ build/prodos/prodos:
 	$(MAKE) -C ./build/prodos
 	
 # sanitized disks
-build/source/boot.prodos: subdirs
-	tools/sanitize.py -s ./disks/boot.d64 -d ./build/source/boot.prodos
+build/ef/boot.prodos: subdirs
+	tools/sanitize.py -s ./disks/boot.d64 -d ./build/ef/boot.prodos
 
-build/source/character.prodos: subdirs
-	tools/sanitize.py -s ./disks/character.d64 -d ./build/source/character.prodos
+build/ef/character.bin: subdirs
+	tools/sanitize.py -s ./disks/character.d64 -d ./build/ef/character.bin
 
-build/source/dungeona.prodos: subdirs
-	tools/sanitize.py -s ./disks/dungeona.d64 -d ./build/source/dungeona.prodos
+build/ef/dungeona.bin: subdirs
+	tools/sanitize.py -s ./disks/dungeona.d64 -d ./build/ef/dungeona.bin
 
-build/source/dungeonb.prodos: subdirs
-	tools/sanitize.py -s ./disks/dungeonb.d64 -d ./build/source/dungeonb.prodos
+build/ef/dungeonb.bin: subdirs
+	tools/sanitize.py -s ./disks/dungeonb.d64 -d ./build/ef/dungeonb.bin
 	
 # application files
-build/source/files.list: subdirs build/source/boot.prodos build/prodos/prodos
-	build/prodos/prodos -i ./build/source/boot.prodos ls > build/source/files.list
-	tools/extract.sh build/source/files.list build/ef
+build/ef/files.list: subdirs build/ef/boot.prodos build/prodos/prodos
+	build/prodos/prodos -i ./build/ef/boot.prodos ls > build/ef/files.list
+	tools/extract.sh build/ef/files.list build/ef
 
 # get m.prg	
 #build/source/m.prg:

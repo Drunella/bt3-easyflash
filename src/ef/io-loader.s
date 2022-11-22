@@ -19,6 +19,8 @@
 
 .export _init_io
 .export _load_file
+.export bd3_current_disk_index
+
 
 ; uses zeropage variables
 ; fd: file id
@@ -190,12 +192,6 @@
         bne copy_segment_loop
         dec bytes_to_copy_high
         bne copy_segment_loop
-;    :   ; check size
-;        lda #$ff
-;        bit bytes_to_copy_low
-;        bne copy_segment
-;        bit bytes_to_copy_high
-;        bne copy_segment
 
         rts
 
@@ -388,8 +384,13 @@
         .byte $00
     ef_address_high:
         .byte $80
+    bd3_current_disk_index:
+        .byte $01            ; 1: character, 2: dungeon a, 3: dungeon b
     bd3_current_disk:
-        .byte $08            ; 8: character disk
+        .byte $00            ; invalid
+        .byte $08            ; bank offset for character disk
+        .byte $12            ; bank offset for dungeon a
+        .byte $1c            ; bank offset for dungeon b
 
 
     load_sector_body:
@@ -404,6 +405,7 @@
 
  
     save_sector_body:
+        clc
         rts
 
 
@@ -421,13 +423,14 @@
         lsr a
         lsr a
         lsr a
-        ;clc
-        ;adc $47  ; error
         ldx $47
         clc
         beq :+
         adc #$08             ; if bit 0 of sector_high is set, add value 8
-    :   adc bd3_current_disk
+
+    :   ldx bd3_current_disk_index     ; bank offset for disk
+        clc
+        adc bd3_current_disk, x
         sta ef_bank
 
         lda #$00

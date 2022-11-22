@@ -26,6 +26,7 @@ EASYFLASH_KILL    = $04
 
 LOADER_SOURCE = $8000
 LOADER_DEST = $2000
+LOADER_RUN = $2000
 
 
 .segment "ULTIMAX_VECTORS"
@@ -135,7 +136,7 @@ LOADER_DEST = $2000
         bne pagecopy
 
         ; start
-        jmp LOADER_DEST
+        jmp LOADER_RUN
 
     kill:
         lda #EASYFLASH_KILL

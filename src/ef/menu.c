@@ -53,7 +53,6 @@ void main(void)
     //  initialize_basic files: eapi for later
     load_eapi(0xc0);
     cart_bankout();
-    init_io();
     
     repaint = true;
     bgcolor(COLOR_BLACK);
@@ -81,11 +80,13 @@ void main(void)
         case ' ':
         case 'g':
             clear_menu();
+            init_io();
             startup_game(); // does not return
             break;
 
         case 'u':
             clear_menu();
+            init_io();
             startup_utility(); // does not return
             break;
         

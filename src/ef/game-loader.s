@@ -26,11 +26,28 @@
 .import __STARTGAME_RUN__
 .import __STARTGAME_SIZE__
 
+diskswitcher_run = $67cb
+.import bd3_current_disk_index
 
 
 .segment "GAMELOADER"
 
+    diskswitcher_load:
+        ; we replace the following code in BARDSUBS1 (8 bytes)
+        ; 67CB   20 70 6A   JSR L6A70   ; load sector 0
+        ; 67CE   B0 2A      BCS L67FA   ; ? (on error)
+        ; 67D0   AD FF BB   LDA $BBFF   ; load diskid
+        lda $6ad8  ; variable of expected disk id
+        sta bd3_current_disk_index
+        nop
+        nop
+    diskswitcher_end:
+    diskswitcher_size = diskswitcher_end - diskswitcher_load
+
+
     startup_init_game:
+        lda #$20
+        sta $034e                   ; unknown purpose
         sei
         lda #$35                    ; memory
         sta $01
@@ -44,6 +61,8 @@
 
 
     startup_init_utility:
+        lda #$20
+        sta $034e                   ; unknown purpose
         sei
         lda #$35                    ; memory
         sta $01
@@ -53,6 +72,16 @@
         ldy #>_startup_utility
         stx $fffc
         sty $fffd
+        rts
+
+    startup_replacement:
+        ; copy DISKSWITCHER
+        ldx #<diskswitcher_size
+    :   lda diskswitcher_load-1, x
+        sta diskswitcher_run-1, x
+        dex
+        bne :-
+
         rts
 
 
@@ -195,6 +224,8 @@
         lda #24
         jsr _load_file       ; load BARDSUBS1
 
+        jsr startup_replacement  ; replacements
+
         jsr startup_memory
 
         ldx #$00             ; continue to initialize
@@ -218,12 +249,15 @@
     label_1910:
         inx
         bne label_18f0
+
         lda #$41
         sta $034e
-        dex
+
+        ldx #$ff             ; reset stack
         txs
         cli
-        cld                  ; no decimal 
+        cld                  ; no decimal
+
         lda #$35             ; memory mapping
         sta $01
         lda #$37
