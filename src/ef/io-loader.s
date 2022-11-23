@@ -17,15 +17,17 @@
 
 .include "easyflash.i"
 
-.export _init_io
-.export _load_file
-.export bd3_current_disk_index
-
-
 ; uses zeropage variables
 ; fd: file id
 ; fe: directory pointer low
 ; ff: directory pointer high
+
+
+sector_map_bank = 41
+
+.export _init_io
+.export _load_file
+.export bd3_current_disk_index
 
 .import __CLEARCLC_CALL_LOAD__
 .import __CLEARCLC_CALL_RUN__
@@ -378,9 +380,11 @@
 
 .segment "LOADSECTOR_BODY"
 
+    save_mapping:
+        .byte $37
     ef_bank:
         .byte $08
-    ef_address_low:
+    ef_type:
         .byte $00
     ef_address_high:
         .byte $80
@@ -388,19 +392,20 @@
         .byte $01            ; 1: character, 2: dungeon a, 3: dungeon b
     bd3_current_disk:
         .byte $00            ; invalid
-        .byte $08            ; bank offset for character disk
-        .byte $12            ; bank offset for dungeon a
-        .byte $1c            ; bank offset for dungeon b
+        .byte $80            ; list address for character disk
+        .byte $90            ; list address for dungeon a
+        .byte $a0            ; list address for dungeon b
 
 
     load_sector_body:
         clc
         jsr calculate_easyflash_parameters
-        jsr copy_sector_data
-        sec
-        jsr calculate_easyflash_parameters
+        jsr load_sector_data
+;        sec    ; old
+;        jsr calculate_easyflash_parameters  ; old
+        jsr calculate_easyflash_nextsector  ; new
         inc $45
-        jsr copy_sector_data
+        jsr load_sector_data
         dec $45
 
  
@@ -409,37 +414,27 @@
         rts
 
 
-    calculate_easyflash_parameters:
-        lda $46              ; sector 0-5 low bits -> high address of ef
-        rol a                ; set carry for +1
-        and #$3f
-        clc
-        adc #$80
-        sta ef_address_high
-
-        lda $46              ; low address 3 high bits -> bank
-        lsr a
-        lsr a
-        lsr a
-        lsr a
-        lsr a
-        ldx $47
-        clc
-        beq :+
-        adc #$08             ; if bit 0 of sector_high is set, add value 8
-
-    :   ldx bd3_current_disk_index     ; bank offset for disk
-        clc
-        adc bd3_current_disk, x
-        sta ef_bank
-
-        lda #$00
-        sta ef_address_low
-
+    easyflash_bankin:
+        lda $01
+        sta save_mapping
+        lda #$37   ; memory map, read from ef
+        sta $01
+        lda #EASYFLASH_LED | EASYFLASH_16K
+        sta EASYFLASH_CONTROL
         rts
 
 
-    copy_sector_data:
+    easyflash_bankout:
+        lda #$37   ; memory map, read from ef
+        sta $01
+        lda #EASYFLASH_KILL
+        sta EASYFLASH_CONTROL
+        lda save_mapping
+        sta $01    ; restore memory map
+        rts
+
+
+    load_sector_data:
         ; destination
         lda $44
         sta transfer_destination_low
@@ -447,20 +442,13 @@
         sta transfer_destination_high
 
         ; source
-        lda ef_address_low
-        sta transfer_source_low
         lda ef_address_high
         sta transfer_source_high
 
         ; prepare
         php
         sei
-        lda $01
-        pha
-        lda #$37   ; memory map, read from ef
-        sta $01
-        lda #EASYFLASH_LED | EASYFLASH_16K
-        sta EASYFLASH_CONTROL
+        jsr easyflash_bankin
         lda ef_bank
         jsr EAPISetBank      ; set bank
         
@@ -469,7 +457,6 @@
     :   ldy #$37   ; memory map: read from ef
         sty $01
     transfer_source:
-    transfer_source_low = transfer_source + 1
     transfer_source_high = transfer_source + 2
         lda $8000, x
         ldy #$34   ; memory map: all ram visible, no ef
@@ -481,18 +468,135 @@
         inx
         bne :-               ; loop 256 times
 
-        lda #$37   ; memory map, read from ef
-        sta $01
-        lda #EASYFLASH_KILL
-        sta EASYFLASH_CONTROL
-        pla
-        sta $01    ; restore memory map
+        jsr easyflash_bankout
 
         plp
         rts
         
 
+; calculate sector sources (old) ----------------
 
+;    calculate_easyflash_parameters:
+;        lda $46              ; sector 0-5 low bits -> high address of ef
+;        rol a                ; set carry for +1
+;        and #$3f
+;        clc
+;        adc #$80
+;        sta ef_address_high
+;
+;        lda $46              ; low address 3 high bits -> bank
+;        lsr a
+;        lsr a
+;        lsr a
+;        lsr a
+;        lsr a
+;        ldx $47
+;        clc
+;        beq :+
+;        adc #$08             ; if bit 0 of sector_high is set, add value 8
+;
+;    :   ldx bd3_current_disk_index     ; bank offset for disk
+;        clc
+;        adc bd3_current_disk, x
+;        sta ef_bank
+;
+;        ;lda #$00
+;        ;sta ef_address_low
+;
+;        rts
+
+
+; calculate sector sources ----------------------
+
+    get_value:
+        ldx $46              ; low byte of sector id is the table index
+    table_index:
+    table_index_low = table_index + 1
+    table_index_high = table_index + 2
+        lda $8000, x
+        rts
+
+
+    calculate_easyflash_parameters:
+        jsr easyflash_bankin
+        lda #sector_map_bank
+        jsr EAPISetBank
+
+        ldx bd3_current_disk_index  ; offset for disk
+        lda bd3_current_disk, x
+        clc
+        adc $47              ; add sector id highest bit
+        sta table_index_high
+        jsr get_value
+        sta ef_type
+
+        inc table_index_high
+        inc table_index_high
+        jsr get_value
+        sta ef_bank
+
+        inc table_index_high  ; prepare and get address
+        inc table_index_high
+        jsr get_value
+        sta ef_address_high
+        
+        ;lda #$ff
+        bit ef_type
+        ;bne calculate_done    ; type 0, we are done
+        bvc :+
+        ;jsr ###       ; recalculate for save area a
+        jmp easyflash_bankout
+    :   bpl :+
+        ;jsr ###       ; recalulate for save area b
+
+    :   jmp easyflash_bankout
+
+
+    calculate_easyflash_nextsector:
+        inc ef_address_high
+        rts
+
+; ### calculate extended source for save zones
+; ### find current save area in its area
+; ### save zone a: low addresses only, save zone b: high addresses only
+
+; ### saving of sectors
+; ### find next save area
+; ### if in new block erase old area
+; ### save sector
+
+
+    ;resolve_easyflash_parameters:
+        ; ef_type
+        ; ef_address_high
+        ; ef_bank
+
+        ; bank
+;        get_value
+;        sta ef_bank
+
+        ; offset
+;        inc $table_index_high
+;        inc $table_index_high
+;        jsr get_value
+;        sta ef_address_high
+
+        ; type
+;        inc $table_index_high
+;        inc $table_index_high
+;        jsr get_value
+;        sta ef_type
+;        bit ef_type
+        ; branch on negative flag
+        ; branch on overflow flag
+
+        ; no save allowed
+
+;        ldx bd3_current_disk_index     ; bank offset for disk
+;        clc
+;        adc bd3_current_disk, x
+;        sta ef_bank
+        
 
 ;  ldy #[bankin]
 ;  sty ef_control

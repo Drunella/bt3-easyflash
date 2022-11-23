@@ -9,7 +9,11 @@
 
 # sector files
 8 f character.bin addr 0x8000
-18 f dungeona.bin addr 0x8000
-28 f dungeonb.bin addr 0x8000
+19 f dungeona.bin addr 0x8000
+30 f dungeonb.bin addr 0x8000
+
+41 f character-sectors.bin addr 0x8000
+41 f dungeona-sectors.bin addr 0x9000
+41 f dungeonb-sectors.bin addr 0xa000
 
 # automatic additions

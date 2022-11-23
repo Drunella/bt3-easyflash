@@ -58,9 +58,15 @@ build/%.o: build/%.s
 build/ef/init.prg: build/ef/init.o
 	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/init.cfg $^
 
-# easyflash loadfile.prg
-#build/ef/loadfile.prg: build/ef/loadfile.o
-#	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/loadfile.cfg $^
+# character sector info
+build/ef/character-sectors.bin:
+	tools/mksectors.py -v -i src/ef/character-disk.map -o build/ef/character-sectors.bin
+
+build/ef/dungeona-sectors.bin:
+	tools/mksectors.py -v -i src/ef/dungeona-disk.map -o build/ef/dungeona-sectors.bin
+
+build/ef/dungeonb-sectors.bin:
+	tools/mksectors.py -v -i src/ef/dungeonb-disk.map -o build/ef/dungeonb-sectors.bin
 
 # easyflash loader.prg
 build/ef/loader.prg: $(EF_LOADER_FILES)
@@ -117,7 +123,7 @@ build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list
 #	tools/mkblocks.py -v -o ./src/disks.cfg -b ./src/ef/block.map -f ./build/ef.f -m ./build/ef/crt.blocks.map -d ./build/ef
 
 # cartridge binary
-build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin
+build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin build/ef/character-sectors.bin build/ef/dungeona-sectors.bin build/ef/dungeonb-sectors.bin
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
 	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin
@@ -169,19 +175,3 @@ build/ef/dungeonb.bin: subdirs
 build/ef/files.list: subdirs build/ef/boot.prodos build/prodos/prodos
 	build/prodos/prodos -i ./build/ef/boot.prodos ls > build/ef/files.list
 	tools/extract.sh build/ef/files.list build/ef
-
-# get m.prg	
-#build/source/m.prg:
-#	c1541 ./disks/osi.d64 -read m ./build/source/m.prg
-
-# get meow.prg	
-#build/source/meow.prg:
-#	c1541 ./disks/osi.d64 -read meow ./build/source/meow.prg
-
-# get subs.128.prg	
-#build/source/subs.128.prg:
-#	c1541 ./disks/osi.d64 -read subs.128 ./build/source/subs.128.prg
-
-# get temp.subs.prg	
-#build/source/temp.subs.prg:
-#	c1541 ./disks/osi.d64 -read temp.subs ./build/source/temp.subs.prg
