@@ -205,18 +205,20 @@
 67B3   D0 03                BNE L67B8
 67B5   EE AF 67             INC $67AF
 67B8   60         L67B8     RTS
+
 67B9   49 FF      L67B9     EOR #$FF
 67BB   8D D8 6A             STA $6AD8
 67BE   20 C7 67   L67BE     JSR L67C7
 67C1   20 FB 67             JSR L67FB
 67C4   4C BE 67             JMP L67BE
+
 67C7   A2 00      L67C7     LDX #$00
 67C9   A0 00                LDY #$00
-67CB   20 70 6A             JSR L6A70
-67CE   B0 2A                BCS L67FA
-67D0   AD FF BB             LDA $BBFF
-67D3   CD D8 6A             CMP $6AD8
-67D6   D0 22                BNE L67FA
+67CB   20 70 6A             JSR L6A70          ; ### ###               ; lda $6ad8
+67CE   B0 2A                BCS L67FA          ;                       ; sta $disk id
+67D0   AD FF BB             LDA $BBFF          ; test disk id          ; nop, nop
+67D3   CD D8 6A             CMP $6AD8                                  ; lda #$00; nop
+67D6   D0 22                BNE L67FA          ; branch if not equal
 67D8   A0 00                LDY #$00
 67DA   8C 55 BE             STY $BE55
 67DD   8C 56 BE             STY $BE56
@@ -232,7 +234,9 @@
 67F8   68                   PLA
 67F9   68                   PLA
 67FA   60         L67FA     RTS
+
 67FB   20 07 74   L67FB     JSR L7407
+
 67FE   F4                   ???                ;11110100
 67FF   18                   CLC
 6800   61 48                ADC ($48,X)
@@ -241,6 +245,7 @@
 6806   CC 37 7D             CPY $7D37
 6809   22                   ???                ;00100010 '"'
 680A   10 00                BPL L680C
+
 680C   AD D8 6A   L680C     LDA $6AD8
 680F   0A                   ASL A
 6810   AA                   TAX
@@ -499,6 +504,7 @@
 6A1B   18                   CLC
 6A1C   69 BA                ADC #$BA
 6A1E   85 35                STA $35
+
 6A20   A0 00                LDY #$00
 6A22   A2 00                LDX #$00
 6A24   A1 34      L6A24     LDA ($34,X)
@@ -516,12 +522,16 @@
 6A3B   90 E7                BCC L6A24
 6A3D   18                   CLC
 6A3E   90 B9                BCC L69F9
+
+; -- backup zero page ----------------------------------------------------
 6A40   A2 1F      L6A40     LDX #$1F
 6A42   B5 30      L6A42     LDA $30,X
 6A44   9D E0 02             STA $02E0,X
 6A47   CA                   DEX
 6A48   10 F8                BPL L6A42
 6A4A   60                   RTS
+
+; -- restore zero page ---------------------------------------------------
 6A4B   A2 1F      L6A4B     LDX #$1F
 6A4D   08                   PHP
 6A4E   48                   PHA
@@ -532,6 +542,8 @@
 6A57   68                   PLA
 6A58   28                   PLP
 6A59   60                   RTS
+
+; -- ??? -----------------------------------------------------------------
 6A5A   88         L6A5A     DEY
 6A5B   98                   TYA
 6A5C   38                   SEC
@@ -544,47 +556,55 @@
 6A6A   8D 4C BE             STA $BE4C
 6A6D   A0 00                LDY #$00
 6A6F   60                   RTS
-6A70   8A         L6A70     TXA
+
+; -- ??? -----------------------------------------------------------------
+6A70   8A         L6A70     TXA        ; parameter x: low sector number
 6A71   48                   PHA
-6A72   98                   TYA
+6A72   98                   TYA        ; parameter y: high sector number
 6A73   48                   PHA
-6A74   20 40 6A             JSR L6A40
+6A74   20 40 6A             JSR L6A40  ; backup zero page
 6A77   68                   PLA
 6A78   85 47                STA $47
 6A7A   68                   PLA
 6A7B   85 46                STA $46
 6A7D   20 A4 6A             JSR L6AA4
 6A80   4C 4B 6A             JMP L6A4B
+
+; -- save data -----------------------------------------------------------
 6A83   8A                   TXA
 6A84   48                   PHA
 6A85   98                   TYA
 6A86   48                   PHA
-6A87   20 40 6A             JSR L6A40
+6A87   20 40 6A             JSR L6A40  ; backup zero page
 6A8A   68                   PLA
 6A8B   85 47                STA $47
 6A8D   68                   PLA
 6A8E   85 46                STA $46
 6A90   A9 02                LDA #$02
-6A92   8D AD 6A             STA $6AAD
-6A95   20 A4 6A             JSR L6AA4
+6A92   8D AD 6A             STA $6AAD  ; set mode 2: save
+6A95   20 A4 6A             JSR L6AA4  ; save data
 6A98   08                   PHP
 6A99   48                   PHA
 6A9A   A9 01                LDA #$01
-6A9C   8D AD 6A             STA $6AAD
+6A9C   8D AD 6A             STA $6AAD  ; restore mode
 6A9F   68                   PLA
 6AA0   28                   PLP
-6AA1   4C 4B 6A             JMP L6A4B
-6AA4   A9 00      L6AA4     LDA #$00
+6AA1   4C 4B 6A             JMP L6A4B  ; restore zero page
+
+; -- load data -----------------------------------------------------------
+6AA4   A9 00      L6AA4     LDA #$00   ; buffer to $ba00
 6AA6   85 44                STA $44
 6AA8   A9 BA                LDA #$BA
 6AAA   85 45                STA $45
-6AAC   A9 01      L6AAC     LDA #$01
+6AAC   A9 01      L6AAC     LDA #$01   ; mode load
 6AAE   85 42                STA $42
-6AB0   20 7A BE             JSR $BE7A
-6AB3   E6 46                INC $46
+6AB0   20 7A BE             JSR $BE7A  ; load sector
+6AB3   E6 46                INC $46    ; set next sector
 6AB5   D0 02                BNE L6AB9
 6AB7   E6 47                INC $47
 6AB9   60         L6AB9     RTS
+
+; -- ??? -----------------------------------------------------------------
 6ABA   48         L6ABA     PHA
 6ABB   20 E2 91             JSR L91E2
 6ABE   85 37                STA $37
@@ -598,13 +618,16 @@
 6ACC   A2 04      L6ACC     LDX #$04
 6ACE   68                   PLA
 6ACF   4C 7D 66             JMP L667D
+
 6AD2   00                   BRK
 6AD3   00                   BRK
 6AD4   00                   BRK
 6AD5   00                   BRK
 6AD6   00                   BRK
 6AD7   00                   BRK
-6AD8   00                   BRK
+6AD8   00                   BRK  ; variable: disk id
+
+; -- ??? -----------------------------------------------------------------
 6AD9   A2 9B                LDX #$9B
 6ADB   A5 2F                LDA $2F
 6ADD   C9 FF                CMP #$FF
@@ -1169,9 +1192,11 @@
 6F09   29 07                AND #$07
 6F0B   18                   CLC
 6F0C   60                   RTS
+
+; -- ??? -----------------------------------------------------------------
 6F0D   20 0F 8B   L6F0D     JSR L8B0F
-6F10   06 A2                ASL $A2
-6F12   38                   SEC
+6F10   06 A2                ASL $A2    ; calling parameters ?
+6F12   38                   SEC        ; pc returns here
 6F13   60                   RTS
 6F14   38         L6F14     SEC
 6F15   60                   RTS
@@ -1886,6 +1911,7 @@
 7403   CA                   DEX
 7404   10 F9                BPL L73FF
 7406   60                   RTS
+
 7407   20 73 86   L7407     JSR L8673
 740A   68         L740A     PLA
 740B   AA                   TAX
@@ -1929,11 +1955,16 @@
 7460   AC 04 75             LDY $7504
 7463   60                   RTS
 7464   00                   BRK
+
+; -- ??? -----------------------------------------------------------------
 7465   A2 FF      L7465     LDX #$FF
 7467   86 B7                STX $B7
 7469   E8                   INX
 746A   86 B9                STX $B9
 746C   60                   RTS
+
+
+; -- ??? -----------------------------------------------------------------
 746D   66 B9      L746D     ROR $B9
 746F   20 FA 74   L746F     JSR L74FA
 7472   09 00                ORA #$00
@@ -2017,6 +2048,8 @@
 74F4   BB                   ???                ;10111011
 74F5   AD A5 A0             LDA $A0A5
 74F8   06 2C                ASL $2C
+
+; -- ??? -----------------------------------------------------------------
 74FA   A0 05      L74FA     LDY #$05
 74FC   A9 00                LDA #$00
 74FE   24 B7      L74FE     BIT $B7
@@ -2034,6 +2067,8 @@
 7518   88                   DEY
 7519   D0 E3                BNE L74FE
 751B   60                   RTS
+
+; -- ??? -----------------------------------------------------------------
 751C   86 38      L751C     STX $38
 751E   84 39                STY $39
 7520   A0 00                LDY #$00
@@ -4192,6 +4227,7 @@
 851B   8E 3A 85   L851B     STX $853A
 851E   60                   RTS
 851F   00                   BRK
+
 8520   AC 3A 85   L8520     LDY $853A
 8523   F0 0F                BEQ L8534
 8525   A2 00                LDX #$00
@@ -4204,7 +4240,8 @@
 8534   A5 20      L8534     LDA $20
 8536   8D 63 85             STA $8563
 8539   60                   RTS
-853A   00                   BRK
+
+853A   00                   BRK                  ; variables
 853B   00                   BRK
 853C   00                   BRK
 853D   00                   BRK
@@ -4246,6 +4283,7 @@
 8561   00                   BRK
 8562   00                   BRK
 8563   00                   BRK
+
 8564   38         L8564     SEC
 8565   24 18                BIT $18
 8567   86 1A                STX $1A
@@ -4386,6 +4424,8 @@
 866E   A5 22                LDA $22
 8670   85 22      L8670     STA $22
 8672   60                   RTS
+
+; -- clear screen or copy to screen
 8673   20 10 8C   L8673     JSR L8C10
 8676   A2 05                LDX #$05
 8678   A0 48      L8678     LDY #$48
@@ -4417,6 +4457,8 @@
 86AC   8D 3A 85             STA $853A
 86AF   85 2D                STA $2D
 86B1   60                   RTS
+
+; -- ??? -----------------------------------------------------------------
 86B2   A2 00      L86B2     LDX #$00
 86B4   BD AE 8C   L86B4     LDA $8CAE,X
 86B7   9D AD 8C             STA $8CAD,X
@@ -5121,6 +5163,8 @@
 8C0D   7B                   ???                ;01111011 '{'
 8C0E   18                   CLC
 8C0F   00                   BRK
+
+; -- ??? -----------------------------------------------------------------
 8C10   A2 0A      L8C10     LDX #$0A
 8C12   A9 00                LDA #$00
 8C14   9D AD 8C   L8C14     STA $8CAD,X
@@ -5128,6 +5172,8 @@
 8C1A   CA                   DEX
 8C1B   10 F7                BPL L8C14
 8C1D   60                   RTS
+
+; -- ??? -----------------------------------------------------------------
 8C1E   AD C3 8C   L8C1E     LDA $8CC3
 8C21   29 40                AND #$40
 8C23   F0 16                BEQ L8C3B
@@ -5203,7 +5249,8 @@
 8CA8   9D 06 01             STA $0106,X
 8CAB   18                   CLC
 8CAC   60                   RTS
-8CAD   00                   BRK
+
+8CAD   00                   BRK                  ; variable
 8CAE   00                   BRK
 8CAF   00                   BRK
 8CB0   00                   BRK

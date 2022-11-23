@@ -10,14 +10,48 @@ Bard's Tale 3
   + io access to all files
   + how are savegames and gamestates stored?
 
-- loader with modified util64
-  do the import of characters at another place
+- disable disk switches (ok)
+  + diskswitch request sets the current disk to properly load or save sectors
 
-- simple loader of all files
-  jumptable for loading of the different files
+- disable code wheel
+  + ignore the code wheel
+  + try to completely disable it
 
-- disable disk switches
-  + diskswitch request sets the current disk to properly load sectors
+- character import
+  + loader with modified util64
+
+- character editor
+
+- simple loader of all files (ok)
+  + simple table with id for loading of the different files
+
+- savegame management
+  which sectors wil be changed?
+  savegame: 010b, 010c, 010d (1536 bytes)
+  camp: 0110, 0111, 0112, 0113, 0114, 0115, 0116, 0117 (4096 bytes)
+
+- saving gamestats and characters
+  character disk
+  savegame: sectors: 0x10b, 0x10c, 0x10d (3 sectors: 1536 bytes)
+  roster: sectors: 0x110 to 0x117 (8 sectors: 4096 bytes)
+
+
+File loading from easyflash
+===========================
+
+- small code to load up to 16 files from easyflash
+- do not use ef filesystem, not necessary, simple system sufficient
+- identify files by number, have a directory for 16 files, takes up on page (256 bytes)
+- directory entry
+  0: id (1); value of ff means no file present
+  1: relative bank number (1)
+  2: bank offset low/high (2)
+  4: size (low/high/upper) (3)
+  7: load address (low/high) (2)
+  9: init call offset (low/high) (2) ; when value is zero do not call, call may not return
+  11: reserved (5)
+
+                        
 
 Startup
 =======
@@ -25,7 +59,7 @@ Startup
 load "PRODOS" loader
 load "2.0" (contains basic os routines)
 initialize
-load BARD64.SYSTEM from prodos filesystem to $2000
+load BARD64.SYSTEM from prodos filesystem to $2000 (will be replaced)
 load MAINPIC64 from prodos filesystem to $0800
 load DMUSIC64 from prodos filesystem to $e000
 load SPLASH64 from prodos filesystem to $4000
@@ -39,7 +73,34 @@ load BARDSUBS1 from prodos filesystem to $6600 (11511)
   2.0 partially overwritten
 
 important subs
-- JSR 6aa4 : load sector (20 a4 6a)
+- jsr BE7A ; load prodos sector (sector no in $46/$47)
+  $42 mode (1: read, 2: write, 3:?)
+  $43
+  $44 low address destination buffer
+  $45 high address destination buffer
+  $46 low sector number 
+  $47 high sector number 
+
+
+Sector calculation
+==================
+
+                          $47     $46     
+sector bits            76543210 76543210
+                       HHHHHHHH LLLLLLLL
+                              x xxxxxxxx (max 332)
+                              B BBBAAAAA0                         
+ef bits:                  76543 210543210
+
+sector bits:           76543210-76543210
+                                00111001
+
+rol 1                         7-76543210
+                              0-0111001 (no carry)
+
+map to ef                76543210-543210-76543210
+                              001-11001 (no carry)
+
 
 Save game
 =========

@@ -18,18 +18,37 @@ Local Memory
   $3F
   $40
   $41
-  $42 mode (1: read, 2: write, 3:)
+  $42 mode (1: read, 2: write, 3:?)
   $43
   $44 low address destination buffer
   $45 high address destination buffer
   $46 low sector number 
   $47 high sector number 
 
+  $fd  temporary variable
+  $fe  low temp address
+  $ff  high temp address
+
 
 Main Memory Map
 ===============
 
 0x0000
+   1      
+   2      
+   3      
+   4
+   5
+   6
+   7
+   8      [screen]
+   9      [screen]
+   A      [screen]
+   B      [screen]
+   C      [screen]
+   D      [screen]
+   E      [screen]
+   F      [screen]
 0x1000    
    1      
    2      
@@ -71,36 +90,21 @@ Main Memory Map
    3      
    4      
    5      
-   6      
-   7      
-   8      
-   9      
-   A      
-   B      
-   C      
-   D      
-   E      
-   F      
-0x7000    
-   1      
-   2      
-   3      
-   4      
-   5      
-   6      
-   7      
-   8      
-   9      
-   A      
-   B      
-   C      
-   D      
-   E      
-   F      
-0x8000    
-0x9000    
-   1      
-   2      
+   6      [BARDSUB1]
+   7      [BARDSUB1]
+   8      [BARDSUB1]
+   9      [BARDSUB1]
+   A      [BARDSUB1]
+   B      [BARDSUB1]
+   C      [BARDSUB1]
+   D      [BARDSUB1]
+   E      [BARDSUB1]
+   F      [BARDSUB1]
+0x7000    [BARDSUB1]
+0x8000    [BARDSUB1]
+0x9000    [BARDSUB1]
+   1      [BARDSUB1]
+   2      [BARDSUB1]
    3      
    4      
    5      
@@ -120,9 +124,9 @@ Main Memory Map
    3
    4
    5
-   6
-   7       
-   8
+   6      
+   7      
+   8      
    9      
    A      
    B
@@ -133,53 +137,54 @@ Main Memory Map
 0xB000
    1      
    2
-   3
-   4
-   5
-   6
-   7
-   8
-   9
+   3      []
+   4      []
+   5      []
+   6      []
+   7      []
+   8      []
+   9      []
    A      [sector temp area]
    B      [sector temp area]
    C      [sector temp area]
    D      [sector temp area]
-   E      [file and sector io]
+   E      [file and sector calls] 
    F
-0xC000    [prodos] -> [eapi loader]
-   1      [prodos]
-   2      [prodos]
-   3      [prodos]
-   4      [prodos]
-   5      [prodos] / [music]
-   6      [prodos] / [music]
-   7      [prodos] / [music]
-   8      [prodos] / [music]
-   9      [prodos] / [music]
-   A      
-   B
-   C
-   D
-   E
-   F
-0xD000    [i/o] / [ram]
-   1
-   2
-   3
-   4
-   5
-   6
-   7
-   8
-   9
-   A
-   B
-   C
-   D
-   E      
-   F     
-0xE000    [kernel] / [ram] / [banked code on startup]
-0xF000    [kernel] / [ram] / [banked code on startup]
+0xC000    [prodos] / [ef: eapi]
+   1      [prodos] / [ef: eapi]
+   2      [prodos] / [ef: eapi]
+   3      [prodos] / [ef: io body]
+   40     [prodos] / [ef: io body]
+   48     [prodos] / [MUSIC64] [init: io body]
+   5      [prodos] / [MUSIC64] [init: io body]
+   6      [prodos] / [MUSIC64] [init: io body]
+   7      [prodos] / [MUSIC64]
+   8      [prodos] / [MUSIC64]
+   9      [prodos] / [MUSIC64]
+   A      [MUSIC64] / [utility: eapi]
+   B      [MUSIC64] / [utility: eapi]
+   C      [MUSIC64] / [utility: eapi]
+   D      [BARDSUB2]
+   E      [BARDSUB2]
+   F      [BARDSUB2]
+0xD000    [vic ii] / [BARDSUB2]
+   1      [vic ii] / [BARDSUB2]
+   2      [vic ii] / [BARDSUB2]
+   3      [vic ii] / [BARDSUB2]
+   4      [sid] / [BARDSUB2]
+   5      [sid] / [BARDSUB2]
+   6      [sid] / [BARDSUB2]
+   7      [sid] / [BARDSUB2]
+   8      [color ram] / [BARDSUB2]
+   9      [color ram] / [BARDSUB2]
+   A      [color ram] / [BARDSUB2]
+   B      [color ram] / [BARDSUB2]
+   C      [cia 1] / [BARDSUB2]
+   D      [cia 2] / [BARDSUB2]
+   E      [io 1] / [BARDSUB2]
+   F      [io 2] / [BARDSUB2]
+0xE000    [kernel] / [banked code on startup] / [BARDSUB2]
+0xF000    [kernel] / [banked code on startup] / [BARDSUB2]
 
 
 
@@ -246,26 +251,27 @@ Cartridge Memory Map
      1900      EAPI       
      1A00      EAPI
      1B00      EAPI
-     1C00     
+     1C00      [files list: 16 files]
      1D00      
      1E00      
      1F00      Startup Code & Reset Vector (init.s)
-01:0:0000     
-01:1:0000     
-02:0:0000     
-02:1:0000     
-03:0:0000     
-03:1:0000     
-04:0:0000     
-04:1:0000     
-05:0:0000     
-05:1:0000     
-06:0:0000     
-06:1:0000     
-07:0:0000     
-07:1:0000     
 
-08:0:0000     
+01:0:0000      [files]
+01:1:0000      [files: 16k]
+02:0:0000      [files]
+02:1:0000      [files: 32k]
+03:0:0000      [files]
+03:1:0000      [files: 48k]
+04:0:0000      [files]
+04:1:0000      [files: 64k]
+05:0:0000      [files]
+05:1:0000      [files: 80k]
+06:0:0000      [files]
+06:1:0000      [files: 96k]
+07:0:0000      [files]
+07:1:0000      [files: 128k]
+
+08:0:0000      [character disk]
 08:1:0000     
 09:0:0000     
 09:1:0000     
@@ -281,14 +287,14 @@ Cartridge Memory Map
 14:1:0000     
 15:0:0000     
 15:1:0000     
-
 16:0:0000     
 16:1:0000     
 17:0:0000     
 17:1:0000     
-18:0:0000     
+18:0:0000      
 18:1:0000     
-19:0:0000     
+
+19:0:0000     [dungeon a disk]
 19:1:0000     
 20:0:0000     
 20:1:0000     
@@ -298,7 +304,6 @@ Cartridge Memory Map
 22:1:0000     
 23:0:0000     
 23:1:0000     
-              
 24:0:0000     
 24:1:0000     
 25:0:0000     
@@ -307,15 +312,15 @@ Cartridge Memory Map
 26:1:0000     
 27:0:0000     
 27:1:0000     
-28:0:0000     
+28:0:0000      
 28:1:0000     
 29:0:0000     
 29:1:0000     
-30:0:0000     
+
+30:0:0000     [dungeon b disk]
 30:1:0000     
 31:0:0000     
 31:1:0000     
-              
 32:0:0000     
 32:1:0000     
 33:0:0000     
@@ -328,58 +333,60 @@ Cartridge Memory Map
 36:1:0000     
 37:0:0000     
 37:1:0000     
-38:0:0000     
-38:1:0000     
-39:0:0000     
-39:1:0000     
-              
-40:0:0000     
-40:1:0000     
-41:0:0000     
-41:1:0000     
-41:0:0000     
-42:1:0000     
-42:0:0000     
-43:1:0000     
-44:0:0000     
-44:1:0000     
-45:0:0000     
-45:1:0000     
-46:0:0000     
-46:1:0000     
-47:0:0000     
-47:1:0000     
+38:0:0000      
+38:1:0000      
+39:0:0000      
+39:1:0000      
+40:0:0000      
+40:1:0000      
 
-48:0:0000     
-48:1:0000     
-49:0:0000     
-41:1:0000     
-50:0:0000     
-50:1:0000     
-51:0:0000     
-51:1:0000     
-52:0:0000     
-52:1:0000     
-53:0:0000     
-53:1:0000     
-54:0:0000     
-54:1:0000     
-55:0:0000     
-55:1:0000     
+41:0:0000      [sector map character]
+41:0:1000      [sector map dungeon a]
+41:1:0000      [sector map dungeon b]
+41:1:1000      [empty]
+42:0:0000      [empty]
+42:1:0000      [empty]
+43:0:0000      [empty]
+43:1:0000      [empty]
+44:0:0000      [empty]
+44:1:0000      [empty]
+45:0:0000      [empty]
+45:1:0000      [empty]
+46:0:0000      [empty]
+46:1:0000      [empty]
+47:0:0000      [empty]
+47:1:0000      [empty]
 
-56:0:0000     
-56:1:0000     
-57:0:0000     
-57:1:0000     
-58:0:0000     
-58:1:0000     
-59:0:0000     
-59:1:0000     
-60:0:0000     
-60:1:0000     
-61:0:0000     
-61:1:0000     
-62:0:0000     
-62:1:0000     
-63:0:0000     
-63:1:0000     
+48:0:0000      [savegame block a]
+48:1:0000      [camp black a]    
+49:0:0000      [savegame block a]
+41:1:0000      [camp black a]    
+50:0:0000      [savegame block a]
+50:1:0000      [camp black a]    
+51:0:0000      [savegame block a]
+51:1:0000      [camp black a]    
+52:0:0000      [savegame block a]
+52:1:0000      [camp black a]    
+53:0:0000      [savegame block a]
+53:1:0000      [camp black a]    
+54:0:0000      [savegame block a]
+54:1:0000      [camp black a]    
+55:0:0000      [savegame block a]
+55:1:0000      [camp black a]    
+                                 
+56:0:0000      [savegame block b]
+56:1:0000      [camp black a]    
+57:0:0000      [savegame block b]
+57:1:0000      [camp black a]    
+58:0:0000      [savegame block b]
+58:1:0000      [camp black a]    
+59:0:0000      [savegame block b]
+59:1:0000      [camp black a]    
+60:0:0000      [savegame block b]
+60:1:0000      [camp black a]    
+61:0:0000      [savegame block b]
+61:1:0000      [camp black a]    
+62:0:0000      [savegame block b]
+62:1:0000      [camp black a]    
+63:0:0000      [savegame block b]
+63:1:0000      [camp black a]    
