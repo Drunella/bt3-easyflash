@@ -25,6 +25,11 @@ import traceback
 import pprint
 import csv
 
+FILEENTRY_SIZE = 0x10
+FILEDIRECTORY_SIZE = 0x0200
+FILEDATA_SIZE = 0x30000
+FILEDATA_STARTBANK = 1
+FILEDIRECTOTY_ENTRIES = (FILEDIRECTORY_SIZE / FILEENTRY_SIZE) - 1
 
 
 def data_writebyte(data, position, value):
@@ -43,20 +48,22 @@ def data_write24(data, position, value):
 
 
 def add_file(path, id, loadaddress, initaddress, prg):
-    global image_data_max
-    global image_dir_max
     global image_data
     global image_dir
     global image_data_cursor
     global image_dir_cursor
-    global start_bank
     
     with open(path, "rb") as file:
         contents = file.read()
         size = len(contents) - prg
+
+    if (image_dir_cursor + 1 >= FILEDIRECTORY_SIZE):
+        raise Exception("too many files")
+    if (image_data_cursor + size > FILEDATA_SIZE):
+        raise Exception("files too large")
+
+    banknum = FILEDATA_STARTBANK + image_data_cursor // 16384
     
-    dc = image_dir_cursor * 16;
-    banknum = start_bank + image_data_cursor // 16384
     bankaddress = image_data_cursor % 16384
     if bankaddress < 8192:
         bankaddress = bankaddress + 0x8000
@@ -66,31 +73,60 @@ def add_file(path, id, loadaddress, initaddress, prg):
     if prg > 0:
         loadaddress = contents[0] + contents[1]*256
 
-    # write directory entry
-    dc = image_dir_cursor;
-    data_writebyte(image_dir, dc, id)
-    image_dir_cursor = image_dir_cursor + 16
-    data_writeword(image_dir, dc+1, banknum)
-    data_writeword(image_dir, dc+2, bankaddress)
-    data_write24(image_dir, dc+4, size)
-    data_writeword(image_dir, dc+7, loadaddress)
-    data_writeword(image_dir, dc+9, initaddress)
+    data_writebyte(image_dir, image_dir_cursor, id)
+    #image_dir_cursor = image_dir_cursor + 16
+    data_writeword(image_dir, image_dir_cursor+1, banknum)
+    data_writeword(image_dir, image_dir_cursor+2, bankaddress)
+    data_write24(image_dir, image_dir_cursor+4, size)
+    data_writeword(image_dir, image_dir_cursor+7, loadaddress)
+    data_writeword(image_dir, image_dir_cursor+9, initaddress)
     
     # write data
     for i in range(0, size):
         image_data[image_data_cursor+i] = contents[prg + i]
-    image_data_cursor = image_data_cursor + size    
+
+    # next entry
+    image_dir_cursor = image_dir_cursor + FILEENTRY_SIZE;
+    image_data_cursor = image_data_cursor + size
+    
+#    dc = image_dir_cursor * FILEENTRY_SIZE;
+#    if (dc+1 >= FILEDIRECTORY_SIZE):
+#        raise Exception("too many files")
+#    banknum = FILEDATA_STARTBANK + image_data_cursor // 16384
+#    bankaddress = image_data_cursor % 16384
+#    if bankaddress < 8192:
+#        bankaddress = bankaddress + 0x8000
+#    else:
+#        bankaddress = bankaddress + 0xA000 - 0x2000
+#    
+#    if prg > 0:
+#        loadaddress = contents[0] + contents[1]*256
+#
+#    # write directory entry
+#    dc = image_dir_cursor;
+#    data_writebyte(image_dir, dc, id)
+#    image_dir_cursor = image_dir_cursor + 16
+#    data_writeword(image_dir, dc+1, banknum)
+#    data_writeword(image_dir, dc+2, bankaddress)
+#    data_write24(image_dir, dc+4, size)
+#    data_writeword(image_dir, dc+7, loadaddress)
+#    data_writeword(image_dir, dc+9, initaddress)
+#    
+#    # write data
+#    for i in range(0, size):
+#        image_data[image_data_cursor+i] = contents[prg + i]
+#    image_data_cursor = image_data_cursor + size    
     #print(path + ": id="+str(id)+" size="+str(size)+" load="+str(loadaddress)+" init="+str(initaddress))
 
 
 def main(argv):
-    global image_data_max
-    global image_dir_max
+    #global image_data_max
+    #global image_dir_max
     global image_data
     global image_dir
     global image_data_cursor
     global image_dir_cursor
-    global start_bank
+    #global start_bank
 
     p = argparse.ArgumentParser()
     p.add_argument("-v", dest="verbose", action="store_true", help="Verbose output.")
@@ -98,8 +134,8 @@ def main(argv):
     p.add_argument("-f", dest="files_dir", action="store", required=True, help="files directory.")
     p.add_argument("-o", dest="dest_image", action="store", required=True, help="destination binary image.")
     p.add_argument("-d", dest="dest_dir", action="store", required=True, help="destination binary directory.")
-    p.add_argument("-s", dest="image_size", action="store", required=True, help="destination binary image size in bytes.")
-    p.add_argument("-b", dest="start_bank", action="store", required=True, help="start bank.")
+    #p.add_argument("-s", dest="image_size", action="store", required=True, help="destination binary image size in bytes.")
+    #p.add_argument("-b", dest="start_bank", action="store", required=True, help="start bank.")
 
     args = p.parse_args()
     verbose = args.verbose
@@ -109,13 +145,13 @@ def main(argv):
     os.makedirs(os.path.dirname(dest_image), exist_ok=True)
     dest_dir = args.dest_dir
     os.makedirs(os.path.dirname(dest_dir), exist_ok=True)
-    image_size = args.image_size
-    start_bank = int(args.start_bank, 0)
+    #image_size = args.image_size
+    #start_bank = int(args.start_bank, 0)
 
-    image_data_max = int(image_size, 0)
-    image_dir_max = 256
-    image_data = bytearray([255] * image_data_max)
-    image_dir = bytearray([255] * image_dir_max)
+    #image_data_max = int(image_size, 0)
+    #image_dir_max = 512
+    image_data = bytearray([255] * FILEDATA_SIZE)
+    image_dir = bytearray([255] * FILEDIRECTORY_SIZE)
     image_data_cursor = 0
     image_dir_cursor = 0
 

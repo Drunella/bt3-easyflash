@@ -50,7 +50,7 @@ void main(void)
 {
     static bool repaint;
     
-    //  initialize_basic files: eapi for later
+    //  initialize eapi now
     load_eapi(0xc0);
     cart_bankout();
     
@@ -71,6 +71,8 @@ void main(void)
             cputs("\r\n");
             menu_option('U', "Savegame utility");
             cputs("\r\n");
+            menu_option('E', "Character editor");
+            cputs("\r\n");
             menu_option('Q', "Quit to basic");
         }
         
@@ -88,6 +90,12 @@ void main(void)
             clear_menu();
             init_io();
             startup_utility(); // does not return
+            break;
+
+        case 'e':
+            clear_menu();
+            init_io();
+            startup_editor(); // does not return
             break;
         
         case 'q':

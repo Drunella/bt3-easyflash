@@ -30,7 +30,7 @@ export LD65_LIB=/opt/cc65/share/cc65/lib
 .SUFFIXES: .prg .s .c
 .PHONY: clean subdirs all easyflash mrproper
 
-EF_LOADER_FILES=build/ef/menu.o build/ef/menu_util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o
+EF_LOADER_FILES=build/ef/menu.o build/ef/menu_util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o
 
 # all
 all: easyflash
@@ -59,71 +59,26 @@ build/ef/init.prg: build/ef/init.o
 	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/init.cfg $^
 
 # character sector info
-build/ef/character-sectors.bin:
-	tools/mksectors.py -v -i src/ef/character-disk.map -o build/ef/character-sectors.bin
+#build/ef/character-sectors.bin:
+#	tools/mksectors.py -v -i src/ef/character-disk.map -o build/ef/character-sectors.bin
 
-build/ef/dungeona-sectors.bin:
-	tools/mksectors.py -v -i src/ef/dungeona-disk.map -o build/ef/dungeona-sectors.bin
+#build/ef/dungeona-sectors.bin:
+#	tools/mksectors.py -v -i src/ef/dungeona-disk.map -o build/ef/dungeona-sectors.bin
 
-build/ef/dungeonb-sectors.bin:
-	tools/mksectors.py -v -i src/ef/dungeonb-disk.map -o build/ef/dungeonb-sectors.bin
+#build/ef/dungeonb-sectors.bin:
+#	tools/mksectors.py -v -i src/ef/dungeonb-disk.map -o build/ef/dungeonb-sectors.bin
 
 # easyflash loader.prg
 build/ef/loader.prg: $(EF_LOADER_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
 
-# music
-#build/ef/music.prg build/ef.f/music_rom.bin build/ef/music.map: $(EF_MUSIC_FILES)
-#	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/music.map -o build/ef/music.prg -C src/ef/music.cfg $(EF_MUSIC_FILES)
-
-# io-replacement
-#build/ef/io-replacement.prg build/ef/io-replacement.map: build/ef/io-code.o build/ef/io-data.o build/ef/io-rw.o build/exo/exodecrunch.o
-#	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/io-replacement.map -o build/ef/io-replacement.prg -C ./src/ef/io-replacement.cfg $^
-
-# io-addendum
-#build/ef/io-addendum.prg: build/ef/io-code.o build/ef/io-data.o build/ef/io-rw.o build/exo/exodecrunch.o
-#	$(LD65) $(LD65FLAGS) -o $@ -C ./src/ef/io-addendum.cfg $^
-
-# transfer-load
-#build/ef/transfer-load.prg build/ef/transfer-load.map: build/ef/transfer-load.o
-#	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/transfer-load.map -o $@ -C ./src/ef/transfer-load.cfg $^
-
-# disassemble m.prg 
-#build/ef/music-disassemble.o: build/source/m.prg src/ef/music-disassemble.info ./src/ef/music-export.i
-#	$(DA65) -i ./src/ef/music-disassemble.info -o ./build/temp/music-disassemble.s
-#	cat ./src/ef/music-export.i >> ./build/temp/music-disassemble.s
-#	$(CA65) $(CA65FLAGS) -o ./build/ef/music-disassemble.o ./build/temp/music-disassemble.s
-
-# files with additional items
-#build/ef.f/files.list: build/source/files.list build/ef/io-addendum.prg build/ef/music.prg
-#	cp ./build/source/* ./build/ef.f/
-#	cp build/ef/io-addendum.prg build/ef.f/io.add.prg
-#	cp build/ef/music.prg build/ef.f/music.prg
-#	echo "0x41/io.add io.add" >> build/ef.f/files.list
-#	echo "0x41/music music" >> build/ef.f/files.list
-	
-# patch
-#build/ef.f/patched.done: build/ef.f/files.list build/ef/io-replacement.map build/ef/transfer-load.map build/ef/music.map build/ef/transfer-load.prg build/ef.f/music_rom.bin
-#	tools/u5patch.py -v -l ./build/ef.f/files.list -f ./build/ef.f -m build/ef/io-replacement.map -m build/ef/transfer-load.map -m build/ef/music.map ./patches/ef/*.patch ./patches/*.patch
-#	cp build/ef.f/music_rom.bin build/ef/music_rom.aprg
-#	touch ./build/ef.f/patched.done
-	 
-# crunch
-#build/ef.f/crunched.done: build/ef.f/patched.done
-#	tools/crunch.py -v -t level -b ./build/ef.f
-#	touch build/ef.f/crunched.done
-
 # build image dir and data
 build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list
 	cp src/ef/files.csv build/ef/files.csv
-	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin -s 131072 -b 1
-
-# build blocks
-#build/ef/crt.blocks.map: build/ef.f/files.list
-#	tools/mkblocks.py -v -o ./src/disks.cfg -b ./src/ef/block.map -f ./build/ef.f -m ./build/ef/crt.blocks.map -d ./build/ef
+	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
 # cartridge binary
-build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin build/ef/character-sectors.bin build/ef/dungeona-sectors.bin build/ef/dungeonb-sectors.bin
+build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
 	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin
@@ -133,25 +88,17 @@ build/bd3-easyflash.crt: build/ef/bd3-easyflash.bin
 	cartconv -b -t easy -o build/bd3-easyflash.crt -i build/ef/bd3-easyflash.bin -n "Bard's Tale III" -p
 
 
-# ------------------------------------------------------------------------
-# d81
-
 subdirs:
 	@mkdir -p ./build/temp 
-#	@mkdir -p ./build/source
-#	@mkdir -p ./build/ef.f
 	@mkdir -p ./build/ef
 
 clean:
 	rm -rf build/ef
-#	rm -rf build/ef.f 
 	rm -rf build/temp
-#	rm -rf build/source
 	rm -f build/bd3-easyflash.crt
 
 mrproper:
 	rm -rf build
-
 
 # external tool
 build/prodos/prodos:

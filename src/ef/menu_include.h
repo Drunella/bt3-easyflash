@@ -32,6 +32,7 @@ void __fastcall__ load_eapi(uint8_t high);
 void __fastcall__ init_io(void);
 void __fastcall__ startup_game(void);
 void __fastcall__ startup_utility(void);
+void __fastcall__ startup_editor(void);
 
 
 #endif

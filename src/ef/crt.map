@@ -1,19 +1,24 @@
 # loader, init, eapi
-0 f loader.prg addr 0x8000
-0 f init.prg addr 0xbf00
-0 f eapi-am29f040.prg addr 0xb800
+# bank type filename address length start
+
+0 f loader.prg 0x8000 0 0
+0 f init.prg 0xbf00 0 0
+0 f eapi-am29f040.prg 0xb800 0 0
 
 # file and dir data
-0 f files.dir.bin addr 0xbc00
-1 f files.data.bin addr 0x8000
+0 f files.dir.bin 0xbc00 0 0
+1 f files.data.bin 0x8000 0 0
 
 # sector files
-8 f character.bin addr 0x8000
-19 f dungeona.bin addr 0x8000
-30 f dungeonb.bin addr 0x8000
+13 f character.bin 0x8000 0x24000 0
+22 f dungeona.bin 0x8000 0x24000 0
+31 f dungeonb.bin 0x8000 0x24000 0
 
-41 f character-sectors.bin addr 0x8000
-41 f dungeona-sectors.bin addr 0x9000
-41 f dungeonb-sectors.bin addr 0xa000
+# storage block a: save game
+40 f character.bin 0x9600 0x600 0x21600
 
-# automatic additions
+# storeage block b: refugee camp
+48 f character.bin 0xa000 0x1000 0x22000
+
+# storage block c: unknown
+56 f character.bin 0x9c00 0x400 0x21c00

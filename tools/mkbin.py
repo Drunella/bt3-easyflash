@@ -55,13 +55,18 @@ def bin_initialize():
     binary_file = bytearray([0xff] * 64 * 16384) # all 64 banks
 
 
-def bin_placedata(data, bank, address):
+def bin_placedata(data, bank, address, size, start):
     global binary_file
     if address < 0x8000 or address >= 0xC000:
         raise Exception("address outside allowed range: 0x{0:04x}".format(address))
     address -= 0x8000
     address += bank * 16384
-    binary_file[address:address+len(data)] = data
+    if size == 0:
+        binary_file[address:address+len(data)] = data[start:]
+    else:
+        if start+size > len(data):
+            raise Exception("given data size is more than actual data size")
+        binary_file[address:address+size] = data[start:start+size]
 
 
 def bin_write(filename):
@@ -71,61 +76,65 @@ def bin_write(filename):
 
 
 # format map file
-# bank f filename [addr] [value]
+# bank f filename address [value] [length] [start]
 # bank a address addr value
 #
 # f: writes filename at prg address (if *.prg) or given address
 # a: writes addreass at given address in lo/hi format
 #
-# addr: destination address in bin file (prg is ignored) (required for non prg)
-#       all start addresses must be in range of 0x8000 to 0xbfff (lo-hi area)
-#       or must be changed with addr
+# address: destination address in bin file (prg is ignored) (required for non prg)
+#          all start addresses must be in range of 0x8000 to 0xbfff (lo-hi area)
+#          or must be changed with addr
+# length: the number of bytes to transfer, 0 for complete file
+# start: start address in the file
 # example
-# 0 f eapi-am29f040.prg addr 0xb800
-# 0 f directory.data.prg addr 0xa000
+# 0 f eapi-am29f040.prg 0xb800 0 0
+# 0 f directory.data.prg 0xa000 0 0
 # 0 a 0x6ca8 addr 0x9601
 #
 
 def process(e):
     global build_path
-    type = e[1]
     bank = int(e[0], 0)
-    file = e[2]
-    if len(e) > 3:
-        flag = e[3]
-        value = int(e[4], 0)
-        if flag != "addr":
-            raise Exception("unknown flag " + flag)
+    type = e[1]
+    source = e[2]
+    address = int(e[3], 0)
+    if len(e) > 4:
+        #address = int(e[3], 0)
+        size = int(e[4], 0)
+        start = int(e[5], 0)
+        #if flag != "addr":
+        #    raise Exception("unknown flag " + flag)
     else:
-        flag = ""
-        value = 0
+        #address = 0
+        start = 0
+        size = 0
 
     if type == "f":
         # set prg file with load address
         # addr must be given for a non prg file
-        filename = os.path.join(build_path, file)
+        filename = os.path.join(build_path, source)
         data = load_file(filename)
-        if file.endswith(".prg"):
-            address = remove_prg(data)
-            if flag == "addr":
+        if source.endswith(".prg"):
+            value = remove_prg(data)
+            if address == 0:
                 address = value
         else:
-            if flag != "addr":
+            if address == 0:
                 raise Exception("must give address for non prg file")
-            address = value
-        bin_placedata(data, bank, address)
+        bin_placedata(data, bank, address, size, start)
         return address
     elif type == "a":
-        # set binary file without load address
+        # set data in low/high
         # address must be given
-        address = value
-        value = int(file, 0)
-        if flag != "addr":
-            raise Exception("must give address for non prg file")
+        #address = value
+        value = int(source, 0)
+        if address == 0:
+            raise Exception("must give address for set data")
         data = bytearray(2);
         data[0] = value % 256
         data[1] = value // 256
-        bin_placedata(data, bank, address)
+        bin_placedata(data, bank, address, 0, 0)
         return address
     else:
         raise Exception("unknown type " + type)
