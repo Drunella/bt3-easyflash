@@ -72,13 +72,17 @@ build/ef/init.prg: build/ef/init.o
 build/ef/loader.prg: $(EF_LOADER_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
 
+# sector-rom.prg
+build/ef/sector-rom.bin: build/ef/io-sector.o
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
+
 # build image dir and data
 build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
 # cartridge binary
-build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin
+build/ef/bd3-easyflash.bin: build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin build/ef/sector-rom.bin
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
 	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin

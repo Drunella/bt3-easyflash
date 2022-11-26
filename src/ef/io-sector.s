@@ -14,11 +14,128 @@
 ; limitations under the License.
 ; ----------------------------------------------------------------------------
 
+; important variables in dfyx
+; y
+; 0 : current bank, absolute value
+; 1 : current offset, absolute value
+; 2 : next bank (for writing), absolute value
+; 3 : next offset (for writing), absolute value
+;  x 
+;  0: game
+;  1: game
+;  2: game
+;  3: unknown 
+;  4: unkknown
+;  5: camp
+;  6: camp
+;  7: camp
+;  8: camp
+;  9: camp
+;  a: camp
+;  b: camp
+;  c: camp
+;  d:  0
+;  e:  0
+;  f:  0
+;
+; df40: erase command (=0: do not erase, >0: erase)
+; df41: erase offset high value
+; df42: erase bank
+;
+; df50-df5f: variables
+; df60-df6f: variables
+; df70-df7f: variables
+
 
 .include "easyflash.i"
 
 
 .export bd3_current_disk_index
+.export prepare_save_storage
+
+erase_command = $df40
+erase_bank = $df42
+erase_offset  = $df41
+
+
+.segment "IOLOADER"
+
+    prepare_save_storage:
+        ; save mapping and bank in
+        sei
+        lda $01
+        pha
+        lda #$37   ; memory map, read from ef
+        sta $01
+        lda #EASYFLASH_LED | EASYFLASH_16K
+        sta EASYFLASH_CONTROL
+        lda #$00
+        jsr EAPISetBank
+
+        ; clear area
+        ldx #$00
+        lda #$00
+    :   sta $df00, x
+        inx
+        cpx #$80
+        bne :-
+
+        ; initialise 
+        lda #SAVE_10B_BANK  ; current and next bank
+        sta $df00
+        sta $df01
+        sta $df02
+        sta $df20
+        sta $df21
+        sta $df22
+        lda #$96  ; current offset
+        sta $df10
+        lda #$98
+        sta $df11
+        lda #$9a
+        sta $df12
+        lda #$b6  ; next offset
+        sta $df30
+        lda #$b8
+        sta $df31
+        lda #$ba
+        sta $df32
+        lda #$ff
+        sta $df40
+        lda #$80
+        sta $df41
+        lda #$28
+        sta $df42
+        ; ### todo
+        
+
+        lda #SAVE_10E_BANK
+        sta $df03
+        sta $df04
+        ; ### todo
+
+        lda #SAVE_110_BANK
+        sta $df05
+        sta $df06
+        sta $df07
+        sta $df08
+        sta $df09
+        sta $df0a
+        sta $df0b
+        sta $df0c
+        ; todo
+
+        ; ### identify the current area
+
+        ; bankout and return
+        lda #$37   ; memory map, read from ef
+        sta $01
+        lda #EASYFLASH_KILL
+        sta EASYFLASH_CONTROL
+        pla
+        sta $01    ; restore memory map
+        cli
+        rts
 
 
 .segment "LOADSECTOR_CALL"
@@ -30,20 +147,9 @@
     ;   $45 high address destination buffer
     ;   $46 low sector number
     ;   $47 high sector number
-    _load_sector:
+    _io_sector:
         jsr loadsave_sector_body
         rts
-;        lda $42
-;        cmp #$03
-;        beq do_3          ; branch if mode == 3
-;        cmp #$02
-;        bne do_load       ; branch if mode != 2
-;        jmp save_sector_body
-;    do_3:
-;        sec  ;  for now set error
-;        rts
-;    do_load:
-;        jmp load_sector_body
 
 
 .segment "LOADSECTOR_BODY"
@@ -52,10 +158,6 @@
         .byte $37
     ef_bank:
         .byte $08
-;    ef_bankmode:
-;        .byte $d0        
-;    ef_type:
-;        .byte $00
     ef_address_high:
         .byte $80
     bd3_current_disk_index:
@@ -76,9 +178,8 @@
         bne loadsave_load   ; branch if mode != 2
 
         ; save sector
-        jsr easyflash_bankin
+        jsr loadsave_bankin
         jsr calculate_sector_source
-        jsr prepare_easyflash_storage
         bcc :+  ; branch if saving is possible
         sec
         rts
@@ -88,7 +189,7 @@
         jsr save_sector_data
         dec $45
         jsr finish_easyflash_storage
-        jsr easyflash_bankout
+        jsr loadsave_bankout
         clc
         rts
         
@@ -97,21 +198,19 @@
         rts                 ; for now return error on mode 3
 
     loadsave_load:  ; load sector
-        jsr easyflash_bankin
+        jsr loadsave_bankin
         jsr calculate_sector_source
         jsr load_sector_data
         inc ef_address_high
         inc $45
         jsr load_sector_data
         dec $45
-        jsr easyflash_bankout
+        jsr loadsave_bankout
         clc
         rts
  
 
-    easyflash_bankin:
-        ; a: bank to switch to
-;        pha
+    loadsave_bankin:
         sei
         lda $01
         sta save_mapping
@@ -119,12 +218,10 @@
         sta $01
         lda #EASYFLASH_LED | EASYFLASH_16K
         sta EASYFLASH_CONTROL
-;        pla
-;        jsr EAPISetBank
         rts
 
 
-    easyflash_bankout:
+    loadsave_bankout:
         lda #$37   ; memory map, read from ef
         sta $01
         lda #EASYFLASH_KILL
@@ -134,6 +231,112 @@
         cli
         rts
 
+
+    calculate_sector_source:
+        clc
+        lda $46              ; sector 0-5 low bits -> high address of ef
+        rol a                ; 
+        and #$3f
+        clc
+        adc #$80
+        sta ef_address_high
+
+        lda $46              ; low address 3 high bits -> bank
+        lsr a
+        lsr a
+        lsr a
+        lsr a
+        lsr a
+        ldy $47
+        clc
+        beq :+
+        adc #$08             ; if bit 0 of sector_high is set, add value 8
+
+    :   ldx bd3_current_disk_index     ; bank offset for disk
+        clc
+        adc bd3_current_disk, x
+        sta ef_bank          ; no we see the first bank of the specified save area
+
+        ; correct bank and offset for saveable banks
+        lda bd3_current_disk_index  ; if disk != 1, then no save
+        cmp #$01
+        bne prepare_nosave
+
+        lda $47    ; if sector < 0x0100, then no save
+        cmp #$1
+        bne prepare_nosave
+
+        sec
+        lda $46    ; if sector < 0x010b, then no save
+        sbc #$0b
+        bmi prepare_nosave
+
+        ; now correct the bank
+        ;clc
+        ;lda $46
+        ;sbc #$0b ; load the corrected sector no to x
+        tax
+        clc
+        lda $df00, x
+        ;adc ef_bank
+        sta ef_bank
+        clc
+        lda $df10, x   ; and the offset
+        ;adc ef_address_high
+        sta ef_address_high
+
+        lda $42    ; if mode != 2, then no save
+        cmp #$02
+        bne prepare_nosave
+
+        ; now correct for the next area
+        clc
+        lda $df20, x
+        ;adc ef_bank
+        sta ef_bank
+        clc
+        lda $df30, x   ; and the offset
+        ;adc ef_address_high
+        sta ef_address_high
+
+        clc
+        rts
+;        cpy #$01   ; y contains zero page $47
+;        bne :+
+        ; correct bank offset for saved sectors
+;        clc
+;        ldx $46
+;        adc $df00, x  ; load prepared bank offset on save disk
+;    :   sta ef_bank
+
+;        lda $42    ; if mode != 2, then not ok
+;        cmp #$02
+;        bne prepare_nosave
+
+;        lda bd3_current_disk_index  ; if disk != 1, then not ok
+;        cmp #$01
+;        bne prepare_nosave
+
+;        lda $47    ; if sector < 0x0100, then not ok
+;        cmp #$1
+;        bne prepare_nosave
+
+;        lda #$0a    ; if sector >= 0x010b, then ok
+;        cmp $46
+;        bmi prepare_save
+
+    prepare_nosave:
+        sec
+        rts
+;    prepare_save:
+        ; we need to find the next sector
+;        ldx bd3_current_disk_index
+;        lda df48, x
+;        clc
+;        rts
+
+
+; -- loading ------------------------------------
 
     load_sector_data:
         ; destination
@@ -146,7 +349,7 @@
         lda ef_address_high
         sta load_sector_source_high
 
-        ;jsr easyflash_bankin  ; bank in and set bank
+        ; bank in and set bank
         ldy #$37   ; memory map: read from ef
         sty $01
         lda ef_bank
@@ -168,13 +371,12 @@
         inx
         bne :-               ; loop 256 times
 
-        ;jmp easyflash_bankout
         ldy #$37   ; memory map: read from ef
         sty $01
         rts
         
 
-; saving ----------------------------------------
+; --- saving ------------------------------------
 
     save_sector_data:
         ; source
@@ -187,7 +389,6 @@
         ldy #$37   ; memory map: ef accessible
         sty $01
         lda ef_bank
-        ;jsr easyflash_bankin  ; bank in and set bank
         jsr EAPISetBank
 
         ldx #$00
@@ -201,174 +402,85 @@
         ldy #$37   ; memory map: ef accessible
         sty $01
         ldy ef_address_high
-        ;jsr EAPIWriteFlash ; ###
-        clc  ; ### as test only
-        nop  ; ### test only ###
-        nop  ; ### test only ###
+        jsr EAPIWriteFlash
         bcs save_error
         inx
         bne :-               ; loop 256 times
 
-        ;jsr easyflash_bankout
+        ldy #$37   ; memory map: read from ef
+        sty $01
         clc
         rts
     save_error:
-        ;jsr easyflash_bankout
+        ldy #$37   ; memory map: read from ef
+        sty $01
         sec
         rts
 
 
-;    save_sector_data:
-;        ; source
-;        lda $44
-;        sta save_sector_source_low
-;        lda $45
-;        sta save_sector_source_high
-;
-;        ; prepare to save data
-;        lda ef_bank
-;        jsr easyflash_bankin  ; bank in and set bank
-;
-;        ; destination and length
-;        lda ef_bankmode
-;        ldy ef_address_high
-;        ldx #$00
-;        jsr EAPISetPtr
-;        lda #$00
-;        tax
-;        ldy #$1  ; 256 bytes length
-;        jsr EAPISetLen
-;
-;        ldx #$00
-;        ; transfer loop
-;    :   ldy #$34   ; read from memory: all ram visible, no ef
-;        sty $01
-;    save_sector_source:
-;    save_sector_source_low = save_sector_source + 1
-;    save_sector_source_high = save_sector_source + 2
-;        lda $ba00, x
-;        ldy #$37   ; memory map: ef accessible
-;        sty $01
-;; ###        jsr EAPIWriteFlashInc
-;        clc  ; ###
-;        bcs save_error
-;        inx
-;        bne :-               ; loop 256 times
-;
-;        jsr easyflash_bankout
-;        clc
-;        rts
-;    save_error:
-;        jsr easyflash_bankout
-;        sec
-;        rts
-
-
     prepare_easyflash_storage:
-        ; $46 low sector number
-        ; important: we assume that only correct sector numbers ask for saving
-        ;lda #$01  ; correct bank
-        ;jsr easyflash_bankin
+        ; prepare next area to store
+        ; erase if necessary
+        ; A contains the low value of the sector
+        pha        ; save offset
+        lda #$00
+        jsr EAPISetBank
+        pla        ; restore sector
+        jsr $b000  ; read only code, a is sector
 
-        ; correct bank offset
-        clc
-        ldx $46
-        lda $df00, x  ; load prepared bank offset to store data
-        adc ef_bank
-        sta ef_bank
-
-        ; correct ef_address_high
-        lda ef_address_high
-        cmp $a0
-        bcc :+  ; is in low area
-        clc
-        adc #$40
-        sta ef_address_high
-    :   
-
-        ; correct ef_address_high from $a0 to $e0
-
-        ; find next free slot, there will always be a free one
-        
-        ; erase previous area if we started in a new area
-        
-        ; must set correctly: 
-        ; ef_bankmode
-        ; ef_address_high
-        ; ef_bank
-
-        ;jmp easyflash_bankout
-        rts
+        ; check for delete
+        lda erase_command
+        beq :+
+        lda erase_bank
+        jsr EAPISetBank
+        ldy erase_offset
+        jsr EAPIEraseSector
+        lda #$00
+        sta erase_command
+    :   rts
 
 
     finish_easyflash_storage:
-        rts  ; ### debug ###
         ; $46 low sector number
         ; important: we assume that only correct sector numbers ask for saving
-        ;lda #$00  ; correct bank
-        ;jsr easyflash_bankin
 
         lda $46
         cmp #$0d   ; 010d: save game
         bne :+
-        ; next area
-        ; clean area
-        jmp :+++
+        jsr prepare_easyflash_storage ; next area, a is sector 
+        jmp finish_return
 
     :   lda $46
         cmp #$0f   ; 010f: unknown area
         bne :+
-        ; next area
-        ; clean area
-        jmp :++
+        jsr prepare_easyflash_storage ; next area, a is sector
+        jmp finish_return
 
     :   lda $46
         cmp #$17   ; 0117: refugee camp
-        bne :+
-        ; next area
-        ; clean area
-        ;jmp :+
+        bne finish_return
+        jsr prepare_easyflash_storage ; next area, a is sector
 
-    :   ;jmp easyflash_bankout
+    finish_return:
         rts
 
 
-; calculate sector sources ----------------------
+.segment "SECTOR_ROM"
 
-    calculate_sector_source:
-        clc
-        lda $46              ; sector 0-5 low bits -> high address of ef
-        rol a                ; 
-        and #$3f
-        clc
-        adc #$80
-        sta ef_address_high
-
-        lda $46              ; low address 3 high bits -> bank
-        lsr a
-        lsr a
-        lsr a
-        lsr a
-        lsr a
-        ldx $47
-        clc
-        beq :+
-        adc #$08             ; if bit 0 of sector_high is set, add value 8
-
-    :   ldx bd3_current_disk_index     ; bank offset for disk
-        clc
-        adc bd3_current_disk, x
-        sta ef_bank
-
+    calculate_next_storage:
+        lda #$ff
+        sta $df40
+        lda #$80
+        sta $df41
+        lda #$28
+        sta $df42
         rts
 
-        ; correct bank offset
-;        clc
-;        ldx $46
-;        lda $df00, x  ; load prepared bank offset to store data
-;        adc ef_bank
-;        sta ef_bank
-;        rts
+
+
+
+; ------------------------------------------------------------------------
+; attic
 
         ; correct ef_address_high
 ;        lda ef_address_high
@@ -453,7 +565,7 @@
 ;        cpx #$0f  ; jump to next block
 ;        bne :+
 ;        clc
-        rts
+;        rts
 
 
 ; calculate sector sources (old) ----------------
@@ -488,9 +600,6 @@
 ;        rts
 
 
-
-; ------------------------------------------------------------------------
-; attic
 
 ; ### calculate extended source for save zones
 ; ### find current save area in its area
@@ -634,3 +743,86 @@
 ;        rts
 
 
+
+
+;    save_sector_data:
+;        ; source
+;        lda $44
+;        sta save_sector_source_low
+;        lda $45
+;        sta save_sector_source_high
+;
+;        ; prepare to save data
+;        lda ef_bank
+;        jsr easyflash_bankin  ; bank in and set bank
+;
+;        ; destination and length
+;        lda ef_bankmode
+;        ldy ef_address_high
+;        ldx #$00
+;        jsr EAPISetPtr
+;        lda #$00
+;        tax
+;        ldy #$1  ; 256 bytes length
+;        jsr EAPISetLen
+;
+;        ldx #$00
+;        ; transfer loop
+;    :   ldy #$34   ; read from memory: all ram visible, no ef
+;        sty $01
+;    save_sector_source:
+;    save_sector_source_low = save_sector_source + 1
+;    save_sector_source_high = save_sector_source + 2
+;        lda $ba00, x
+;        ldy #$37   ; memory map: ef accessible
+;        sty $01
+;; ###        jsr EAPIWriteFlashInc
+;        clc  ; ###
+;        bcs save_error
+;        inx
+;        bne :-               ; loop 256 times
+;
+;        jsr easyflash_bankout
+;        clc
+;        rts
+;    save_error:
+;        jsr easyflash_bankout
+;        sec
+;        rts
+
+
+;    prepare_easyflash_storage:
+        ; $46 low sector number
+        ; important: we assume that only correct sector numbers ask for saving
+        ;lda #$01  ; correct bank
+        ;jsr easyflash_bankin
+
+        ; correct bank offset
+;        clc
+;        ldx $46
+;        lda $df00, x  ; load prepared bank offset to store data
+;        adc ef_bank
+;        sta ef_bank
+
+        ; correct ef_address_high
+;        lda ef_address_high
+;        cmp $a0
+;        bcc :+  ; is in low area
+;        clc
+;        adc #$40
+;        sta ef_address_high
+;    :   
+
+        ; correct ef_address_high from $a0 to $e0
+
+        ; find next free slot, there will always be a free one
+        
+        ; erase previous area if we started in a new area
+        
+        ; must set correctly: 
+        ; ef_bankmode
+        ; ef_address_high
+        ; ef_bank
+
+        ;jmp easyflash_bankout
+;        rts

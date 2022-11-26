@@ -2,6 +2,7 @@
 # bank type filename address length start
 
 0 f loader.prg 0x8000 0 0
+0 f sector-rom.bin 0xb000 0 0
 0 f init.prg 0xbf00 0 0
 0 f eapi-am29f040.prg 0xb800 0 0
 

@@ -28,9 +28,11 @@ CHARACTER_DISK_BANK = 13
 DUNGEONA_DISK_BANK = 22
 DUNGEONB_DISK_BANK = 31
 
+; as this is the bank offset on the disk
 SAVE_10B_BANK = 40
 SAVE_10E_BANK = 48
 SAVE_110_BANK = 56
+SAVE_SECTOR_OFFSET = 8
 
 
 ; eapi functions

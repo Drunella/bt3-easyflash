@@ -24,13 +24,10 @@
 
 
 file_directory_entry = $10
-;sector_map_bank = 35
-;savegame_bank = 48
-
 
 .export _init_io
-;.export _load_file
-;.export bd3_current_disk_index
+.import prepare_save_storage
+
 
 .import __CLEARCLC_CALL_LOAD__
 .import __CLEARCLC_CALL_RUN__
@@ -169,7 +166,7 @@ file_directory_entry = $10
         jsr copy_segment
 
         ; prepare save storage
-;        jsr prepare_save_storage
+        jsr prepare_save_storage
 
         rts
 
@@ -208,57 +205,57 @@ file_directory_entry = $10
         rts
 
 
-    prepare_save_storage:
-        ; save mapping and bank in
-        lda $01
-        pha
-        sei
-        lda #$37   ; memory map, read from ef
-        sta $01
-        lda #EASYFLASH_LED | EASYFLASH_16K
-        sta EASYFLASH_CONTROL
-        lda #$00
-        jsr EAPISetBank
-
-        ; clear area
-        ldx #$00
-        lda #$00
-    :   sta $df00, x
-        inx
-        cpx #$80
-        bne :-
+;    prepare_save_storage:
+;        ; save mapping and bank in
+;        sei
+;        lda $01
+;        pha
+;        lda #$37   ; memory map, read from ef
+;        sta $01
+;        lda #EASYFLASH_LED | EASYFLASH_16K
+;        sta EASYFLASH_CONTROL
+;        lda #$00
+;        jsr EAPISetBank
+;
+;        ; clear area
+;        ldx #$00
+;        lda #$00
+;    :   sta $df00, x
+;        inx
+;        cpx #$80
+;        bne :-
 
         ; initialise 
 ;CHARACTER_DISK_BANK = 13
 ;SAVE_10B_BANK = 40
 ;SAVE_10E_BANK = 48
 ;SAVE_110_BANK = 56
-        lda #(SAVE_10B_BANK - CHARACTER_DISK_BANK)
-        sta $df0b
-        sta $df0c
-        sta $df0d
-
-        lda #(SAVE_10E_BANK - CHARACTER_DISK_BANK)
-        sta $df0b
-        sta $df0c
-
-        lda #(SAVE_110_BANK - CHARACTER_DISK_BANK)
-        sta $df10
-        sta $df11
-        sta $df12
-        sta $df13
-        sta $df14
-        sta $df15
-        sta $df16
-        sta $df17
-
-        ; bankout and return
-        lda #$37   ; memory map, read from ef
-        sta $01
-        lda #EASYFLASH_KILL
-        sta EASYFLASH_CONTROL
-        pla
-        sta $01    ; restore memory map
-        cli
-        rts
+;        lda #(SAVE_10B_BANK - CHARACTER_DISK_BANK)
+;        sta $df0b
+;        sta $df0c
+;        sta $df0d
+;
+;        lda #(SAVE_10E_BANK - CHARACTER_DISK_BANK)
+;        sta $df0e
+;        sta $df0f
+;
+;        lda #(SAVE_110_BANK - CHARACTER_DISK_BANK)
+;        sta $df10
+;        sta $df11
+;        sta $df12
+;        sta $df13
+;        sta $df14
+;        sta $df15
+;        sta $df16
+;        sta $df17
+;
+;        ; bankout and return
+;        lda #$37   ; memory map, read from ef
+;        sta $01
+;        lda #EASYFLASH_KILL
+;        sta EASYFLASH_CONTROL
+;        pla
+;        sta $01    ; restore memory map
+;        cli
+;        rts
 
