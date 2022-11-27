@@ -18,14 +18,16 @@
 .include "easyflash.i"
 
 ; uses zeropage variables
-; fd: file id
-; fe: directory pointer low
-; ff: directory pointer high
+; $fd: file id
+; $fe: directory pointer low
+; $ff: directory pointer high
+; returns the start address in $fe/$ff
 
 
 file_directory_entry = $10
 
 .export _load_file
+.export loadfile_startaddress
 
 
 .segment "CLEARCLC_CALL"
@@ -68,6 +70,11 @@ file_directory_entry = $10
 
 .segment "LOADFILE_BODY"
 
+    loadfile_startaddress:
+    loadfile_startaddress_low = loadfile_startaddress
+    loadfile_startaddress_high = loadfile_startaddress + 1
+        .byte $00, $00
+
     ; loadfile_body
     loadfile_body:
         ; bank in
@@ -103,10 +110,10 @@ file_directory_entry = $10
         ; call address
         ldy #data_directory::init_low
         lda ($fe), y
-        sta load_file_run_low
+        sta loadfile_startaddress_low
         ldy #data_directory::init_high
         lda ($fe), y
-        sta load_file_run_high
+        sta loadfile_startaddress_high
 
         ; EAPISetLen: XYA length, 24 bits (X = low, Y = med, A = high)
         ldy #data_directory::size_low
@@ -151,14 +158,11 @@ file_directory_entry = $10
 
         ; bank out
     loadfile_finish:
+         lda loadfile_startaddress_low
+         sta $fe
+         lda loadfile_startaddress_high
+         sta $ff
          jmp loadfile_bankout
-
-
-    load_file_run:
-    load_file_run_low = load_file_run + 1
-    load_file_run_high = load_file_run + 2
-        jsr $ffff
-        rts
 
 
     loadfile_mapping:

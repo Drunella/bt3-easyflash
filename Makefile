@@ -30,7 +30,9 @@ export LD65_LIB=/opt/cc65/share/cc65/lib
 .SUFFIXES: .prg .s .c
 .PHONY: clean subdirs all easyflash mrproper
 
-EF_LOADER_FILES=build/ef/menu.o build/ef/menu_util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o
+EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o
+SAVEGAME_FILES=build/ef/util.o build/ef/savegame.o
+EDITOR_FILES=build/ef/util.o build/ef/editor.o
 
 # all
 all: easyflash
@@ -58,26 +60,24 @@ build/%.o: build/%.s
 build/ef/init.prg: build/ef/init.o
 	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/init.cfg $^
 
-# character sector info
-#build/ef/character-sectors.bin:
-#	tools/mksectors.py -v -i src/ef/character-disk.map -o build/ef/character-sectors.bin
-
-#build/ef/dungeona-sectors.bin:
-#	tools/mksectors.py -v -i src/ef/dungeona-disk.map -o build/ef/dungeona-sectors.bin
-
-#build/ef/dungeonb-sectors.bin:
-#	tools/mksectors.py -v -i src/ef/dungeonb-disk.map -o build/ef/dungeonb-sectors.bin
-
 # easyflash loader.prg
-build/ef/loader.prg: $(EF_LOADER_FILES)
+build/ef/loader.prg: $(EF_LOADER_FILES) subdirs
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
 
 # sector-rom.prg
-build/ef/sector-rom.bin: build/ef/io-sector.o
+build/ef/sector-rom.bin: build/ef/io-sector.o subdirs
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
 
+# savegame.prg subdirs
+build/ef/savegame.prg: subdirs $(SAVEGAME_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -o $@ -C src/ef/savegame.cfg $(SAVEGAME_FILES)
+
+# editor.prg subdirs
+build/ef/editor.prg: subdirs $(EDITOR_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -o $@ -C src/ef/editor.cfg $(EDITOR_FILES)
+
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list
+build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/savegame.prg build/ef/editor.prg
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 

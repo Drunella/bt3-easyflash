@@ -32,6 +32,12 @@ FILEDATA_STARTBANK = 1
 FILEDIRECTOTY_ENTRIES = (FILEDIRECTORY_SIZE / FILEENTRY_SIZE) - 1
 
 
+def decomment(csvfile):
+    for row in csvfile:
+        raw = row.split('#')[0].strip()
+        if raw: yield raw
+
+
 def data_writebyte(data, position, value):
     data[position] = value
 
@@ -156,7 +162,7 @@ def main(argv):
     image_dir_cursor = 0
 
     with open(files_list, newline='') as csvfile:
-        csvdata = csv.reader(csvfile, delimiter=',', quotechar='|')
+        csvdata = csv.reader(decomment(csvfile), delimiter=',', quotechar='|')
         for row in csvdata:
             name = row[0].strip()
             try:

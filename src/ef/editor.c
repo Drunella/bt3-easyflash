@@ -14,25 +14,42 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#ifndef MENU_INCLUDE_H
-#define MENU_INCLUDE_H
 
-#include <stdint.h>
+#include <stdbool.h>
+#include <conio.h>
 
-
-void clear_menu(void);
-void menu_option(char key, char *desc);
-//void cart_kill(void);
-//void cart_bankin(void);
-//void cart_bankout(void);
-
-//void __fastcall__ load_eapi(uint8_t high);
-//void __fastcall__ load_file(uint8_t filenumber);
-//void __fastcall__ load_sector(uint8_t filenumber);
-void __fastcall__ init_io(void);
-void __fastcall__ startup_game(void);
-void __fastcall__ startup_savegame(void);
-void __fastcall__ startup_editor(void);
+#include "util.h"
 
 
-#endif
+void main(void)
+{
+    // we assume eapi already installed at $c000
+    // we assume the sector load/save functions are installed at $cxxx
+    // we assume the wrapper are installed at $b7xx
+
+    cart_bankout();
+    
+    bgcolor(COLOR_BLACK);
+    bordercolor(COLOR_BLACK);
+    clrscr();
+    //gotoxy(0, 0);
+    textcolor(COLOR_GRAY2);
+    
+    //     ****************************************
+    cputs("    Bard's Tale III: Thief of Fate\r\n"
+          "\r\n"
+          "          Character Editor");
+    
+    while (kbhit()) {
+        cgetc();
+    }
+    
+    for (;;) {
+        
+        switch (cgetc()) {
+        case 'r':
+            cart_reset();
+            break;
+        }
+    }
+}

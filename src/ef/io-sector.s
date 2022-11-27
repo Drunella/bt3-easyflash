@@ -88,17 +88,17 @@ erase_offset  = $df41
         sta $df20
         sta $df21
         sta $df22
-        lda #$96  ; current offset
+        lda #$80  ; current offset
         sta $df10
-        lda #$98
+        lda #$82
         sta $df11
-        lda #$9a
+        lda #$84
         sta $df12
-        lda #$b6  ; next offset
+        lda #$a0  ; next offset
         sta $df30
-        lda #$b8
+        lda #$a2
         sta $df31
-        lda #$ba
+        lda #$a4
         sta $df32
         lda #$ff
         sta $df40
@@ -272,17 +272,12 @@ erase_offset  = $df41
         bmi prepare_nosave
 
         ; now correct the bank
-        ;clc
-        ;lda $46
-        ;sbc #$0b ; load the corrected sector no to x
         tax
         clc
         lda $df00, x
-        ;adc ef_bank
         sta ef_bank
         clc
         lda $df10, x   ; and the offset
-        ;adc ef_address_high
         sta ef_address_high
 
         lda $42    ; if mode != 2, then no save
@@ -292,48 +287,17 @@ erase_offset  = $df41
         ; now correct for the next area
         clc
         lda $df20, x
-        ;adc ef_bank
         sta ef_bank
         clc
         lda $df30, x   ; and the offset
-        ;adc ef_address_high
         sta ef_address_high
 
         clc
         rts
-;        cpy #$01   ; y contains zero page $47
-;        bne :+
-        ; correct bank offset for saved sectors
-;        clc
-;        ldx $46
-;        adc $df00, x  ; load prepared bank offset on save disk
-;    :   sta ef_bank
-
-;        lda $42    ; if mode != 2, then not ok
-;        cmp #$02
-;        bne prepare_nosave
-
-;        lda bd3_current_disk_index  ; if disk != 1, then not ok
-;        cmp #$01
-;        bne prepare_nosave
-
-;        lda $47    ; if sector < 0x0100, then not ok
-;        cmp #$1
-;        bne prepare_nosave
-
-;        lda #$0a    ; if sector >= 0x010b, then ok
-;        cmp $46
-;        bmi prepare_save
 
     prepare_nosave:
         sec
         rts
-;    prepare_save:
-        ; we need to find the next sector
-;        ldx bd3_current_disk_index
-;        lda df48, x
-;        clc
-;        rts
 
 
 ; -- loading ------------------------------------
@@ -426,7 +390,7 @@ erase_offset  = $df41
         lda #$00
         jsr EAPISetBank
         pla        ; restore sector
-        jsr $b000  ; read only code, a is sector
+        jsr calculate_next_storage  ; read only code, a is sector
 
         ; check for delete
         lda erase_command

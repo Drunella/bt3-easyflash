@@ -24,7 +24,11 @@
 #include <conio.h>
 // #include <peekpoke.h>
 
+#include "util.h"
 #include "menu_include.h"
+
+
+#define MENU_START 15
 
 
 static void draw_game_info(void) {
@@ -43,6 +47,32 @@ static void draw_game_info(void) {
           "\r\n"
           "     EasyFlash version by Drunella\r\n"
           "\r\n");
+}
+
+
+void clear_menu(void)
+{
+    uint8_t y;
+
+    for (y = 12; y < 25; ++y) {
+        cclearxy(0, y, 40);
+    }
+    gotoxy(0, MENU_START);
+}
+
+
+void menu_option(char key, char *desc)
+{
+    textcolor(COLOR_GRAY2);
+    cputs("       (");
+    textcolor(COLOR_WHITE);
+    cputc(key);
+    textcolor(COLOR_GRAY2);
+    cputs(")  ");
+    //textcolor(COLOR_GRAY2);
+    //cprintf("%s\r\n", desc);
+    cputs(desc);
+    cputs("\r\n");
 }
 
 
@@ -89,7 +119,7 @@ void main(void)
         case 'u':
             clear_menu();
             init_io();
-            startup_utility(); // does not return
+            startup_savegame(); // does not return
             break;
 
         case 'e':

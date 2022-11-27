@@ -14,25 +14,18 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#ifndef MENU_INCLUDE_H
-#define MENU_INCLUDE_H
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <stdint.h>
 
 
-void clear_menu(void);
-void menu_option(char key, char *desc);
-//void cart_kill(void);
-//void cart_bankin(void);
-//void cart_bankout(void);
+void cart_kill(void);
+void cart_bankin(void);
+void cart_bankout(void);
+void cart_reset(void);
 
-//void __fastcall__ load_eapi(uint8_t high);
-//void __fastcall__ load_file(uint8_t filenumber);
-//void __fastcall__ load_sector(uint8_t filenumber);
-void __fastcall__ init_io(void);
-void __fastcall__ startup_game(void);
-void __fastcall__ startup_savegame(void);
-void __fastcall__ startup_editor(void);
+void __fastcall__ load_eapi(uint8_t high);
 
 
 #endif

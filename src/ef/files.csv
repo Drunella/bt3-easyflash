@@ -1,11 +1,13 @@
-filename,        , id,  loadaddress,  initaddress, prg
-BARD64.SYSTEM.bin,  0,  0x0000,       0           ,0
-BARD3.PIC64.bin,   21,  0x2000,       0           ,0
-BARDSUBS1.bin,     24,  0x6600,       0           ,0
-BARDSUBS2.bin,     23,  0xcd00,       0           ,0
-MAINPIC64.bin,     11,  0x0800,       0           ,0
-SPLASH64.bin,      13,  0x4000,       0x4000      ,0
-UTIL64.bin,        31,  0x2000,       0x2000      ,0
-MUSIC64.bin,       22,  0x4800,       0           ,0
-DMUSIC64.bin,      12,  0xe000,       0           ,0
-BARD.SYSTEM.bin,    0,  0x0000,       0           ,0
+#filename,        , id,  loadaddress,  initaddress, prg
+BARD64.SYSTEM.bin,  0,  0x0000,       0,           0
+BARD3.PIC64.bin,   21,  0x2000,       0,           0
+BARDSUBS1.bin,     24,  0x6600,       0,           0
+BARDSUBS2.bin,     23,  0xcd00,       0,           0
+MAINPIC64.bin,     11,  0x0800,       0,           0
+SPLASH64.bin,      13,  0x4000,       0x4000,      0
+UTIL64.bin,        31,  0x2000,       0x2000,      0
+MUSIC64.bin,       22,  0x4800,       0,           0
+DMUSIC64.bin,      12,  0xe000,       0,           0
+BARD.SYSTEM.bin,    0,  0x0000,       0,           0
+savegame.prg,      32,  0x3a00,       0x3a00,      2
+editor.prg,        33,  0x2000,       0x2000,      2

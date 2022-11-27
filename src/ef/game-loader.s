@@ -20,7 +20,7 @@
 .import _load_file
 
 .export _startup_game
-.export _startup_utility
+.export _startup_savegame
 .export _startup_editor
 
 .import __STARTGAME_LOAD__
@@ -29,6 +29,7 @@
 
 diskswitcher_run = $67cb
 .import bd3_current_disk_index
+.import loadfile_startaddress
 
 
 .segment "GAMELOADER"
@@ -61,7 +62,7 @@ diskswitcher_run = $67cb
         rts
 
 
-    startup_init_utility:
+    startup_init_savegame:
         lda #$20
         sta $034e                   ; unknown purpose
         sei
@@ -69,8 +70,8 @@ diskswitcher_run = $67cb
         sta $01
         lda #$2f
         sta $00
-        ldx #<_startup_utility  ; set cold reset vector to 1800
-        ldy #>_startup_utility
+        ldx #<_startup_savegame  ; set cold reset vector to 1800
+        ldy #>_startup_savegame
         stx $fffc
         sty $fffd
         rts
@@ -266,18 +267,33 @@ diskswitcher_run = $67cb
         jmp $ff5b            ; start game
 
 
-    _startup_utility:
-        jsr startup_init_utility
+    _startup_savegame:
+        ;jsr startup_init_savegame
         lda #31
         jsr _load_file       ; load UTIL64
-        ; load own backup / restore code ###
-        nop  ; todo
-        rts
+        ; load own backup/restore code
+        ; ###
+        lda #32
+        jsr _load_file       ; load savegame
+
+        ldx #$ff             ; reset stack
+        txs
+        cli
+        cld                  ; no decimal
+
+        jmp ($00fe)
 
 
     _startup_editor:
-        ; load editor ###
+        ; load editor
         ; editor will probably not use any bard's tale 3 code ###
-        ; todo ###
-        rts
+        lda #33
+        jsr _load_file       ; load editor
+
+        ldx #$ff             ; reset stack
+        txs
+        cli
+        cld                  ; no decimal
+
+        jmp ($00fe)
 
