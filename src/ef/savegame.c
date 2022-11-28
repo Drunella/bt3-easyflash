@@ -17,8 +17,13 @@
 
 #include <stdbool.h>
 #include <conio.h>
+#include <dio.h>
 
 #include "util.h"
+
+
+//uint8_t __cdecl__ read_sector(char* dest, uint8_t track, uint8_t sector);
+
 
 
 void main(void)
@@ -26,6 +31,8 @@ void main(void)
     // we assume eapi already installed at $c000
     // we assume the sector load/save functions are installed at $cxxx
     // we assume the wrapper are installed at $b7xx
+//    dhandle_t handle;
+//    unsigned sectors, size;
 
     cart_bankout();
     
@@ -38,6 +45,14 @@ void main(void)
     cputs("    Bard's Tale III: Thief of Fate\r\n"
           "\r\n"
           "            Savegame editor\r\n");
+
+//    handle = dio_open(8);
+//    sectors = dio_query_sectcount(handle);
+//    size = dio_query_sectsize(handle);
+//    vcprintf("Sectors: %d\n", sectors);
+//    vcprintf("Size: %d\n", size);
+    //read_sector(0xa000, 18, 0);
+    
     
     while (kbhit()) { // clear all keys
         cgetc();

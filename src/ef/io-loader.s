@@ -26,7 +26,7 @@
 file_directory_entry = $10
 
 .export _init_io
-.import prepare_save_storage
+.import init_save_storage
 
 
 .import __CLEARCLC_CALL_LOAD__
@@ -56,6 +56,10 @@ file_directory_entry = $10
 .import __GAMELOADER_LOAD__
 .import __GAMELOADER_RUN__
 .import __GAMELOADER_SIZE__
+
+.import __SETDISK_CALL_LOAD__
+.import __SETDISK_CALL_RUN__
+.import __SETDISK_CALL_SIZE__
 
 
 .segment "IOLOADER"
@@ -165,8 +169,23 @@ file_directory_entry = $10
         sta bytes_to_copy_high
         jsr copy_segment
 
-        ; prepare save storage
-        jsr prepare_save_storage
+        ; load segment SETDISK_CALL
+        lda #<__SETDISK_CALL_LOAD__
+        sta source_address_low
+        lda #>__SETDISK_CALL_LOAD__
+        sta source_address_high
+        lda #<__SETDISK_CALL_RUN__
+        sta destination_address_low
+        lda #>__SETDISK_CALL_RUN__
+        sta destination_address_high
+        lda #<__SETDISK_CALL_SIZE__
+        sta bytes_to_copy_low
+        lda #>__SETDISK_CALL_SIZE__
+        sta bytes_to_copy_high
+        jsr copy_segment
+
+        ; init save storage
+        jsr init_save_storage
 
         rts
 

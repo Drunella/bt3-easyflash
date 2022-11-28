@@ -25,14 +25,14 @@ LD65FLAGS=-t $(TARGET)
 CA65FLAGS=-t $(TARGET) -I . --debug-info
 CC65FLAGS=-t $(TARGET) -O
 #LD65FLAGS=
-export LD65_LIB=/opt/cc65/share/cc65/lib
+#export LD65_LIB=/opt/cc65/share/cc65/lib
 
 .SUFFIXES: .prg .s .c
 .PHONY: clean subdirs all easyflash mrproper
 
-EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o
-SAVEGAME_FILES=build/ef/util.o build/ef/savegame.o
-EDITOR_FILES=build/ef/util.o build/ef/editor.o
+EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o
+SAVEGAME_FILES=build/ef/util.o build/ef/util_s.o build/ef/savegame.o
+EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor.o
 
 # all
 all: easyflash
@@ -62,19 +62,19 @@ build/ef/init.prg: build/ef/init.o
 
 # easyflash loader.prg
 build/ef/loader.prg: $(EF_LOADER_FILES) subdirs
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -Ln ./build/ef/loader.info -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
 
 # sector-rom.prg
 build/ef/sector-rom.bin: build/ef/io-sector.o subdirs
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -Ln ./build/ef/sector-rom.info -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
 
 # savegame.prg subdirs
 build/ef/savegame.prg: subdirs $(SAVEGAME_FILES)
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -o $@ -C src/ef/savegame.cfg $(SAVEGAME_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -Ln ./build/ef/savegame.info -o $@ -C src/ef/savegame.cfg c64.lib $(SAVEGAME_FILES)
 
 # editor.prg subdirs
 build/ef/editor.prg: subdirs $(EDITOR_FILES)
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -o $@ -C src/ef/editor.cfg $(EDITOR_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.info -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
 
 # build image dir and data
 build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/savegame.prg build/ef/editor.prg

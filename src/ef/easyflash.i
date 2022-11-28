@@ -34,6 +34,10 @@ SAVE_10E_BANK = 48
 SAVE_110_BANK = 56
 SAVE_SECTOR_OFFSET = 8
 
+; io function
+io_loadsave_sector_addr = $be7a
+io_set_current_disk_addr = $be38
+
 
 ; eapi functions
 

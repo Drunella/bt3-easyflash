@@ -26,46 +26,47 @@
 
 file_directory_entry = $10
 
-.export _load_file
+;.export _load_file
 .export loadfile_startaddress
+.export loadfile_body
 
 
-.segment "CLEARCLC_CALL"
-
-    ; clear_clc(void)
-    ; I do not know if this is necessary
-    _clear_clc:
-        clc
-        rts
-
-
-.segment "LOADFILE_CALL"
-
-    ; load_file(uint8_t filenumber) @ $be02
-    _load_file:
-        ; save id
-        sta $fd
-
-        ; save directory location
-        lda #>FILES_DIR_START
-        sta $ff
-        lda #$00
-        sta $fe
-
-        jmp loadfile_body
+;.segment "CLEARCLC_CALL"
+;
+;    ; clear_clc(void)
+;    ; I do not know if this is necessary
+;    _clear_clc:
+;        clc
+;        rts
 
 
-.segment "LOAD_DATA"
+;.segment "LOADFILE_CALL"
+;
+;    ; load_file(uint8_t filenumber) @ $be02
+;    _load_file:
+;        ; save id
+;        sta $fd
+;
+;        ; save directory location
+;        lda #>FILES_DIR_START
+;        sta $ff
+;        lda #$00
+;        sta $fe
+;
+;        jmp loadfile_body
 
-        ; meaning yet to be determined: data @ bd40
-        .byte $00, $00, $00, $03, $7E, $BE, $00, $BA
-        .byte $00, $04, $00, $00, $00, $00, $00, $00
-        .byte $00, $01, $00, $02, $00, $00, $00, $00
-        .byte $0A, $7E, $BE, $C3, $06, $00, $00, $00
-        .byte $00, $00, $00, $00, $00, $00, $00, $00
-        .byte $00, $00, $03, $60, $00, $BA, $00, $00
-        .byte $01, $7E, $BE, $04, $00, $00, $00, $00
-        .byte $00, $00
+
+;.segment "LOAD_DATA"
+;
+;        ; meaning yet to be determined: data @ bd40
+;        .byte $00, $00, $00, $03, $7E, $BE, $00, $BA
+;        .byte $00, $04, $00, $00, $00, $00, $00, $00
+;        .byte $00, $01, $00, $02, $00, $00, $00, $00
+;        .byte $0A, $7E, $BE, $C3, $06, $00, $00, $00
+;        .byte $00, $00, $00, $00, $00, $00, $00, $00
+;        .byte $00, $00, $03, $60, $00, $BA, $00, $00
+;        .byte $01, $7E, $BE, $04, $00, $00, $00, $00
+;        .byte $00, $00
 
 
 .segment "LOADFILE_BODY"

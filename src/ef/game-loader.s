@@ -206,7 +206,7 @@ diskswitcher_run = $67cb
 
         ; splash
         cli
-; ###        jsr $4000             ; we ignore the pressed key
+;        jsr $4000             ; we ignore the pressed key
 
         lda #$35 
         sta $01  

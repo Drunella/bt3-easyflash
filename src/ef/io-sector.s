@@ -14,7 +14,7 @@
 ; limitations under the License.
 ; ----------------------------------------------------------------------------
 
-; important variables in dfyx
+; important variables in$DFyx
 ; y
 ; 0 : current bank, absolute value
 ; 1 : current offset, absolute value
@@ -51,17 +51,21 @@
 
 
 .export bd3_current_disk_index
-.export prepare_save_storage
+.export init_save_storage
+.export loadsave_sector_body
+
+.export _compare_data
 
 erase_command = $df40
 erase_bank = $df42
 erase_offset  = $df41
 
 
+
 .segment "IOLOADER"
 
-    prepare_save_storage:
-        ; save mapping and bank in
+    init_save_storage:
+        ; save mapping and bank
         sei
         lda $01
         pha
@@ -69,10 +73,10 @@ erase_offset  = $df41
         sta $01
         lda #EASYFLASH_LED | EASYFLASH_16K
         sta EASYFLASH_CONTROL
-        lda #$00
-        jsr EAPISetBank
+        ;lda #$00
+        ;jsr EAPISetBank
 
-        ; clear area
+        ; clear variable area
         ldx #$00
         lda #$00
     :   sta $df00, x
@@ -80,41 +84,111 @@ erase_offset  = $df41
         cpx #$80
         bne :-
 
-        ; initialise 
-        lda #SAVE_10B_BANK  ; current and next bank
+        ; initialise save game area
+    init_10b:
+        lda #SAVE_10B_BANK
+        jsr EAPISetBank
+
+        ldx #$00
+        ldy #$80
+        lda #$ff
+        jsr _compare_data    ; yx: address (x low), a: data
+        bcc set_10b_a0       ; branch if no data in $8000
+    set_10b_80:
+        lda #SAVE_10B_BANK   ; set save game is in low chip
         sta $df00
         sta $df01
         sta $df02
         sta $df20
         sta $df21
         sta $df22
-        lda #$80  ; current offset
+        lda #$80             ; current offset
         sta $df10
         lda #$82
         sta $df11
         lda #$84
         sta $df12
-        lda #$a0  ; next offset
+        lda #$e0             ; next offset
         sta $df30
-        lda #$a2
+        lda #$e2
         sta $df31
-        lda #$a4
+        lda #$e4
         sta $df32
-        lda #$ff
-        sta $df40
-        lda #$80
-        sta $df41
-        lda #$28
-        sta $df42
-        ; ### todo
-        
+        jmp init_10e
+    set_10b_a0:
+        lda #SAVE_10B_BANK   ; set save game is in low chip
+        sta $df00
+        sta $df01
+        sta $df02
+        sta $df20
+        sta $df21
+        sta $df22
+        lda #$a0             ; current offset
+        sta $df10
+        lda #$a2
+        sta $df11
+        lda #$a4
+        sta $df12
+        lda #$80             ; next offset
+        sta $df30
+        lda #$82
+        sta $df31
+        lda #$84
+        sta $df32
 
+        ; initialise unknown save area
+    init_10e:
         lda #SAVE_10E_BANK
+        jsr EAPISetBank
+
+        ldx #$00
+        ldy #$80
+        lda #$ff
+        jsr _compare_data    ; yx: address (x low), a: data
+        bcc set_10f_a0       ; branch if no data in $8000
+    set_10f_80:
+        lda #SAVE_10E_BANK   ; set save game is in low chip
         sta $df03
         sta $df04
-        ; ### todo
+        sta $df23
+        sta $df24
+        lda #$80             ; current offset
+        sta $df13
+        lda #$82
+        sta $df14
+        lda #$e0             ; next offset
+        sta $df33
+        lda #$e2
+        sta $df34
+        jmp init_110
+    set_10f_a0:
+        lda #SAVE_10E_BANK   ; set save game is in low chip
+        sta $df03
+        sta $df04
+        sta $df23
+        sta $df24
+        lda #$a0             ; current offset
+        sta $df13
+        lda #$a2
+        sta $df14
+        lda #$80             ; next offset
+        sta $df33
+        lda #$82
+        sta $df34
 
+        ; initialize camp save area
+    init_110:
         lda #SAVE_110_BANK
+        jsr EAPISetBank
+
+        ldx #$00
+        ldy #$80
+        lda #$ff
+        jsr _compare_data    ; yx: address (x low), a: data
+        bcs set_110_80       ; branch if data in $8000
+        jmp set_110_a0
+    set_110_80:
+        lda #SAVE_110_BANK   ; set save game is in low chip
         sta $df05
         sta $df06
         sta $df07
@@ -123,11 +197,102 @@ erase_offset  = $df41
         sta $df0a
         sta $df0b
         sta $df0c
-        ; todo
+        sta $df25
+        sta $df26
+        sta $df27
+        sta $df28
+        sta $df29
+        sta $df2a
+        sta $df2b
+        sta $df2c
+        lda #$80             ; current offset
+        sta $df15
+        lda #$82
+        sta $df16
+        lda #$84
+        sta $df17
+        lda #$86
+        sta $df18
+        lda #$88
+        sta $df19
+        lda #$8a
+        sta $df1a
+        lda #$8c
+        sta $df1b
+        lda #$8e
+        sta $df1c
+        lda #$e0             ; next offset
+        sta $df35
+        lda #$e2
+        sta $df36
+        lda #$e4
+        sta $df37
+        lda #$e6
+        sta $df38
+        lda #$e8
+        sta $df39
+        lda #$ea
+        sta $df3a
+        lda #$ec
+        sta $df3b
+        lda #$ee
+        sta $df3c
+        jmp init_done
+    set_110_a0:
+        lda #SAVE_110_BANK   ; set save game is in low chip
+        sta $df05
+        sta $df06
+        sta $df07
+        sta $df08
+        sta $df09
+        sta $df0a
+        sta $df0b
+        sta $df0c
+        sta $df25
+        sta $df26
+        sta $df27
+        sta $df28
+        sta $df29
+        sta $df2a
+        sta $df2b
+        sta $df2c
+        lda #$a0             ; current offset
+        sta $df15
+        lda #$a2
+        sta $df16
+        lda #$a4
+        sta $df17
+        lda #$a6
+        sta $df18
+        lda #$a8
+        sta $df19
+        lda #$aa
+        sta $df1a
+        lda #$ac
+        sta $df1b
+        lda #$ae
+        sta $df1c
+        lda #$80             ; next offset
+        sta $df35
+        lda #$82
+        sta $df36
+        lda #$84
+        sta $df37
+        lda #$86
+        sta $df38
+        lda #$88
+        sta $df39
+        lda #$8a
+        sta $df3a
+        lda #$8c
+        sta $df3b
+        lda #$8e
+        sta $df3c
 
-        ; ### identify the current area
-
+    init_done:
         ; bankout and return
+        lda #$00
+        jsr EAPISetBank
         lda #$37   ; memory map, read from ef
         sta $01
         lda #EASYFLASH_KILL
@@ -138,17 +303,133 @@ erase_offset  = $df41
         rts
 
 
-.segment "LOADSECTOR_CALL"
 
-    ; load_sector() @ $be7a
-    ;   $42 mode (1: read, 2: write, 3:?)
-    ;   $43 ?
-    ;   $44 low address destination buffer
-    ;   $45 high address destination buffer
-    ;   $46 low sector number
-    ;   $47 high sector number
-    _io_sector:
-        jsr loadsave_sector_body
+.segment "SECTOR_ROM"
+
+    calculate_next_storage:
+        ; A: the sector if (010d, 010f, 0117)
+        cmp #$0d   ; 010d: save game last sector
+        bne :+
+        jmp calculate_next_storage_10d
+
+    :   lda $46
+        cmp #$0f   ; 010f: unknown area last sector
+        bne :+
+        jmp calculate_next_storage_10f
+
+    :   lda $46
+        cmp #$17   ; 0117: refugee camp last sector
+        bne :+
+        jmp calculate_next_storage_117
+
+    :
+        rts
+
+
+    calculate_next_storage_10d:
+        lda #$ff
+        sta $df40
+        lda $df10  ; current offset
+        sta $df41
+        lda #SAVE_10B_BANK
+        sta $df42
+
+        ldx $df10  ; current offset
+        ldy $df30  ; next offset
+        stx $df30
+        sty $df10
+        ldx $df11  ; current offset
+        ldy $df31  ; next offset
+        stx $df31
+        sty $df11
+        ldx $df12  ; current offset
+        ldy $df32  ; next offset
+        stx $df32
+        sty $df12
+
+        jsr correct_ultimax_addresses 
+        rts
+
+
+    calculate_next_storage_10f:
+        lda #$ff   ; delete command
+        sta $df40
+        lda $df13  ; current offset
+        sta $df41
+        lda #SAVE_10E_BANK
+        sta $df42
+
+        ldx $df13  ; current offset
+        ldy $df33  ; next offset
+        stx $df33
+        sty $df13
+        ldx $df14  ; current offset
+        ldy $df34  ; next offset
+        stx $df34
+        sty $df14
+
+        jsr correct_ultimax_addresses 
+        rts
+
+
+    calculate_next_storage_117:
+        lda #$ff   ; delete command
+        sta $df40
+        lda $df15  ; current offset
+        sta $df41
+        lda #SAVE_110_BANK
+        sta $df42
+
+        ldx $df15  ; current offset
+        ldy $df35  ; next offset
+        stx $df35
+        sty $df15
+        ldx $df16  ; current offset
+        ldy $df36  ; next offset
+        stx $df36
+        sty $df16
+        ldx $df17  ; current offset
+        ldy $df37  ; next offset
+        stx $df37
+        sty $df17
+        ldx $df18  ; current offset
+        ldy $df38  ; next offset
+        stx $df38
+        sty $df18
+        ldx $df19  ; current offset
+        ldy $df39  ; next offset
+        stx $df39
+        sty $df19
+        ldx $df1a  ; current offset
+        ldy $df3a  ; next offset
+        stx $df3a
+        sty $df1a
+        ldx $df1b  ; current offset
+        ldy $df3b  ; next offset
+        stx $df3b
+        sty $df1b
+        ldx $df1c  ; current offset
+        ldy $df3c  ; next offset
+        stx $df3c
+        sty $df1c
+
+        jsr correct_ultimax_addresses
+        rts
+
+
+    correct_ultimax_addresses:
+        ; decrease all offsets in the current offset area
+        ldx #$00
+    :   lda $df10, x
+        cmp $e0
+        bcc :+
+        sec
+        sbc #$40
+        sta $df10, x
+    :   inx
+        cpx #$10
+        bne :--
+
         rts
 
 
@@ -180,10 +461,8 @@ erase_offset  = $df41
         ; save sector
         jsr loadsave_bankin
         jsr calculate_sector_source
-        bcc :+  ; branch if saving is possible
-        sec
-        rts
-    :   jsr save_sector_data
+        bcs loadsave_mode3  ; branch if saving is not possible
+        jsr save_sector_data
         inc ef_address_high
         inc $45
         jsr save_sector_data
@@ -193,10 +472,6 @@ erase_offset  = $df41
         clc
         rts
         
-    loadsave_mode3:  ; mode 3
-        sec
-        rts                 ; for now return error on mode 3
-
     loadsave_load:  ; load sector
         jsr loadsave_bankin
         jsr calculate_sector_source
@@ -208,6 +483,10 @@ erase_offset  = $df41
         jsr loadsave_bankout
         clc
         rts
+
+    loadsave_mode3:  ; mode 3
+        sec
+        rts                 ; for now return error on mode 3
  
 
     loadsave_bankin:
@@ -273,10 +552,8 @@ erase_offset  = $df41
 
         ; now correct the bank
         tax
-        clc
         lda $df00, x
         sta ef_bank
-        clc
         lda $df10, x   ; and the offset
         sta ef_address_high
 
@@ -285,10 +562,8 @@ erase_offset  = $df41
         bne prepare_nosave
 
         ; now correct for the next area
-        clc
         lda $df20, x
         sta ef_bank
-        clc
         lda $df30, x   ; and the offset
         sta ef_address_high
 
@@ -409,36 +684,50 @@ erase_offset  = $df41
         ; important: we assume that only correct sector numbers ask for saving
 
         lda $46
-        cmp #$0d   ; 010d: save game
+        cmp #$0d   ; 010d: save game last sector
         bne :+
-        jsr prepare_easyflash_storage ; next area, a is sector 
-        jmp finish_return
+        ;jsr prepare_easyflash_storage ; next area, a is sector 
+        jmp finish_prepare
 
     :   lda $46
-        cmp #$0f   ; 010f: unknown area
+        cmp #$0f   ; 010f: unknown area last sector
         bne :+
-        jsr prepare_easyflash_storage ; next area, a is sector
-        jmp finish_return
+        ;jsr prepare_easyflash_storage ; next area, a is sector
+        jmp finish_prepare
 
     :   lda $46
-        cmp #$17   ; 0117: refugee camp
+        cmp #$17   ; 0117: refugee camp last sector
         bne finish_return
+        ;jsr prepare_easyflash_storage ; next area, a is sector
+
+    finish_prepare:
         jsr prepare_easyflash_storage ; next area, a is sector
 
     finish_return:
         rts
 
 
-.segment "SECTOR_ROM"
+; --- utility -----------------------------------
 
-    calculate_next_storage:
-        lda #$ff
-        sta $df40
-        lda #$80
-        sta $df41
-        lda #$28
-        sta $df42
+    _compare_data:
+        ; yx: address (x low)
+        ; a: data
+        ; return: clc if all bytes are eqal
+        stx compare_data_cmp_low
+        sty compare_data_cmp_high
+        ldx #$00
+    compare_data_cmp:
+    compare_data_cmp_low = compare_data_cmp + 1
+    compare_data_cmp_high = compare_data_cmp + 2
+        cmp $8000, x
+        beq :+
+        sec
         rts
+    :   inx
+        bne compare_data_cmp
+        clc
+        rts
+
 
 
 
