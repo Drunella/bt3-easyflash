@@ -18,9 +18,15 @@
 #include <stdbool.h>
 #include <conio.h>
 #include <stdio.h>
+#include <string.h>
+#include <cbm.h>
 
 #include "util.h"
 
+
+char cname[2] = "#";
+char command[16];
+//char bcommand;
 
 
 void cart_kill()
@@ -84,3 +90,35 @@ void cart_reset()
     // jmp ($fffc)  $6c $fc $ff
     
 }
+
+uint8_t load_cbm_sector(uint8_t device, uint8_t track, uint8_t sector, char* dest)
+{
+    uint16_t i;
+    uint8_t result;
+
+
+    cbm_k_setnam(cname);
+    cbm_k_setlfs(5, device, 5);
+    result = cbm_k_open();
+    if (result != 0) goto load_cbm_sector_finish;
+
+    sprintf(command, "%c1 5 0 %d %d", 0x55, track, sector);
+    cbm_k_setnam(command);
+    cbm_k_setlfs(15, device, 15);
+    result = cbm_k_open();
+    if (result != 0) goto load_cbm_sector_finish;
+    
+    result = cbm_k_chkin(5);
+    if (result != 0) goto load_cbm_sector_finish;
+    
+    for (i=0; i<256; i++) dest[i] = cbm_k_getin();
+    result = 0;
+    
+  load_cbm_sector_finish:
+    cbm_k_close(2);
+    cbm_k_close(15);
+    cbm_k_clrch();
+    return result;
+}
+
+
