@@ -19,20 +19,30 @@
 
 .import sp, popa
 
+.export _set_ef_diskid
 .export _read_ef_sector
 .export _write_ef_sector 
+
+.export _load_ef_file
 
 .export _read_cbm_sector
 .export _write_cbm_sector
 .export _device_present
 .export _device_last_status
 .export _device_last_statuscode
+.export _device_clear_status
 
 
 
 ; -- easyflash sector io -----------------------------------------------------
 
 .segment "CODE"
+
+    ; void __fastcall__ set_ef_diskid(uint8_t diskid)
+    _set_ef_diskid:
+        ; diskid in a
+        jmp io_set_current_disk_addr
+
 
     ; uint8_t __fastcall__ read_pd_sector(uint16_t sector, char* destination)
     _read_ef_sector:
@@ -99,6 +109,32 @@
 
 
 
+; -- easyflash load file -----------------------------------------------------
+
+.segment "CODE"
+
+    _load_ef_file:
+        ; void __fastcall__ load_ef_file(uint8_t fileid);
+        tax
+        lda $ff
+        pha
+        lda $fe
+        pha
+        lda $fd
+        pha
+        txa
+        jsr io_load_file_addr
+        pla
+        sta $fd
+        pla
+        sta $fe
+        pla
+        sta $ff
+        lda #$00
+        rts
+
+
+
 ; -- 1541 block io -----------------------------------------------------------
 
 .segment "DATA"
@@ -138,7 +174,8 @@
 
 .segment "CODE"
 
-    device_resetstatus:
+    _device_clear_status:
+        ; void __fastcall__ device_clear_status();
         lda #$00
         sta blockio_status_cursor
         sta blockio_status
@@ -198,7 +235,7 @@
         txa
         sta $ba
 
-        jsr device_resetstatus
+        jsr _device_clear_status
         lda #$00
         sta $90       ; clear STATUS flags
 
@@ -278,7 +315,7 @@
         sta $ae
         jsr popa  ; address high
         sta $af
-        jsr device_resetstatus
+        jsr _device_clear_status
         lda #$31  ; U1 command
         sta blockio_u_command_id
 
@@ -371,7 +408,7 @@
         sta $ae
         jsr popa  ; address high
         sta $af
-        jsr device_resetstatus
+        jsr _device_clear_status
         lda #$32  ; U2 command
         sta blockio_u_command_id
 
@@ -418,9 +455,9 @@
         bcs write_sector_close_fixerr
 
         ldy #$00
-    :   jsr $ffb7     ; call READST
-        bne write_sector_close_fixerr
-        lda ($ae), y  ; read byte from memory
+;    :   jsr $ffb7     ; call READST
+;        bne write_sector_close_fixerr
+    :    lda ($ae), y  ; read byte from memory
         jsr $ffd2     ; call CHROUT (write byte to channel buffer)
         iny
         bne :-        ; next byte, end when 256 bytes are read
@@ -430,16 +467,15 @@
         bcs write_sector_close_fixerr
 
         ldy #$00
-    :   jsr $ffb7     ; call READST
-        bne write_sector_close_fixerr
-        lda blockio_u2_command_len, y  ; read byte from command string
+;    :   jsr $ffb7     ; call READST
+;        bne write_sector_close_fixerr
+    :   lda blockio_u_command, y  ; read byte from command string
         jsr $ffd2     ; call CHROUT (write byte to command channel)
         iny
         cpy #blockio_u2_command_len
         bne :-
-
-        pla
-        rts
+        lda #$00
+        pha
 
     write_sector_close:
         lda #$0f      ; filenumber 15

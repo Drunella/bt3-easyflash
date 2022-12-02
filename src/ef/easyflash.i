@@ -37,6 +37,7 @@ SAVE_SECTOR_OFFSET = 8
 ; io function
 io_loadsave_sector_addr = $be7a
 io_set_current_disk_addr = $be38
+io_load_file_addr = $be02
 
 
 ; eapi functions

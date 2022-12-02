@@ -1,0 +1,9 @@
+type = hex
+; replace start of codewheel with jmp to success branch
+; at sector 0x57 at offset 0x51 (0x0af51 in sanitized character disk)
+; with jmp $a89c (4c 9c a8)
+filename = character.bin
+offset = 0
+address = 0x0af51
+original = 203eff
+new      = 4c9ca8

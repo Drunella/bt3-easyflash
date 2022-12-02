@@ -16,18 +16,277 @@
 
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <conio.h>
-#include <dio.h>
+#include <string.h>
 
 #include "util.h"
 
 
-sectors_save[6][2] = { {(uint8_t)28,(uint8_t)9}, 
-                       {(uint8_t)28,(uint8_t)2}, 
-                       {(uint8_t)28,(uint8_t)13}, 
-                       {(uint8_t)28,(uint8_t)6}, 
-                       {(uint8_t)28,(uint8_t)17}, 
-                       {(uint8_t)28,(uint8_t)10}};
+#define MENU_START_Y 6
+#define MENU_START_X 12
+#define OUTPUT_START_Y 18
+
+#define RESTORE_SECTORS 26
+
+
+sectors_save[RESTORE_SECTORS][2] = { 
+    {(uint8_t)28,(uint8_t)9},  // savegame
+    {(uint8_t)28,(uint8_t)2}, 
+    {(uint8_t)28,(uint8_t)13}, 
+    {(uint8_t)28,(uint8_t)6}, 
+    {(uint8_t)28,(uint8_t)17}, 
+    {(uint8_t)28,(uint8_t)10},
+    {(uint8_t)28,(uint8_t)3},  // unknown save area
+    {(uint8_t)28,(uint8_t)14},
+    {(uint8_t)28,(uint8_t)7},
+    {(uint8_t)29,(uint8_t)0},
+    {(uint8_t)29,(uint8_t)11}, // refugee camp
+    {(uint8_t)29,(uint8_t)4},
+    {(uint8_t)29,(uint8_t)15},
+    {(uint8_t)29,(uint8_t)8},
+    {(uint8_t)29,(uint8_t)1},
+    {(uint8_t)29,(uint8_t)12},
+    {(uint8_t)29,(uint8_t)5},
+    {(uint8_t)29,(uint8_t)16},
+    {(uint8_t)29,(uint8_t)9},
+    {(uint8_t)29,(uint8_t)2},
+    {(uint8_t)29,(uint8_t)13},
+    {(uint8_t)29,(uint8_t)6},
+    {(uint8_t)29,(uint8_t)17},
+    {(uint8_t)29,(uint8_t)10},
+    {(uint8_t)29,(uint8_t)3},
+    {(uint8_t)29,(uint8_t)14},
+};
+
+
+bool sure(uint8_t x, uint8_t y)
+{
+    char c;
+    uint8_t ox, oy;
+    
+    ox = wherex();
+    oy = wherey();
+    textcolor(COLOR_GRAY2);
+    cputsxy(x, y, "Are you sure? ");
+    cursor(1);
+    c = cgetc();
+    cursor(0);
+    cclearxy(x, y, 16);
+    gotoxy(ox, oy);
+    return c == 'y';
+}
+
+void anykey(uint8_t x, uint8_t y)
+{
+    uint8_t ox, oy;
+    
+    ox = wherex();
+    oy = wherey();
+    textcolor(COLOR_GRAY2);
+    cputsxy(x, y, "Please press any key.");
+    while (!kbhit());
+    while (kbhit()) cgetc(); // clear all keys
+    cclearxy(x, y, 22);
+
+    gotoxy(ox, oy);
+    return;
+}
+
+static void print_device(uint8_t x, uint8_t y, uint8_t device)
+{
+    if (device == 0) return;
+    cclearxy(x, y, 3);
+    gotoxy(x, y);
+    textcolor(COLOR_WHITE);
+    cprintf("%d", device); // ### crashes, stack related?
+    textcolor(COLOR_GRAY2);
+}
+
+static void print_error(char* text)
+{
+    uint8_t len;
+    
+    textcolor(COLOR_GRAY2);
+    len = strlen(text);
+    if (len == 0) return;
+    cputsxy(0, 24, "Error: ");
+    cputsxy(7, 24, text);
+    if (len < 35) {
+        cclearxy(7+len, 24, 35-len);
+    }
+}
+
+void clear_error()
+{
+    cclearxy(0, 24, 40);
+}
+
+
+static uint8_t select_device(uint8_t x, uint8_t y)
+{
+    uint8_t device = 0;
+    uint8_t input_len = 0;
+    char c;
+
+    for (;;) {
+        if (input_len) {
+            print_device(x, y, device);
+        } else {
+            cclearxy(x, y, 3);
+            gotoxy(x, y);
+        }
+
+        cursor(1);
+        c = cgetc();
+        cursor(0);
+
+        if (c == CH_ENTER) {
+            if (device >= 4 && device <= 30) {
+                return device;
+            }
+        } else if (c == CH_DEL && input_len > 0) {
+            device /= 10;
+            --input_len;
+        } else if (c >= '0' && c <= '9' && input_len < 2) {
+            device = device * 10 + c - '0';
+            ++input_len;
+        }
+    }
+}
+
+void clear_menu()
+{
+    uint8_t i;
+
+    for (i = MENU_START_Y; i < OUTPUT_START_Y; ++i) {
+        cclearxy(0, i, 40);
+    }
+    gotoxy(0, MENU_START_Y);
+}
+
+void clear_output()
+{
+    uint8_t i;
+
+    for (i = OUTPUT_START_Y; i < 25; ++i) {
+        cclearxy(0, i, 40);
+    }
+    gotoxy(0, OUTPUT_START_Y);
+}
+
+
+void menu_option(char key, char *desc)
+{
+    textcolor(COLOR_GRAY2);
+    cputs("       (");
+    textcolor(COLOR_WHITE);
+    cputc(key);
+    textcolor(COLOR_GRAY2);
+    cputs(")  ");
+    //textcolor(COLOR_GRAY2);
+    //cprintf("%s\r\n", desc);
+    cputs(desc);
+    cputs("\r\n");
+}
+
+void draw_menu()
+{
+    clrscr();
+    textcolor(COLOR_GRAY2);
+    
+    cputs("    Bard's Tale III: Thief of Fate\r\n"
+          "\r\n"
+          "            Savegame utility\r\n\r\n");
+
+}
+
+
+void draw_progress(int progress) 
+{
+    cprintf("writing sector %d of 577...  ", progress);
+    gotox(0);
+}
+
+
+uint8_t backup_to_disk(uint8_t device)
+{
+    uint8_t i, retval;
+    char* source;
+    int progress = 0;
+
+    cprintf("Please insert a blank disk into #%d.\n\r", device);
+    cprintf("The disk will be overwritten and a\n\r"
+            "valid Bard's Tale III character disk\n\r"
+            "will be created.\n\r");
+    anykey(0, wherey());
+
+    set_ef_diskid(1);
+    source = (char*)SAVE_ADDRESS;
+    
+    // load original track 18
+    load_ef_file(41); // track 18
+    for (i=0; i<19; i++) {
+        retval = write_cbm_sector(source, device, 18, i);
+        if (retval != 0) return 0x40;
+        draw_progress(++progress);
+        source += 0x0100;
+    }
+    
+    // write character disk
+    
+    // write savegame
+    
+    // write original sector with codewheel code
+    load_ef_file(42); // codewheel sector
+    retval = write_cbm_sector(source, device, 18, i);
+    if (retval != 0) return 0x40;
+    draw_progress(++progress);
+
+    cprintf("\n\r");
+    cprintf("finished.");
+
+    return 1;
+}
+
+uint8_t restore_from_disk(uint8_t device)
+{
+    uint8_t i, retval;
+    char* dest;
+    bool really;
+
+    cprintf("Your save game and all character in\n\r"
+            "the refugee camp will be overwritten.\n\r");
+    really = sure(0, wherey());
+    if (!really) return 0xb0;
+
+    set_ef_diskid(1);
+    
+    // test if valid character disk
+    // ###
+
+    // load 26 sectors from disk
+    dest = (char*)SAVE_ADDRESS;
+    for (i=0; i<RESTORE_SECTORS; i++) {
+        retval = read_cbm_sector(dest, device, sectors_save[i][0], sectors_save[i][1]);
+        if (retval != 0) return 0x40;
+        cprintf("loading sector %d of %d...  ", i, RESTORE_SECTORS);
+        gotox(0);
+        dest += 0x0100;
+    }
+    cprintf("\n\r");
+
+    // saving to easyflash
+    cprintf("saving savegame ...");
+    write_sectors_save();
+    cprintf(" writing ...");
+    write_sectors_10e();
+    cprintf(" writing ...");
+    write_sectors_camp();
+    cprintf(" done.");
+        
+    return 1;
+}
 
 
 void main(void)
@@ -35,22 +294,80 @@ void main(void)
     // we assume eapi already installed at $c000
     // we assume the sector load/save functions are installed at $cxxx
     // we assume the wrapper are installed at $b7xx
-    uint8_t retval, dev8, y, i;
-//    dhandle_t handle;
-//    unsigned sectors, size;
+    static uint8_t repaint = 1;
+    static uint8_t device = 8;
+    uint8_t retval, newdevice;
 
     cart_bankout();
-    
     bgcolor(COLOR_BLACK);
     bordercolor(COLOR_BLACK);
-    clrscr();
-    textcolor(COLOR_GRAY2);
+    draw_menu();
+    retval = device_present(device);
+    if (retval != 0) device = 0;
+    device_clear_status();
 
+    while (kbhit()) { // clear all keys
+        cgetc();
+    }
     
-    cputs("    Bard's Tale III: Thief of Fate\r\n"
-          "\r\n"
-          "            Savegame editor\r\n\r\n");
+    for (;;) {
+        if (repaint > 0) {
+            clear_menu();
+            menu_option('D', "Device #");
+            cputs("\r\n");
+            menu_option('B', "Backup to floppy disk");
+            cputs("\r\n");
+            menu_option('R', "Restore from floppy disk");
+            cputs("\r\n");
+            menu_option('1', "Import from Bard's Tale I");
+            cputs("\r\n");
+            menu_option('2', "Import from Bard's Tale II");
+            cputs("\r\n");
+            menu_option(0x5f, "Return to main menu");
+            print_device(MENU_START_X + 8, MENU_START_Y, device);
+            if (repaint & 0x80) clear_output();
+            if (repaint & 0x40) print_error(device_last_status());
+        }
+        
+        switch (cgetc()) {
 
+            case 0x5f:
+                clear_output();
+                cart_reset(); // does not return
+                break;
+            case 'd':
+                clear_output();
+                newdevice = select_device(MENU_START_X, MENU_START_Y + 1);
+                retval = device_present(newdevice);
+                if (retval == 0) {
+                    repaint = 1;
+                    device = newdevice;
+                } else {
+                    sprintf(device_last_status(), "device %d not present", newdevice);
+                    repaint = 2;
+                }
+                break;
+            case 'b':
+                clear_output();
+                repaint = backup_to_disk(device);
+                break;
+            case 'r':
+                clear_output();
+                repaint = restore_from_disk(device);
+                break;
+            case '1':
+                clear_output();
+                repaint = 1;
+                break;
+            case '2':
+                clear_output();
+                repaint = 1;
+                break;
+        }
+    }
+
+
+/*
     dev8 = device_present(8);
     cprintf("device 8 present: retval = %d\r\n", dev8);
     if (dev8 == 0) {
@@ -103,6 +420,16 @@ void main(void)
     }
     
     for (;;) {
+        if (repaint) {
+            clear_menu();
+            menu_option('G', "Start game");
+            cputs("\r\n");
+            menu_option('J', "Journey Onward");
+            cputs("\r\n");
+            menu_option('S', "Manage savegames");
+            cputs("\r\n");
+            menu_option('Q', "Quit to basic");
+        }
         
         switch (cgetc()) {
 
@@ -110,5 +437,5 @@ void main(void)
                 cart_reset(); // does not return
                 break;
         }
-    }
+    }*/
 }

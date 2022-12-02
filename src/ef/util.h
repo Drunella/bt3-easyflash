@@ -20,6 +20,8 @@
 #include <stdint.h>
 
 
+#define SAVE_ADDRESS 0xa000
+
 
 struct character_info {
     unsigned char name[16];
@@ -52,8 +54,6 @@ struct character_info {
 };
 
 
-uint8_t load_cbm_sector(uint8_t device, uint8_t track, uint8_t sector, char* dest);
-
 void cart_kill(void);
 void cart_bankin(void);
 void cart_bankout(void);
@@ -62,14 +62,24 @@ void cart_reset(void);
 
 void __fastcall__ load_eapi(uint8_t high);
 
+void __fastcall__ set_ef_diskid(uint8_t diskid);
 uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination);
 uint8_t __fastcall__ write_ef_sector(uint16_t sector, char* destination);
+
+void __fastcall__ load_ef_file(uint8_t fileid);
 
 uint8_t __fastcall__ read_cbm_sector(char* dest, uint8_t device, uint8_t track, uint8_t sector);
 uint8_t __fastcall__ write_cbm_sector(char* source, uint8_t device, uint8_t track, uint8_t sector);
 uint8_t __fastcall__ device_present(uint8_t device);
 char* __fastcall__ device_last_status();
 uint8_t __fastcall__ device_last_statuscode();
+void __fastcall__ device_clear_status();
+
+void load_sectors();
+uint8_t write_sectors_save();
+uint8_t write_sectors_10e();
+uint8_t write_sectors_camp();
+
 
 
 #endif

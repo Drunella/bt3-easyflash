@@ -571,6 +571,7 @@ erase_offset  = $df41
         rts
 
     prepare_nosave:
+        ; check for modified sectors ### ??
         sec
         rts
 

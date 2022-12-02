@@ -24,10 +24,6 @@
 #include "util.h"
 
 
-char cname[2] = "#";
-char command[16];
-//char bcommand;
-
 
 void cart_kill()
 {
@@ -91,34 +87,48 @@ void cart_reset()
     
 }
 
-uint8_t load_cbm_sector(uint8_t device, uint8_t track, uint8_t sector, char* dest)
+
+void load_sectors()
 {
-    uint16_t i;
-    uint8_t result;
+    read_ef_sector(0x010b, (char*)0xa000);
+    read_ef_sector(0x010c, (char*)0xa200);
+    read_ef_sector(0x010d, (char*)0xa400);
 
+    read_ef_sector(0x010e, (char*)0xa600);
+    read_ef_sector(0x010f, (char*)0xa800);
 
-    cbm_k_setnam(cname);
-    cbm_k_setlfs(5, device, 5);
-    result = cbm_k_open();
-    if (result != 0) goto load_cbm_sector_finish;
-
-    sprintf(command, "%c1 5 0 %d %d", 0x55, track, sector);
-    cbm_k_setnam(command);
-    cbm_k_setlfs(15, device, 15);
-    result = cbm_k_open();
-    if (result != 0) goto load_cbm_sector_finish;
-    
-    result = cbm_k_chkin(5);
-    if (result != 0) goto load_cbm_sector_finish;
-    
-    for (i=0; i<256; i++) dest[i] = cbm_k_getin();
-    result = 0;
-    
-  load_cbm_sector_finish:
-    cbm_k_close(2);
-    cbm_k_close(15);
-    cbm_k_clrch();
-    return result;
+    read_ef_sector(0x0110, (char*)0xaa00);
+    read_ef_sector(0x0111, (char*)0xac00);
+    read_ef_sector(0x0112, (char*)0xae00);
+    read_ef_sector(0x0113, (char*)0xb000);
+    read_ef_sector(0x0114, (char*)0xb200);
+    read_ef_sector(0x0115, (char*)0xb400);
+    read_ef_sector(0x0116, (char*)0xb600);
+    read_ef_sector(0x0117, (char*)0xb800);
 }
 
+uint8_t write_sectors_save()
+{
+    write_ef_sector(0x010b, (char*)0xa000);
+    write_ef_sector(0x010c, (char*)0xa200);
+    return write_ef_sector(0x010d, (char*)0xa400);
+}
+
+uint8_t write_sectors_10e()
+{
+    write_ef_sector(0x010e, (char*)0xa600);
+    return write_ef_sector(0x010f, (char*)0xa800);
+}
+
+uint8_t write_sectors_camp()
+{
+    write_ef_sector(0x0110, (char*)0xaa00);
+    write_ef_sector(0x0111, (char*)0xac00);
+    write_ef_sector(0x0112, (char*)0xae00);
+    write_ef_sector(0x0113, (char*)0xb000);
+    write_ef_sector(0x0114, (char*)0xb200);
+    write_ef_sector(0x0115, (char*)0xb400);
+    write_ef_sector(0x0116, (char*)0xb600);
+    return write_ef_sector(0x0117, (char*)0xb800);
+}
 
