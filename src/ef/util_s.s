@@ -26,7 +26,10 @@
 .export _load_ef_file
 
 .export _read_cbm_sector
-.export _write_cbm_sector
+.export _write_cbm_sector_ext
+.export _write_cbm_sector_open
+.export _write_cbm_sector_data
+.export _write_cbm_sector_close
 .export _device_present
 .export _device_last_status
 .export _device_last_statuscode
@@ -170,6 +173,9 @@
         .byte $00
     blockio_status_code:
         .byte $00
+
+    block_io_backup:
+        .byte $00, $00, $00
 
 
 .segment "CODE"
@@ -394,7 +400,170 @@
         jmp read_sector_close
 
 
-    _write_cbm_sector:
+    _write_cbm_sector_open:
+        ; uint8_t __fastcall__ write_cbm_sector_open(uint8_t device);
+        ; device in a
+        sta blockio_drivenumber
+
+        jsr _device_clear_status
+        lda #$32  ; U2 command
+        sta blockio_u_command_id
+
+        ; open the drive memory channel
+        lda #$01
+        ldx #<blockio_buffer_filename
+        ldy #>blockio_buffer_filename
+        jsr $ffbd     ; call SETNAM
+
+        lda #$02      ; file number 2
+        ldx blockio_drivenumber
+        ldy #$02      ; secondary address 2
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN
+        bcs write_sector_open_fixerr
+
+        ; open the command channel
+        lda #blockio_bp_command_len
+        ldx #<blockio_bp_command
+        ldy #>blockio_bp_command
+        jsr $ffbd     ; call SETNAM
+        lda #$0f      ; file number 15
+        ldx blockio_drivenumber
+        ldy #$0f      ; secondary address 15
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN (open command channel and send B-P command)
+        bcs write_sector_open_fixerr
+
+        ; check drive error channel here to test for
+        ldx #$0f
+        jsr $ffc6     ; call CHKIN (file 15 now used as input)
+    :   jsr $ffb7     ; call READST
+        bne :+
+        jsr $ffcf     ; call CHRIN
+        jsr device_writestatus
+        jmp :-
+    :   jsr _device_last_statuscode
+        bne write_sector_open_error
+
+;        ldx #$02      ; filenumber 2
+;        jsr $ffc9     ; call CHKOUT (file 2 now used as output)
+;        bcs write_sector_open_fixerr
+
+;        ldx #$0f      ; filenumber 15
+;        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
+;        bcs write_sector_open_fixerr
+
+        lda #$00      ; success
+        rts
+
+    write_sector_open_error:
+        pha
+        jsr _write_cbm_sector_close
+        pla
+        rts
+
+    write_sector_open_fixerr:
+        jsr _write_cbm_sector_close
+        lda #$00
+        rts
+
+
+    _write_cbm_sector_close:
+        ; void __fastcall__ write_cbm_sector_close();
+        jsr $ffcc     ; call CLRCHN
+
+        lda #$0f      ; filenumber 15
+        jsr $ffc3     ; call CLOSE
+
+        lda #$02      ; filenumber 2
+        jsr $ffc3     ; call CLOSE
+
+        rts
+
+
+    _write_cbm_sector_data:
+        ; uint8_t __fastcall__ write_cbm_sector(char* source, uint8_t track, uint8_t sector);
+        tax ; sector in a
+        lda $ae
+        pha
+        lda $af
+        pha
+
+        txa       ; sector
+        ldx #blockio_u_command_sector
+        jsr write_u_command
+        jsr popa  ; track
+        ldx #blockio_u_command_track
+        jsr write_u_command
+        jsr popa  ; address low
+        sta $ae
+        jsr popa  ; address high
+        sta $af
+
+        jsr _device_clear_status
+
+        ldx #$02      ; filenumber 2
+        jsr $ffc9     ; call CHKOUT (file 2 now used as output)
+        bcs write_sector_data_fixerr
+
+        ldx #$0f      ; filenumber 15
+        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
+        bcs write_sector_data_fixerr
+
+        ldy #$00
+    :   lda ($ae), y  ; read byte from memory
+        jsr $ffd2     ; call CHROUT (write byte to channel buffer)
+        iny
+        bne :-        ; next byte, end when 256 bytes are read
+
+        ldy #$00
+    :   lda blockio_u_command, y  ; read byte from command string
+        jsr $ffd2     ; call CHROUT (write byte to command channel)
+        iny
+        cpy #blockio_u2_command_len
+        bne :-
+
+        ; check drive error channel here to test for
+        jsr $ffcc     ; call CLRCHN
+        ldx #$0f
+        jsr $ffc6     ; call CHKIN (file 15 now used as input)
+    :   jsr $ffb7     ; call READST
+        bne :+
+        jsr $ffcf     ; call CHRIN
+        jsr device_writestatus
+        jmp :-
+    :   jsr _device_last_statuscode
+        bne write_sector_data_error
+        ldx #$00
+        ;pha
+
+    write_sector_data_finish:
+        ;pla
+        ;tax
+        pla
+        sta $af
+        pla
+        sta $ae
+        txa
+        rts
+
+    write_sector_data_fixerr:
+        jsr _write_cbm_sector_close
+        ldx $ff
+        ;pha
+        jmp write_sector_data_finish
+
+    write_sector_data_error:
+        pha
+        jsr _write_cbm_sector_close
+        pla
+        tax
+        jmp write_sector_data_finish
+
+
+    _write_cbm_sector_ext:
         ; uint8_t __fastcall__ write_cbm_sector(char* source, uint8_t device, uint8_t track, uint8_t sector);
         ; sector in a
         ldx #blockio_u_command_sector
@@ -424,7 +593,7 @@
         jsr $ffba     ; call SETLFS
 
         jsr $ffc0     ; call OPEN
-        bcs write_sector_close_fixerr
+        bcs write_sector_ext_fixerr
 
         ; open the command channel
         lda #blockio_bp_command_len
@@ -437,9 +606,42 @@
         jsr $ffba     ; call SETLFS
 
         jsr $ffc0     ; call OPEN (open command channel and send B-P command)
-        bcs write_sector_close_fixerr
+        bcs write_sector_ext_fixerr
 
         ; check drive error channel here to test for
+;        ldx #$0f
+;        jsr $ffc6     ; call CHKIN (file 15 now used as input)
+;    :   jsr $ffb7     ; call READST
+;        bne :+
+;        jsr $ffcf     ; call CHRIN
+;        jsr device_writestatus
+;        jmp :-
+;    :   jsr _device_last_statuscode
+;        bne write_sector_ext_error
+
+        ldx #$02      ; filenumber 2
+        jsr $ffc9     ; call CHKOUT (file 2 now used as output)
+        bcs write_sector_ext_fixerr
+
+        ldy #$00
+    :   lda ($ae), y  ; read byte from memory
+        jsr $ffd2     ; call CHROUT (write byte to channel buffer)
+        iny
+        bne :-        ; next byte, end when 256 bytes are read
+
+        ldx #$0f      ; filenumber 15
+        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
+        bcs write_sector_ext_fixerr
+
+        ldy #$00
+    :   lda blockio_u_command, y  ; read byte from command string
+        jsr $ffd2     ; call CHROUT (write byte to command channel)
+        iny
+        cpy #blockio_u2_command_len
+        bne :-
+
+        ; check drive error channel here to test for
+        jsr $ffcc     ; call CLRCHN
         ldx #$0f
         jsr $ffc6     ; call CHKIN (file 15 now used as input)
     :   jsr $ffb7     ; call READST
@@ -448,36 +650,12 @@
         jsr device_writestatus
         jmp :-
     :   jsr _device_last_statuscode
-        bne write_sector_close_error
+        bne write_sector_ext_error
 
-        ldx #$02      ; filenumber 2
-        jsr $ffc9     ; call CHKOUT (file 2 now used as output)
-        bcs write_sector_close_fixerr
-
-        ldy #$00
-;    :   jsr $ffb7     ; call READST
-;        bne write_sector_close_fixerr
-    :    lda ($ae), y  ; read byte from memory
-        jsr $ffd2     ; call CHROUT (write byte to channel buffer)
-        iny
-        bne :-        ; next byte, end when 256 bytes are read
-
-        ldx #$0f      ; filenumber 15
-        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
-        bcs write_sector_close_fixerr
-
-        ldy #$00
-;    :   jsr $ffb7     ; call READST
-;        bne write_sector_close_fixerr
-    :   lda blockio_u_command, y  ; read byte from command string
-        jsr $ffd2     ; call CHROUT (write byte to command channel)
-        iny
-        cpy #blockio_u2_command_len
-        bne :-
         lda #$00
         pha
 
-    write_sector_close:
+    write_sector_ext_close:
         lda #$0f      ; filenumber 15
         jsr $ffc3     ; call CLOSE
 
@@ -489,11 +667,11 @@
         pla
         rts
 
-    write_sector_close_error:
+    write_sector_ext_error:
         pha
-        jmp write_sector_close
+        jmp write_sector_ext_close
 
-    write_sector_close_fixerr:
+    write_sector_ext_fixerr:
         lda $ff
         pha
-        jmp write_sector_close
+        jmp write_sector_ext_close

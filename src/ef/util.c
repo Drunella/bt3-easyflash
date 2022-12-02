@@ -114,7 +114,7 @@ uint8_t write_sectors_save()
     return write_ef_sector(0x010d, (char*)0xa400);
 }
 
-uint8_t write_sectors_10e()
+uint8_t write_sectors_storage()
 {
     write_ef_sector(0x010e, (char*)0xa600);
     return write_ef_sector(0x010f, (char*)0xa800);

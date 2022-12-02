@@ -21,43 +21,15 @@
 #include <string.h>
 
 #include "util.h"
+#include "savegame_map.h"
 
 
 #define MENU_START_Y 6
 #define MENU_START_X 12
 #define OUTPUT_START_Y 18
 
-#define RESTORE_SECTORS 26
 
-
-sectors_save[RESTORE_SECTORS][2] = { 
-    {(uint8_t)28,(uint8_t)9},  // savegame
-    {(uint8_t)28,(uint8_t)2}, 
-    {(uint8_t)28,(uint8_t)13}, 
-    {(uint8_t)28,(uint8_t)6}, 
-    {(uint8_t)28,(uint8_t)17}, 
-    {(uint8_t)28,(uint8_t)10},
-    {(uint8_t)28,(uint8_t)3},  // unknown save area
-    {(uint8_t)28,(uint8_t)14},
-    {(uint8_t)28,(uint8_t)7},
-    {(uint8_t)29,(uint8_t)0},
-    {(uint8_t)29,(uint8_t)11}, // refugee camp
-    {(uint8_t)29,(uint8_t)4},
-    {(uint8_t)29,(uint8_t)15},
-    {(uint8_t)29,(uint8_t)8},
-    {(uint8_t)29,(uint8_t)1},
-    {(uint8_t)29,(uint8_t)12},
-    {(uint8_t)29,(uint8_t)5},
-    {(uint8_t)29,(uint8_t)16},
-    {(uint8_t)29,(uint8_t)9},
-    {(uint8_t)29,(uint8_t)2},
-    {(uint8_t)29,(uint8_t)13},
-    {(uint8_t)29,(uint8_t)6},
-    {(uint8_t)29,(uint8_t)17},
-    {(uint8_t)29,(uint8_t)10},
-    {(uint8_t)29,(uint8_t)3},
-    {(uint8_t)29,(uint8_t)14},
-};
+static char temp_line[41];
 
 
 bool sure(uint8_t x, uint8_t y)
@@ -201,17 +173,38 @@ void draw_menu()
 
 }
 
-
 void draw_progress(int progress) 
 {
-    cprintf("writing sector %d of 577...  ", progress);
+    cprintf("writing sector %d of %d...  ", progress, BACKUP_SECTORS + 19 + 1);
     gotox(0);
+}
+
+
+uint8_t check_bd3_character_disk(uint8_t device)
+{
+    uint8_t retval;
+    char* work = (char*)TEMP_ADDRESS;
+    
+    retval = read_cbm_sector(work, device, 1, 0);
+    if (retval != 0) return retval;
+
+    retval = read_cbm_sector(work+0x0100, device, 1, 11);
+    if (retval != 0) return retval;
+    
+    if (work[0]!=0x43 && work[1]!=0x42 && work[2]!=0x4d) return 0xff;
+    
+    if (work[7]!=0x42 && work[8]!=0x41 && work[9]!=0x52 && 
+        work[10]!=0x44 && work[11]!=0x27 && work[12]!=0x53) return 0xff;
+        
+    if (work[0x1ff] != 0x01) return 0xff;
+    return 0;
 }
 
 
 uint8_t backup_to_disk(uint8_t device)
 {
-    uint8_t i, retval;
+    int i;
+    uint8_t retval;
     char* source;
     int progress = 0;
 
@@ -224,29 +217,52 @@ uint8_t backup_to_disk(uint8_t device)
     set_ef_diskid(1);
     source = (char*)SAVE_ADDRESS;
     
+    // open
+    //retval = write_cbm_sector_open(device);
+    //if (retval != 0) return 0x40;
+    
     // load original track 18
     load_ef_file(41); // track 18
     for (i=0; i<19; i++) {
-        retval = write_cbm_sector(source, device, 18, i);
+        retval = write_cbm_sector_ext(source, device, 18, (uint8_t)i);
         if (retval != 0) return 0x40;
         draw_progress(++progress);
         source += 0x0100;
     }
     
-    // write character disk
+    // write character disk && savegame
+    source = (char*)SAVE_ADDRESS;
+    for (i=0; i<BACKUP_SECTORS/2; i++) {
+        retval = read_ef_sector(i, source);
+        if (retval != 0) {
+            sprintf(temp_line, "backup failed");
+            print_error(temp_line);
+            return 1;
+        }
+        retval = write_cbm_sector_ext(source, device, sectors_backup[i*2].track, sectors_backup[i*2].sector);
+        if (retval != 0) return 0x40;
+        draw_progress(++progress);
+        retval = write_cbm_sector_ext(source+0x0100, device, sectors_backup[i*2+1].track, sectors_backup[i*2+1].sector);
+        if (retval != 0) return 0x40;
+        draw_progress(++progress);
+    }
     
-    // write savegame
+    
     
     // write original sector with codewheel code
     load_ef_file(42); // codewheel sector
-    retval = write_cbm_sector(source, device, 18, i);
+    retval = write_cbm_sector_ext(source, device, 18, i);
     if (retval != 0) return 0x40;
     draw_progress(++progress);
 
+    // close
+    //write_cbm_sector_close();
+    
     cprintf("\n\r");
     cprintf("finished.");
 
     return 1;
+
 }
 
 uint8_t restore_from_disk(uint8_t device)
@@ -263,12 +279,18 @@ uint8_t restore_from_disk(uint8_t device)
     set_ef_diskid(1);
     
     // test if valid character disk
-    // ###
+    retval = check_bd3_character_disk(device);
+    if (retval == 0xff) {
+        print_error("not a valid character disk");
+        return 1;
+    } else if (retval > 0) {
+        return 0x40;
+    }
 
     // load 26 sectors from disk
     dest = (char*)SAVE_ADDRESS;
     for (i=0; i<RESTORE_SECTORS; i++) {
-        retval = read_cbm_sector(dest, device, sectors_save[i][0], sectors_save[i][1]);
+        retval = read_cbm_sector(dest, device, sectors_save[i].track, sectors_save[i].sector);
         if (retval != 0) return 0x40;
         cprintf("loading sector %d of %d...  ", i, RESTORE_SECTORS);
         gotox(0);
@@ -279,9 +301,9 @@ uint8_t restore_from_disk(uint8_t device)
     // saving to easyflash
     cprintf("saving savegame ...");
     write_sectors_save();
-    cprintf(" writing ...");
-    write_sectors_10e();
-    cprintf(" writing ...");
+    cprintf(" ...");
+    write_sectors_storage();
+    cprintf(" ...");
     write_sectors_camp();
     cprintf(" done.");
         
@@ -343,8 +365,9 @@ void main(void)
                     repaint = 1;
                     device = newdevice;
                 } else {
-                    sprintf(device_last_status(), "device %d not present", newdevice);
-                    repaint = 2;
+                    sprintf(temp_line, "device %d not present", newdevice);
+                    print_error(temp_line);
+                    repaint = 1;
                 }
                 break;
             case 'b':
@@ -357,11 +380,11 @@ void main(void)
                 break;
             case '1':
                 clear_output();
-                repaint = 1;
+                repaint = 0x80;
                 break;
             case '2':
                 clear_output();
-                repaint = 1;
+                repaint = 0x80;
                 break;
         }
     }

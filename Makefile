@@ -31,7 +31,7 @@ CC65FLAGS=-t $(TARGET) -O
 .PHONY: clean subdirs all easyflash mrproper
 
 EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o
-SAVEGAME_FILES=build/ef/util.o build/ef/util_s.o build/ef/savegame.o
+SAVEGAME_FILES=build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
 EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor.o
 
 # all
