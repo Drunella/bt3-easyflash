@@ -136,7 +136,7 @@ erase_offset  = $df41
         lda #$84
         sta $df32
 
-        ; initialise unknown save area
+        ; initialise storage save area
     init_10e:
         lda #SAVE_10E_BANK
         jsr EAPISetBank
@@ -312,13 +312,13 @@ erase_offset  = $df41
         bne :+
         jmp calculate_next_storage_10d
 
-    :   lda $46
-        cmp #$0f   ; 010f: unknown area last sector
+;    :   lda $46
+    :   cmp #$0f   ; 010f: unknown area last sector
         bne :+
         jmp calculate_next_storage_10f
 
-    :   lda $46
-        cmp #$17   ; 0117: refugee camp last sector
+;    :   lda $46
+    :   cmp #$17   ; 0117: refugee camp last sector
         bne :+
         jmp calculate_next_storage_117
 
@@ -418,17 +418,34 @@ erase_offset  = $df41
 
 
     correct_ultimax_addresses:
-        ; decrease all offsets in the current offset area
+        ; decrease all offsets in the current offset area if >= $e0
         ldx #$00
     :   lda $df10, x
-        cmp $e0
+        cmp #$e0
         bcc :+
+        lda $df10, x
         sec
         sbc #$40
         sta $df10, x
     :   inx
-        cpx #$10
+        cpx #$0d
         bne :--
+
+        ; increase all offsets in the next offset area if >= $a0 and < $e0
+        ldx #$00
+    :   lda $df30, x
+        cmp #$a0
+        bcc :+
+        cmp #$e0
+        bcs :+
+        lda $df30, x
+        clc
+        adc #$40
+        sta $df30, x
+    :   inx
+        cpx #$0d
+        bne :--
+
 
         rts
 
@@ -683,21 +700,21 @@ erase_offset  = $df41
     finish_easyflash_storage:
         ; $46 low sector number
         ; important: we assume that only correct sector numbers ask for saving
-
         lda $46
+
         cmp #$0d   ; 010d: save game last sector
         bne :+
         ;jsr prepare_easyflash_storage ; next area, a is sector 
         jmp finish_prepare
 
-    :   lda $46
-        cmp #$0f   ; 010f: unknown area last sector
+;    :   lda $46
+    :   cmp #$0f   ; 010f: unknown area last sector
         bne :+
         ;jsr prepare_easyflash_storage ; next area, a is sector
         jmp finish_prepare
 
-    :   lda $46
-        cmp #$17   ; 0117: refugee camp last sector
+;    :   lda $46
+    :    cmp #$17   ; 0117: refugee camp last sector
         bne finish_return
         ;jsr prepare_easyflash_storage ; next area, a is sector
 
