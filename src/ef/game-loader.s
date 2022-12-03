@@ -18,10 +18,12 @@
 .include "easyflash.i"
 
 .import _load_file
+.import _load_eapi
+.import _init_io
 
-.export _startup_game
-.export _startup_savegame
-.export _startup_editor
+;.export _startup_game
+;.export _startup_startmenu
+;.export _startup_editor
 
 .import __STARTGAME_LOAD__
 .import __STARTGAME_RUN__
@@ -32,7 +34,41 @@ diskswitcher_run = $67cb
 .import loadfile_startaddress
 
 
+.segment "STARTUP"
+
+    startup:
+        ; load eapi
+        lda #$c0
+        jsr _load_eapi
+
+        ; bankout
+        lda #$36
+        sta $01
+        lda #EASYFLASH_KILL
+        sta EASYFLASH_CONTROL
+
+        ; init_io
+        jsr _init_io
+
+        ; load startmenu
+        jmp jt_startup_startmenu
+
+
+
 .segment "GAMELOADER"
+
+    call_startup_startmenu:
+        ; @1800
+        jmp startup_startmenu
+
+    call_startup_editor:
+        ; @1803
+        jmp startup_editor
+
+    call_startup_game:
+        ; @1806
+        jmp startup_game
+
 
     diskswitcher_load:
         ; we replace the following code in BARDSUBS1 (8 bytes)
@@ -55,14 +91,14 @@ diskswitcher_run = $67cb
         sta $01
         lda #$2f
         sta $00
-        ldx #<_startup_game  ; set cold reset vector to 1800
-        ldy #>_startup_game
+        ldx #<startup_game  ; set cold reset vector to 1800
+        ldy #>startup_game
         stx $fffc
         sty $fffd
         rts
 
 
-    startup_init_savegame:
+    startup_init_startmenu:
         lda #$20
         sta $034e                   ; unknown purpose
         sei
@@ -70,8 +106,8 @@ diskswitcher_run = $67cb
         sta $01
         lda #$2f
         sta $00
-        ldx #<_startup_savegame  ; set cold reset vector to 1800
-        ldy #>_startup_savegame
+        ldx #<startup_startmenu  ; set cold reset vector to 1800
+        ldy #>startup_startmenu
         stx $fffc
         sty $fffd
         rts
@@ -194,7 +230,7 @@ diskswitcher_run = $67cb
         rti
 
 
-    _startup_game:
+    startup_game:
         jsr startup_init_game
         jsr startup_init
         lda #11
@@ -267,14 +303,14 @@ diskswitcher_run = $67cb
         jmp $ff5b            ; start game
 
 
-    _startup_savegame:
-        ;jsr startup_init_savegame
-        lda #31
-        jsr _load_file       ; load UTIL64
+    startup_startmenu:
+        ;jsr startup_init_startmenu
+        ;lda #42
+        ;jsr _load_file       ; load UTIL64
         ; load own backup/restore code
         ; ###
         lda #32
-        jsr _load_file       ; load savegame
+        jsr _load_file       ; load startmenu
 
         ldx #$ff             ; reset stack
         txs
@@ -284,7 +320,7 @@ diskswitcher_run = $67cb
         jmp ($00fe)
 
 
-    _startup_editor:
+    startup_editor:
         ; load editor
         ; editor will probably not use any bard's tale 3 code ###
         lda #33

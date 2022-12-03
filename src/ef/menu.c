@@ -28,10 +28,13 @@
 #include "menu_include.h"
 
 
-#define MENU_START 15
+#define MENU_START_Y 15
 
 
-static void draw_game_info(void) {
+void savegame_main(void);
+
+
+static void draw_startmenu(void) {
     clrscr();
     textcolor(COLOR_GRAY2);
     cputs("    Bard's Tale III: Thief of Fate\r\n"
@@ -41,7 +44,6 @@ static void draw_game_info(void) {
           "          Bruce Schlickbernd,\r\n"
           "         Michael A. Stackpole\r\n"
           "\r\n");
-    //textcolor(COLOR_GRAY1);
     cputs("\r\n"
           "Copyright (c) 1988 InterPlay Productions\r\n"
           "\r\n"
@@ -50,7 +52,7 @@ static void draw_game_info(void) {
 }
 
 
-void clear_menu(void)
+/*void clear_menu(void)
 {
     uint8_t y;
 
@@ -73,21 +75,17 @@ void menu_option(char key, char *desc)
     //cprintf("%s\r\n", desc);
     cputs(desc);
     cputs("\r\n");
-}
+}*/
 
 
 void main(void)
 {
     static bool repaint;
     
-    //  initialize eapi now
-    load_eapi(0xc0);
-    cart_bankout();
-    
     repaint = true;
     bgcolor(COLOR_BLACK);
     bordercolor(COLOR_BLACK);
-    draw_game_info();
+    draw_startmenu();
     
     while (kbhit()) {
         cgetc();
@@ -96,7 +94,7 @@ void main(void)
     for (;;) {
         
         if (repaint) {
-            clear_menu();
+            menu_clear(MENU_START_Y, 24);
             menu_option('G', "Start game");
             cputs("\r\n");
             menu_option('U', "Savegame utility");
@@ -111,20 +109,18 @@ void main(void)
         switch (cgetc()) {
         case ' ':
         case 'g':
-            clear_menu();
-            init_io();
+            menu_clear(MENU_START_Y,24);
             startup_game(); // does not return
             break;
 
         case 'u':
-            clear_menu();
-            init_io();
-            startup_savegame(); // does not return
+            savegame_main();
+            draw_startmenu();
+            repaint = true;
             break;
 
         case 'e':
-            clear_menu();
-            init_io();
+            menu_clear(MENU_START_Y,24);
             startup_editor(); // does not return
             break;
         

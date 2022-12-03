@@ -19,6 +19,9 @@
 
 .import sp, popa
 
+.export _startup_game
+.export _startup_editor
+
 .export _set_ef_diskid
 .export _read_ef_sector
 .export _write_ef_sector 
@@ -34,6 +37,18 @@
 .export _device_last_status
 .export _device_last_statuscode
 .export _device_clear_status
+
+
+
+; -- easyflash startup -------------------------------------------------------
+
+.segment "CODE"
+
+    _startup_game:
+        jmp jt_startup_game
+
+    _startup_editor:
+        jmp jt_startup_editor
 
 
 

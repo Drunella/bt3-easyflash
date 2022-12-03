@@ -158,6 +158,9 @@ def main(argv):
     #obj_path = os.path.join(args.build, "obj")
     #os.makedirs(obj_path, exist_ok=True)
 
+    if (args.verbose):
+        print("creating binary cartridge image")
+
     bin_initialize()
 
     # add prg files

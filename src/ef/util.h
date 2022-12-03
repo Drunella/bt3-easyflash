@@ -61,7 +61,8 @@ void cart_bankout(void);
 void cart_reset(void);
 
 
-void __fastcall__ load_eapi(uint8_t high);
+void __fastcall__ startup_game();
+void __fastcall__ startup_editor();
 
 void __fastcall__ set_ef_diskid(uint8_t diskid);
 uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination);
@@ -84,6 +85,9 @@ uint8_t write_sectors_save();
 uint8_t write_sectors_storage();
 uint8_t write_sectors_camp();
 
+
+void menu_clear(uint8_t start, uint8_t stop);
+void menu_option(char key, char *desc);
 
 
 #endif

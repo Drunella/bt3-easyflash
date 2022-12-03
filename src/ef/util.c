@@ -132,3 +132,28 @@ uint8_t write_sectors_camp()
     return write_ef_sector(0x0117, (char*)0xb800);
 }
 
+
+void menu_clear(uint8_t start, uint8_t stop)
+{
+    uint8_t y;
+
+    for (y = start; y < stop; ++y) {
+        cclearxy(0, y, 40);
+    }
+    gotoxy(0, start);
+}
+
+
+void menu_option(char key, char *desc)
+{
+    textcolor(COLOR_GRAY2);
+    cputs("       (");
+    textcolor(COLOR_WHITE);
+    cputc(key);
+    textcolor(COLOR_GRAY2);
+    cputs(")  ");
+    //textcolor(COLOR_GRAY2);
+    //cprintf("%s\r\n", desc);
+    cputs(desc);
+    cputs("\r\n");
+}

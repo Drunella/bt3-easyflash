@@ -34,10 +34,17 @@ SAVE_10E_BANK = 48
 SAVE_110_BANK = 56
 SAVE_SECTOR_OFFSET = 8
 
+
 ; io function
 io_loadsave_sector_addr = $be7a
 io_set_current_disk_addr = $be38
 io_load_file_addr = $be02
+
+
+; startup functions
+jt_startup_startmenu = $1800
+jt_startup_editor = $1803
+jt_startup_game = $1806
 
 
 ; eapi functions

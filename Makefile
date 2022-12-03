@@ -30,8 +30,10 @@ CC65FLAGS=-t $(TARGET) -O
 .SUFFIXES: .prg .s .c
 .PHONY: clean subdirs all easyflash mrproper
 
-EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o
-SAVEGAME_FILES=build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
+#EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
+EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o
+STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
+#SAVEGAME_FILES=build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
 EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor.o
 
 # all
@@ -85,16 +87,20 @@ build/ef/loader.prg: $(EF_LOADER_FILES) subdirs
 build/ef/sector-rom.bin: build/ef/io-sector.o subdirs
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -Ln ./build/ef/sector-rom.info -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
 
-# savegame.prg subdirs
-build/ef/savegame.prg: subdirs $(SAVEGAME_FILES)
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -Ln ./build/ef/savegame.info -o $@ -C src/ef/savegame.cfg c64.lib $(SAVEGAME_FILES)
+# startmenu.prg subdirs
+build/ef/startmenu.prg: subdirs $(STARTMENU_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/startmenu.map -Ln ./build/ef/startmenu.info -o $@ -C src/ef/startmenu.cfg c64.lib $(STARTMENU_FILES)
+
+## savegame.prg subdirs
+#build/ef/savegame.prg: subdirs $(SAVEGAME_FILES)
+#	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -Ln ./build/ef/savegame.info -o $@ -C src/ef/savegame.cfg c64.lib $(SAVEGAME_FILES)
 
 # editor.prg subdirs
 build/ef/editor.prg: subdirs $(EDITOR_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.info -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
 
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/savegame.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin
+build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
@@ -115,16 +121,16 @@ build/ef/patched.done: build/ef/character.bin
 	
 # sanitized disks
 build/ef/boot.prodos: subdirs
-	tools/sanitize.py -s ./disks/boot.d64 -d ./build/ef/boot.prodos
+	tools/sanitize.py -v -i 0 -s ./disks/boot.d64 -d ./build/ef/boot.prodos
 
 build/ef/character.bin: subdirs
-	tools/sanitize.py -s ./disks/character.d64 -d ./build/ef/character.bin
+	tools/sanitize.py -v -i 1 -s ./disks/character.d64 -d ./build/ef/character.bin
 
 build/ef/dungeona.bin: subdirs
-	tools/sanitize.py -s ./disks/dungeona.d64 -d ./build/ef/dungeona.bin
+	tools/sanitize.py -v -i 2 -s ./disks/dungeona.d64 -d ./build/ef/dungeona.bin
 
 build/ef/dungeonb.bin: subdirs
-	tools/sanitize.py -s ./disks/dungeonb.d64 -d ./build/ef/dungeonb.bin
+	tools/sanitize.py -v -i 3 -s ./disks/dungeonb.d64 -d ./build/ef/dungeonb.bin
 	
 # application files
 build/ef/files.list: subdirs build/ef/boot.prodos build/prodos/prodos

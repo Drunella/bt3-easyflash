@@ -300,6 +300,9 @@ def main(argv):
     p.add_argument("-f", dest="filedir", action="store", required=True, help="directory to search files.")
     args = p.parse_args()
 
+    if (args.verbose):
+        print("patching binary files")
+
     files_path = args.filedir
     #fileslist = load_files_directory(args.fileslist)
     

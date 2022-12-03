@@ -26,7 +26,7 @@
 
 #define MENU_START_Y 6
 #define MENU_START_X 12
-#define OUTPUT_START_Y 18
+#define OUTPUT_START_Y 14
 
 
 static char temp_line[41];
@@ -127,15 +127,6 @@ static uint8_t select_device(uint8_t x, uint8_t y)
     }
 }
 
-void clear_menu()
-{
-    uint8_t i;
-
-    for (i = MENU_START_Y; i < OUTPUT_START_Y; ++i) {
-        cclearxy(0, i, 40);
-    }
-    gotoxy(0, MENU_START_Y);
-}
 
 void clear_output()
 {
@@ -147,20 +138,6 @@ void clear_output()
     gotoxy(0, OUTPUT_START_Y);
 }
 
-
-void menu_option(char key, char *desc)
-{
-    textcolor(COLOR_GRAY2);
-    cputs("       (");
-    textcolor(COLOR_WHITE);
-    cputc(key);
-    textcolor(COLOR_GRAY2);
-    cputs(")  ");
-    //textcolor(COLOR_GRAY2);
-    //cprintf("%s\r\n", desc);
-    cputs(desc);
-    cputs("\r\n");
-}
 
 void draw_menu()
 {
@@ -299,7 +276,7 @@ uint8_t restore_from_disk(uint8_t device)
     cprintf("\n\r");
 
     // saving to easyflash
-    cprintf("saving savegame ...");
+    cprintf("restoring savegame ...");
     write_sectors_save();
     cprintf(" ...");
     write_sectors_storage();
@@ -311,7 +288,8 @@ uint8_t restore_from_disk(uint8_t device)
 }
 
 
-void main(void)
+//void main(void)
+void savegame_main()
 {
     // we assume eapi already installed at $c000
     // we assume the sector load/save functions are installed at $cxxx
@@ -320,7 +298,7 @@ void main(void)
     static uint8_t device = 8;
     uint8_t retval, newdevice;
 
-    cart_bankout();
+//    cart_bankout();
     bgcolor(COLOR_BLACK);
     bordercolor(COLOR_BLACK);
     draw_menu();
@@ -334,17 +312,17 @@ void main(void)
     
     for (;;) {
         if (repaint > 0) {
-            clear_menu();
+            menu_clear(MENU_START_Y, OUTPUT_START_Y);
             menu_option('D', "Device #");
             cputs("\r\n");
             menu_option('B', "Backup to floppy disk");
             cputs("\r\n");
             menu_option('R', "Restore from floppy disk");
             cputs("\r\n");
-            menu_option('1', "Import from Bard's Tale I");
+            /*menu_option('1', "Import from Bard's Tale I");
             cputs("\r\n");
             menu_option('2', "Import from Bard's Tale II");
-            cputs("\r\n");
+            cputs("\r\n");*/
             menu_option(0x5f, "Return to main menu");
             print_device(MENU_START_X + 8, MENU_START_Y, device);
             if (repaint & 0x80) clear_output();
@@ -354,9 +332,10 @@ void main(void)
         switch (cgetc()) {
 
             case 0x5f:
-                clear_output();
+                /*clear_output();
                 cart_reset(); // does not return
-                break;
+                break;*/
+                return;
             case 'd':
                 clear_output();
                 newdevice = select_device(MENU_START_X, MENU_START_Y + 1);
@@ -378,14 +357,14 @@ void main(void)
                 clear_output();
                 repaint = restore_from_disk(device);
                 break;
-            case '1':
+            /*case '1':
                 clear_output();
                 repaint = 0x80;
                 break;
             case '2':
                 clear_output();
                 repaint = 0x80;
-                break;
+                break;*/
         }
     }
 

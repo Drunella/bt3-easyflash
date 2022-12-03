@@ -151,6 +151,10 @@ def main(argv):
     os.makedirs(os.path.dirname(dest_image), exist_ok=True)
     dest_dir = args.dest_dir
     os.makedirs(os.path.dirname(dest_dir), exist_ok=True)
+
+    if (args.verbose):
+        print("creating simple binary filesystem image")
+
     #image_size = args.image_size
     #start_bank = int(args.start_bank, 0)
 

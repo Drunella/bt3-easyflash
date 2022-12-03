@@ -9,7 +9,7 @@ UTIL64.bin,           31,  0x2000,       0x2000,      0
 MUSIC64.bin,          22,  0x4800,       0,           0
 DMUSIC64.bin,         12,  0xe000,       0,           0
 BARD.SYSTEM.bin,       0,  0x0000,       0,           0
-savegame.prg,         32,  0x3a00,       0x3a00,      2
+startmenu.prg,        32,  0x2000,       0x2000,      2
 editor.prg,           33,  0x2000,       0x2000,      2
 track18.bin,          41,  0xa000,       0,           0
 track09-sector14.bin, 42,  0xa000,       0,           0
