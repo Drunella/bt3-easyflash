@@ -25,7 +25,7 @@
 #include "savegame_map.h"
 
 
-sector_map_t sectors_save[RESTORE_SECTORS] = { 
+sector_map_t sectors_save[SAVE_SECTORS] = { 
     {28,9}, {28,2},  // savegame
     {28,13}, {28,6}, 
     {28,17}, {28,10},
@@ -42,7 +42,7 @@ sector_map_t sectors_save[RESTORE_SECTORS] = {
 };
 
 
-sector_map_t sectors_backup[BACKUP_SECTORS] = {
+sector_map_t sectors_all[ALL_SECTORS] = {
     {1, 0  }, {1, 11 },  // sector 0
     {1, 1  }, {1, 12 }, 
     {1, 2  }, {1, 13 }, 

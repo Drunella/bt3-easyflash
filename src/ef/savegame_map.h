@@ -22,8 +22,8 @@
 #include <stdio.h>
 
 
-#define RESTORE_SECTORS 26
-#define BACKUP_SECTORS 560
+#define SAVE_SECTORS 26
+#define ALL_SECTORS 560
 
 
 typedef struct sector_map_s {
@@ -34,7 +34,7 @@ typedef struct sector_map_s {
 
 extern sector_map_t sectors_save[];
 
-extern sector_map_t sectors_backup[];
+extern sector_map_t sectors_all[];
 
 
 #endif

@@ -52,32 +52,6 @@ static void draw_startmenu(void) {
 }
 
 
-/*void clear_menu(void)
-{
-    uint8_t y;
-
-    for (y = 12; y < 25; ++y) {
-        cclearxy(0, y, 40);
-    }
-    gotoxy(0, MENU_START);
-}
-
-
-void menu_option(char key, char *desc)
-{
-    textcolor(COLOR_GRAY2);
-    cputs("       (");
-    textcolor(COLOR_WHITE);
-    cputc(key);
-    textcolor(COLOR_GRAY2);
-    cputs(")  ");
-    //textcolor(COLOR_GRAY2);
-    //cprintf("%s\r\n", desc);
-    cputs(desc);
-    cputs("\r\n");
-}*/
-
-
 void main(void)
 {
     static bool repaint;
@@ -121,6 +95,7 @@ void main(void)
 
         case 'e':
             menu_clear(MENU_START_Y,24);
+            cputsxy(30, 24, "loading...");
             startup_editor(); // does not return
             break;
         

@@ -4,6 +4,7 @@ Bard's Tale III disks.
 
 ## Features
 * Import and export save games
+* No codewheel necessary
 
 ## Required Tools
 To build you need the following:
@@ -11,11 +12,12 @@ To build you need the following:
 * cartconv from VICE
 * Python 3.6 or greater
 * GNU Make
+* C compiler
 
 ## Building
 To build Bard's Tale III create the folder `disks/` and place the
-original disks in it. Name the disks `boot.d64`(Boot disk), `character.d64`, 
-`dungeona.d64`, `dungeonb.d64`.
+original disks as d64 in it. Name the disks `boot.d64`(Boot disk), 
+`character.d64`, `dungeona.d64`, `dungeonb.d64`.
 
 Then build with
 
@@ -29,5 +31,6 @@ Find the crt image in the build sub-directory:
 
 # Bugs
 
-I wanted to have a working version with music as fast as possible. I did not
-test it thoroughly.
+I did not test the game thoroughly. A lot of functionality is
+unknown to me and therefore I do not know if I missed important
+parts of code to convert.

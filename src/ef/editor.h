@@ -14,17 +14,19 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef EDITOR_H
+#define EDITOR_H
 
 #include <stdint.h>
 
 
-#define SAVE_ADDRESS 0xa000
-#define TEMP_ADDRESS 0x1800
+typedef struct {
+    uint8_t flags;
+    uint8_t type;
+    uint8_t uses;
+} item_t;
 
-
-/*typedef struct {
+typedef struct {
     unsigned char name[16];
     // 0x10
     uint8_t strength, intelligence, dexterity, constitution, luck;
@@ -42,7 +44,8 @@
     uint8_t status;
     uint8_t armorclass; // always recalculated
     // 0x30
-    uint8_t items[36];
+    //uint8_t items[36];
+    item_t items[12];
     // 0x50
     uint8_t classdata[12];
     uint8_t bardsongs;
@@ -58,42 +61,27 @@ typedef struct {
     uint8_t type;
     uint8_t selectable;
     character_info_t* content;
-} character_entry_t;*/
+} character_entry_t;
 
-    
-void cart_kill(void);
-void cart_bankin(void);
-void cart_bankout(void);
-void cart_reset(void);
-
-
-void __fastcall__ startup_game();
-void __fastcall__ startup_editor();
-
-void __fastcall__ set_ef_diskid(uint8_t diskid);
-uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination);
-uint8_t __fastcall__ write_ef_sector(uint16_t sector, char* destination);
-
-void __fastcall__ load_ef_file(uint8_t fileid);
-
-uint8_t __fastcall__ read_cbm_sector(char* dest, uint8_t device, uint8_t track, uint8_t sector);
-uint8_t __fastcall__ write_cbm_sector_open(uint8_t device);
-uint8_t __fastcall__ write_cbm_sector_data(char* source, uint8_t track, uint8_t sector);
-void __fastcall__ write_cbm_sector_close();
-uint8_t __fastcall__ write_cbm_sector_ext(char* source, uint8_t device, uint8_t track, uint8_t sector);
-uint8_t __fastcall__ device_present(uint8_t device);
-char* __fastcall__ device_last_status();
-uint8_t __fastcall__ device_last_statuscode();
-void __fastcall__ device_clear_status();
-
-void load_sectors();
-uint8_t write_sectors_save();
-uint8_t write_sectors_storage();
-uint8_t write_sectors_camp();
+typedef struct {
+    uint8_t type;
+    char text[19];
+    uint8_t flags;
+} text_entry_t;
 
 
-void menu_clear(uint8_t start, uint8_t stop);
-void menu_option(char key, char *desc);
+char* get_class_name(uint8_t cl);
+char* get_race_name(uint8_t rc);
+char* get_item_name(uint8_t id);
+uint8_t get_item_flags(uint8_t id);
+
+char convert_char_bd3_to_editor(char c);
+uint8_t cprint_name(uint8_t x, uint8_t y, char* name);
+bool getnumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original);
+bool draw_status_confirmation(char* content);
+
+void character_main(character_entry_t* character);
+
 
 
 #endif

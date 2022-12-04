@@ -22,7 +22,7 @@
 
 .segment "LOAD_EAPI"
 
-    ; load_eapi(high address)
+    ; void __fastcall__ load_eapi(uint8_t highaddress)
     _load_eapi: 
         ; store high address
         sta load_eapi_adress_1 + $02
@@ -37,7 +37,7 @@
         lda #$37
         sta $01
         lda #EASYFLASH_LED | EASYFLASH_16K
-        sta EASYFLASH_CONTROL ; jsr SetMemConfiguration
+        sta EASYFLASH_CONTROL
 
         ; switch to bank 0
         lda #$00
@@ -58,15 +58,15 @@
         dex
         bne :-
 
-        ; now bank out but do not set memory
+        ; now bank out
         lda #EASYFLASH_KILL
-        sta EASYFLASH_CONTROL ; jsr SetMemConfiguration
+        sta EASYFLASH_CONTROL
         lda #$37
         sta $01
 
         ; init
     load_eapi_adress_i:
-        jsr $ff14
+        jsr EAPIInit
 
         ; return
         rts

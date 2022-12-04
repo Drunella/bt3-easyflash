@@ -16,7 +16,8 @@
 
 ; easyflash bard's tale iii parameter
 
-EAPI_SOURCE  = $B800  ; $A000 (hirom) + 1800
+EAPI_SOURCE  = $b800  ; $a000 (hirom) + 1800
+EAPI_DESTINATION = $c000
 
 FILES_DIR_BANK = 0
 FILES_DIR_START = $bc00
@@ -49,13 +50,13 @@ jt_startup_game = $1806
 
 ; eapi functions
 
-EASYFLASH_BANK    = $DE00
-EASYFLASH_CONTROL = $DE02
+EASYFLASH_BANK    = $de00
+EASYFLASH_CONTROL = $de02
 EASYFLASH_LED     = $80
 EASYFLASH_16K     = $07
 EASYFLASH_KILL    = $04
 
-;EAPIInit          = EAPI_DESTINATION + 20
+EAPIInit          = EAPI_DESTINATION + $14
 EAPIWriteFlash    = $df80
 EAPIEraseSector   = $df83
 EAPISetBank       = $df86

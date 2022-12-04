@@ -37,8 +37,22 @@ diskswitcher_run = $67cb
 .segment "STARTUP"
 
     startup:
+        ; lower character mode
+        lda #$17
+        sta $d018
+
+        ; write loading...
+        ldx #$00
+    :   lda startup_text, x
+        sta $07e8 - startup_text_len, x  ; write text
+        lda #$0c  ; COLOR_GRAY2
+        sta $dbe8 - startup_text_len, x  ; write color
+        inx
+        cpx #startup_text_len
+        bne :-
+
         ; load eapi
-        lda #$c0
+        lda #>EAPI_DESTINATION
         jsr _load_eapi
 
         ; bankout
@@ -53,6 +67,10 @@ diskswitcher_run = $67cb
         ; load startmenu
         jmp jt_startup_startmenu
 
+    startup_text:
+        .byte $0c, $0f, $01, $04, $09, $0e, $07, $2e, $2e, $2e  ; "loading..."
+    startup_text_end:
+    startup_text_len = startup_text_end - startup_text
 
 
 .segment "GAMELOADER"
