@@ -33,22 +33,22 @@ Local Memory
 Main Memory Map
 ===============
 
-0x0000
-   1      
-   2      
+0x0000    [zero page]
+   1      [stack]
+   2      [entered text]
    3      
    4
    5
    6
    7
-   8      [screen]
-   9      [screen]
-   A      [screen]
-   B      [screen]
-   C      [screen]
-   D      [screen]
-   E      [screen]
-   F      [screen]
+   8      [image data]
+   9      [image data]
+   A      [image data]
+   B      [image data]
+   C      [image data]
+   D      [image data]
+   E      [image data]
+   F      [image data]
 0x1000    
    1      
    2      
@@ -65,7 +65,7 @@ Main Memory Map
    D
    E
    F
-0x2000    
+0x2000    [screen]
 0x3000    
 0x4000
    1
@@ -192,37 +192,6 @@ Cartridge Memory Map
 ====================
 
 00:0:0000      [loader]
-     0100      [loader]
-     0200      [loader]
-     0300      [loader]
-     0400      [loader]
-     0500      [loader]
-     0600      [loader]
-     0700      [loader]
-     0800      [loader]
-     0900      [loader]
-     0A00      [loader]
-     0B00      [loader]
-     0C00      [loader]
-     0D00      [loader]
-     0E00      [loader]
-     0F00      [loader]
-     1000      [loader]
-     1100      [loader]
-     1200      [loader]
-     1300      [loader]
-     1400      [loader]
-     1500      [loader]
-     1600      [loader]
-     1700      [loader]
-     1800      [loader]
-     1900      [loader]
-     1A00      [loader]
-     1B00      [loader]
-     1C00      [loader]
-     1D00      [loader]
-     1E00      [loader]
-     1F00      [loader]
 00:1:0000      
      0100      
      0200      
@@ -239,20 +208,20 @@ Cartridge Memory Map
      0D00      
      0E00      
      0F00      
-     1000      
-     1100      
-     1200      
-     1300      
-     1400      
-     1500      
-     1600      
-     1700      
+     1000      [rom executable]
+     1100      [rom executable]
+     1200      [rom executable]
+     1300      [rom executable]
+     1400      [rom executable]
+     1500      [rom executable]
+     1600      [rom executable]
+     1700      [rom executable]
      1800      EAPI
      1900      EAPI       
      1A00      EAPI
-     1B00      EAPI
+     1B00      
      1C00      [files list: 16 files]
-     1D00      
+     1D00      [files list: 16 files] -> 32 files
      1E00      
      1F00      Startup Code & Reset Vector (init.s)
 
@@ -271,122 +240,121 @@ Cartridge Memory Map
 07:0:0000      [files]
 07:1:0000      [files: 128k]
 
-08:0:0000      [character disk]
-08:1:0000     
-09:0:0000     
-09:1:0000     
-10:0:0000     
-10:1:0000     
-11:0:0000     
-11:1:0000     
-12:0:0000     
-12:1:0000     
-13:0:0000     
-13:1:0000     
-14:0:0000     
-14:1:0000     
-15:0:0000     
-15:1:0000     
-16:0:0000     
-16:1:0000     
-17:0:0000     
-17:1:0000     
-18:0:0000      
-18:1:0000     
+08:0:0000      [files]
+08:1:0000      [files]
+09:0:0000      [files]
+09:1:0000      [files]
+10:0:0000      [files]
+10:1:0000      [files]
+11:0:0000      [files]
+11:1:0000      [files]
+12:0:0000      [files]
+12:1:0000      [files]
 
-19:0:0000     [dungeon a disk]
-19:1:0000     
-20:0:0000     
-20:1:0000     
-21:0:0000     
-21:1:0000     
-22:0:0000     
-22:1:0000     
-23:0:0000     
-23:1:0000     
-24:0:0000     
-24:1:0000     
-25:0:0000     
-25:1:0000     
-26:0:0000     
-26:1:0000     
-27:0:0000     
-27:1:0000     
-28:0:0000      
-28:1:0000     
-29:0:0000     
-29:1:0000     
+13:0:0000      [character disk]
+13:1:0000      [character disk]
+14:0:0000      [character disk]
+14:1:0000      [character disk]
+15:0:0000      [character disk]
+15:1:0000      [character disk]
+16:0:0000      [character disk]
+16:1:0000      [character disk]
+17:0:0000      [character disk]
+17:1:0000      [character disk]
+18:0:0000      [character disk]
+18:1:0000      [character disk]
+19:0:0000      [character disk]
+19:1:0000      [character disk]
+20:0:0000      [character disk]
+20:1:0000      [character disk]
+21:0:0000      [character disk]
+21:1:0000      [character disk]
 
-30:0:0000     [dungeon b disk]
-30:1:0000     
-31:0:0000     
-31:1:0000     
-32:0:0000     
-32:1:0000     
-33:0:0000     
-33:1:0000     
-34:0:0000     
-34:1:0000     
-35:0:0000     
-35:1:0000     
-36:0:0000     
-36:1:0000     
-37:0:0000     
-37:1:0000     
-38:0:0000      
-38:1:0000      
-39:0:0000      
-39:1:0000      
-40:0:0000      
-40:1:0000      
+22:0:0000      [dungeon a disk]
+22:1:0000      [dungeon a disk]
+23:0:0000      [dungeon a disk]
+23:1:0000      [dungeon a disk]
+24:0:0000      [dungeon a disk]
+24:1:0000      [dungeon a disk]
+25:0:0000      [dungeon a disk]
+25:1:0000      [dungeon a disk]
+26:0:0000      [dungeon a disk]
+26:1:0000      [dungeon a disk]
+27:0:0000      [dungeon a disk]
+27:1:0000      [dungeon a disk]
+28:0:0000      [dungeon a disk]
+28:1:0000      [dungeon a disk]
+29:0:0000      [dungeon a disk]
+29:1:0000      [dungeon a disk]
+30:0:0000      [dungeon a disk]
+30:1:0000      [dungeon a disk]
 
-41:0:0000      [sector map character]
-41:0:1000      [sector map dungeon a]
-41:1:0000      [sector map dungeon b]
-41:1:1000      [empty]
-42:0:0000      [empty]
-42:1:0000      [empty]
-43:0:0000      [empty]
-43:1:0000      [empty]
-44:0:0000      [empty]
-44:1:0000      [empty]
-45:0:0000      [empty]
-45:1:0000      [empty]
-46:0:0000      [empty]
-46:1:0000      [empty]
-47:0:0000      [empty]
-47:1:0000      [empty]
+31:0:0000      [dungeon b disk]
+31:1:0000      [dungeon b disk]
+32:0:0000      [dungeon b disk]
+32:1:0000      [dungeon b disk]
+33:0:0000      [dungeon b disk]
+33:1:0000      [dungeon b disk]
+34:0:0000      [dungeon b disk]
+34:1:0000      [dungeon b disk]
+35:0:0000      [dungeon b disk]
+35:1:0000      [dungeon b disk]
+36:0:0000      [dungeon b disk]
+36:1:0000      [dungeon b disk]
+37:0:0000      [dungeon b disk]
+37:1:0000      [dungeon b disk]
+38:0:0000      [dungeon b disk]
+38:1:0000      [dungeon b disk]
+39:0:0000      [dungeon b disk]
+39:1:0000      [dungeon b disk]
 
-48:0:0000      [savegame block a]
-48:1:0000      [camp black a]    
-49:0:0000      [savegame block a]
-41:1:0000      [camp black a]    
-50:0:0000      [savegame block a]
-50:1:0000      [camp black a]    
-51:0:0000      [savegame block a]
-51:1:0000      [camp black a]    
-52:0:0000      [savegame block a]
-52:1:0000      [camp black a]    
-53:0:0000      [savegame block a]
-53:1:0000      [camp black a]    
-54:0:0000      [savegame block a]
-54:1:0000      [camp black a]    
-55:0:0000      [savegame block a]
-55:1:0000      [camp black a]    
+40:0:0000      [game save]
+40:1:0000      [game save]
+41:0:0000      [game save]
+41:1:0000      [game save]
+42:0:0000      [game save]
+42:1:0000      [game save]
+43:0:0000      [game save]
+43:1:0000      [game save]
+44:0:0000      [game save]
+44:1:0000      [game save]
+45:0:0000      [game save]
+45:1:0000      [game save]
+46:0:0000      [game save]
+46:1:0000      [game save]
+47:0:0000      [game save]
+47:1:0000      [game save]
+
+48:0:0000      [refugee camp save]
+48:1:0000      [refugee camp save]
+49:0:0000      [refugee camp save]
+41:1:0000      [refugee camp save]
+50:0:0000      [refugee camp save]
+50:1:0000      [refugee camp save]
+51:0:0000      [refugee camp save]
+51:1:0000      [refugee camp save]
+52:0:0000      [refugee camp save]
+52:1:0000      [refugee camp save]
+53:0:0000      [refugee camp save]
+53:1:0000      [refugee camp save]
+54:0:0000      [refugee camp save]
+54:1:0000      [refugee camp save]
+55:0:0000      [refugee camp save]
+55:1:0000      [refugee camp save]
                                  
-56:0:0000      [savegame block b]
-56:1:0000      [camp black a]    
-57:0:0000      [savegame block b]
-57:1:0000      [camp black a]    
-58:0:0000      [savegame block b]
-58:1:0000      [camp black a]    
-59:0:0000      [savegame block b]
-59:1:0000      [camp black a]    
-60:0:0000      [savegame block b]
-60:1:0000      [camp black a]    
-61:0:0000      [savegame block b]
-61:1:0000      [camp black a]    
-62:0:0000      [savegame block b]
-62:1:0000      [camp black a]    
-63:0:0000      [savegame block b]
-63:1:0000      [camp black a]    
+56:0:0000      [unknown save]
+56:1:0000      [unknown save]
+57:0:0000      [unknown save]
+57:1:0000      [unknown save]
+58:0:0000      [unknown save]
+58:1:0000      [unknown save]
+59:0:0000      [unknown save]
+59:1:0000      [unknown save]
+60:0:0000      [unknown save]
+60:1:0000      [unknown save]
+61:0:0000      [unknown save]
+61:1:0000      [unknown save]
+62:0:0000      [unknown save]
+62:1:0000      [unknown save]
+63:0:0000      [unknown save]
+63:1:0000      [unknown save]

@@ -2,38 +2,68 @@ Bard's Tale 3
 =============
 
 - Calculations (ok)
-  3 Disks: 524544 (assuming no hidden data)
-  Character disk unknown content (seems to be nearly empty)
-  should be enough for character storage
+  + boot disk: programs only, these do not take more than 65535 bytes, will allow two erasable flash areas
+  + 3 data disks, these disks hold data as a prodos disk, meaning 280 sectors per 512 bytes => 143360
+    => meaning: 9 erasable flash areas (147456 bytes)
+  + save area: 3 areas (each need 2 erasable flash areas)
+    + save game: 0x010b - 0x010d
+    + refugee camp: 0x0110 - 0x0117
+    + storage: 0x010e - 0x010f
+  => some space for other files
   
 - prodos analyse (ok)
   + io access to all files
-  + how are savegames and gamestates stored?
 
 - disable disk switches (ok)
   + diskswitch request sets the current disk to properly load or save sectors
 
-- disable code wheel
+- disable code wheel (ok)
   + ignore the code wheel
   + try to completely disable it
+  + place modified sector on different place and load disk 1, sector 0x57 from that place
+  + at start codewheel simple jump to: jmp A89C (change code at 0x0af51 in character disk)
+  + 4c 9c a8
 
-- character import
+- character import (no)
   + loader with modified util64
+  => seems to be a lot of work, not worth the time
+  => no character import!
 
 - character editor
+
+- savegame backup and restore (ok)
+  + store track 18 of character disk as file on easyflash
+  + use bd3 fast loader to create character disk?
+  + maybe find another fast loader
 
 - simple loader of all files (ok)
   + simple table with id for loading of the different files
 
-- savegame management
+- savegame management (ok)
   which sectors wil be changed?
   savegame: 010b, 010c, 010d (1536 bytes)
   camp: 0110, 0111, 0112, 0113, 0114, 0115, 0116, 0117 (4096 bytes)
+  unknown: 010e, 010f
 
-- saving gamestats and characters
+- saving gamestats and characters (ok)
   character disk
   savegame: sectors: 0x10b, 0x10c, 0x10d (3 sectors: 1536 bytes)
   roster: sectors: 0x110 to 0x117 (8 sectors: 4096 bytes)
+  unknown: 010e, 010f (2 sectors: 1024 bytes)
+
+- ask for saving on party death
+
+- reduce amount of flash erases by using all 16 4k areas
+
+
+savegame management
+===================
+
+  backup to disk
+  restore from disk
+  import bards tale ii
+  import from bards tale i
+  clear save game
 
 
 File loading from easyflash

@@ -8476,20 +8476,23 @@ FF39   68                   PLA
 FF3A   60         LFF3A     RTS
 FF3B   A5 B5                LDA $B5
 FF3D   60                   RTS
+
+; -- random number ?? ---------------------------
 FF3E   A9 35      LFF3E     LDA #$35
 FF40   85 01                STA $01
 FF42   AD 5A FF             LDA $FF5A
-FF45   6D 12 D0             ADC $D012
-FF48   65 B5                ADC $B5
-FF4A   6D 04 DD             ADC $DD04
-FF4D   6D 09 DC             ADC $DC09
+FF45   6D 12 D0             ADC $D012  ; add raster line
+FF48   65 B5                ADC $B5    
+FF4A   6D 04 DD             ADC $DD04  ; add timer a
+FF4D   6D 09 DC             ADC $DC09  ; add time of te day
 FF50   8D 5A FF             STA $FF5A
 FF53   48                   PHA
 FF54   A9 34                LDA #$34
 FF56   85 01                STA $01
 FF58   68                   PLA
 FF59   60                   RTS
-FF5A   00                   BRK
+FF5A   00                   BRK                  ; variable (random number)
+
 FF5B   78                   SEI
 FF5C   A9 35                LDA #$35
 FF5E   85 01                STA $01

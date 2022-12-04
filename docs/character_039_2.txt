@@ -211,7 +211,7 @@ Dissassemble of sector $039 and $03a of character disk
 9391   E6 9C                INC $9C
 9393   A6 12                LDX $12
 9395   A0 01                LDY #$01
-9397   20 83 6A             JSR $6A83
+9397   20 83 6A             JSR $6A83            ; save sector
 939A   B0 13                BCS L93AF
 939C   E6 12                INC $12
 939E   A5 12                LDA $12

@@ -1,0 +1,1030 @@
+                            * = $A800
+A800   20 3E FF             JSR $FF3E            ; get random number
+A803   29 0F                AND #$0F
+A805   8D D1 A8             STA $A8D1
+A808   20 3E FF             JSR $FF3E            ; get random number
+A80B   29 0F                AND #$0F
+A80D   8D D2 A8             STA $A8D2
+A810   20 3E FF             JSR $FF3E            ; get random number
+A813   29 0F                AND #$0F
+A815   8D D3 A8             STA $A8D3
+A818   20 3E FF             JSR $FF3E            ; get random number
+A81B   29 0F                AND #$0F
+A81D   8D D4 A8             STA $A8D4
+A820   20 12 A9             JSR LA912            ; calculate wheel result
+A823   20 07 74             JSR $7407            ; probably show text?
+
+A826   F4                   ???                ;11110100
+A827   DE 19 C4             DEC $C419,X
+A82A   55 34                EOR $34,X
+A82C   64                   ???                ;01100100 'd'
+A82D   60                   RTS
+A82E   CD 4D 30             CMP $304D
+A831   44                   ???                ;01000100 'D'
+A832   E2         LA832     ???                ;11100010
+A833   86 50                STX $50
+A835   11 0D                ORA ($0D),Y
+A837   B0 DD                BCS LA816
+A839   F4                   ???                ;11110100
+A83A   0B                   ???                ;00001011
+A83B   69 29                ADC #$29
+A83D   84 EA                STY $EA
+A83F   8C A6 18             STY $18A6
+A842   98                   TYA
+A843   8A                   TXA
+A844   99 83 34   LA844     STA $3483,Y
+A847   98                   TYA
+A848   22                   ???                ;00100010 '"'
+A849   62                   ???                ;01100010 'b'
+A84A   90 E6                BCC LA832
+A84C   99 D3 0D             STA $0DD3,Y
+A84F   44                   ???                ;01000100 'D'
+A850   CA                   DEX
+A851   18                   CLC
+A852   2F                   ???                ;00101111 '/'
+A853   38                   SEC
+A854   40                   RTI
+
+A855   A2 9A                LDX #$9A
+A857   A0 AA                LDY #$AA
+A859   AD D1 A8             LDA $A8D1
+A85C   20 03 70             JSR $7003            ; call 
+A85F   20 C9 A8             JSR LA8C9            ; call 
+A862   A2 04                LDX #$04
+A864   A0 AB                LDY #$AB
+A866   AD D2 A8             LDA $A8D2
+A869   20 03 70             JSR $7003            ; call 
+A86C   20 C9 A8             JSR LA8C9            ; call 
+A86F   A2 9C                LDX #$9C
+A871   A0 AB                LDY #$AB
+A873   AD D3 A8             LDA $A8D3
+A876   20 03 70             JSR $7003            ; call 
+A879   20 0A 74             JSR $740A            ; call 
+A87C   D8 44 E2 84 00
+A881   A2 09                LDX #$09
+A883   A0 AA                LDY #$AA
+A885   AD D4 A8             LDA $A8D4
+A888   20 03 70             JSR $7003            ; call 
+A88B   20 0A 74             JSR $740A            ; call 
+A88E   FF 7D E8 00
+A892   20 1A 73             JSR $731A            ; call (enter text?)
+A895   B0 0A                BCS LA8A1            ; text entered ?
+A897   20 F2 A9             JSR LA9F2            ; call check result
+A89A   B0 05                BCS LA8A1            ; branch on success or failure: 
+A89C   38                   SEC                  ; success branch
+A89D   6E E8 7A             ROR $7AE8
+A8A0   60                   RTS
+A8A1   20 07 74   LA8A1     JSR $7407            ; failured branch call 
+
+A8A4   F5 DF                SBC $DF,X
+A8A6   40                   RTI
+A8A7   A4 55                LDY $55
+A8A9   30 4E                BMI LA8F9
+A8AB   25 30                AND $30
+A8AD   C5 0C                CMP $0C
+A8AF   DE 18 98             DEC $9818,X
+A8B2   8A                   TXA
+A8B3   99 83 34             STA $3483,Y
+A8B6   98                   TYA
+A8B7   30 8B                BMI LA844
+A8B9   E0 68                CPX #$68
+A8BB   84 4C                STY $4C
+A8BD   52                   ???                ;01010010 'R'
+A8BE   1C                   ???                ;00011100
+A8BF   D3                   ???                ;11010011
+A8C0   3A                   ???                ;00111010 ':'
+A8C1   61 80                ADC ($80,X)
+A8C3   A7                   ???                ;10100111
+A8C4   33                   ???                ;00110011 '3'
+A8C5   45 DC                EOR $DC
+A8C7   00                   BRK
+
+A8C8   60                   RTS
+
+A8C9   A9 AC      LA8C9     LDA #$AC
+A8CB   20 8E 84             JSR $848E
+A8CE   4C 89 84             JMP $8489
+A8D1   00                   BRK                  ; random number for wheel 1 (0-15)
+A8D2   00                   BRK                  ; random number for wheel 2 (0-15)
+A8D3   00                   BRK                  ; random number for wheel 3 (0-15)
+A8D4   00                   BRK                  ; random number for wheel 4 (0-15)
+A8D5   00                   BRK
+A8D6   00                   BRK
+A8D7   00                   BRK
+A8D8   00                   BRK
+A8D9   00                   BRK
+
+A8DA   00                   BRK
+A8DB   04                   ???                ;00000100
+A8DC   12                   ???                ;00010010
+A8DD   17                   ???                ;00010111
+A8DE   25 31                AND $31
+A8E0   33                   ???                ;00110011 '3'
+A8E1   46 54                LSR $54
+A8E3   62                   ???                ;01100010 'b'
+A8E4   66 70                ROR $70
+A8E6   83                   ???                ;10000011
+A8E7   85 91                STA $91
+A8E9   97                   ???                ;10010111
+
+A8EA   0D 07 00             ORA $0007
+A8ED   02                   ???                ;00000010
+A8EE   06 09                ASL $09
+A8F0   0F                   ???                ;00001111
+A8F1   03                   ???                ;00000011
+A8F2   05 0C                ORA $0C
+A8F4   0A                   ASL A
+A8F5   01 0E                ORA ($0E,X)
+A8F7   08                   PHP
+A8F8   04                   ???                ;00000100
+A8F9   0B         LA8F9     ???                ;00001011
+
+A8FA   01 0F                ORA ($0F,X)
+A8FC   7F                   ???                ;01111111
+A8FD   FF                   ???                ;11111111
+
+; -- calculate a8fe -----------------------------
+A8FE   8D D6 A8   LA8FE     STA $A8D6
+A901   A2 0F                LDX #$0F
+A903   4A         LA903     LSR A
+A904   6E D6 A8             ROR $A8D6
+A907   90 02                BCC LA90B
+A909   69 B3                ADC #$B3
+A90B   CA         LA90B     DEX
+A90C   D0 F5                BNE LA903
+A90E   8D D7 A8             STA $A8D7
+A911   60                   RTS
+
+; -- calculate wheel result ?? ------------------
+A912   AE D4 A8   LA912     LDX $A8D4
+A915   BD DA A8             LDA $A8DA,X
+A918   8D D8 A8             STA $A8D8
+A91B   4A                   LSR A
+A91C   4A                   LSR A
+A91D   4A                   LSR A
+A91E   4A                   LSR A
+A91F   8D D9 A8             STA $A8D9
+A922   8A                   TXA
+A923   4D D1 A8             EOR $A8D1
+A926   4A                   LSR A
+A927   90 1F                BCC LA948
+A929   AD D8 A8             LDA $A8D8
+A92C   29 07                AND #$07
+A92E   0A                   ASL A
+A92F   4D D2 A8             EOR $A8D2
+A932   29 FE                AND #$FE
+A934   4D D2 A8             EOR $A8D2
+A937   AA                   TAX
+A938   BD EA A8             LDA $A8EA,X
+A93B   18                   CLC
+A93C   6D D1 A8             ADC $A8D1
+A93F   38                   SEC
+A940   ED D9 A8             SBC $A8D9
+A943   29 0F                AND #$0F
+A945   8D D2 A8             STA $A8D2
+A948   AD D8 A8   LA948     LDA $A8D8
+A94B   29 07                AND #$07
+A94D   0A                   ASL A
+A94E   AA                   TAX
+A94F   AD D2 A8             LDA $A8D2
+A952   38                   SEC
+A953   ED D1 A8             SBC $A8D1
+A956   18                   CLC
+A957   6D D9 A8             ADC $A8D9
+A95A   29 0F                AND #$0F
+A95C   DD EA A8             CMP $A8EA,X
+A95F   F0 13                BEQ LA974
+A961   DD EB A8             CMP $A8EB,X
+A964   F0 0E                BEQ LA974
+A966   AD D2 A8             LDA $A8D2
+A969   38                   SEC
+A96A   ED D1 A8             SBC $A8D1
+A96D   0A                   ASL A
+A96E   0A                   ASL A
+A96F   0A                   ASL A
+A970   0A                   ASL A
+A971   4C 81 A9             JMP LA981
+A974   AD D3 A8   LA974     LDA $A8D3
+A977   38                   SEC
+A978   ED D1 A8             SBC $A8D1
+A97B   0A                   ASL A
+A97C   0A                   ASL A
+A97D   0A                   ASL A
+A97E   0A                   ASL A
+A97F   09 08                ORA #$08
+A981   18         LA981     CLC
+A982   6D D8 A8             ADC $A8D8
+A985   8D D5 A8             STA $A8D5
+A988   20 FE A8             JSR LA8FE            ; call calculate intermediate
+A98B   AD D5 A8             LDA $A8D5
+A98E   29 07                AND #$07
+A990   4A                   LSR A
+A991   AA                   TAX
+A992   49 03                EOR #$03
+A994   8D F1 A9             STA $A9F1
+A997   AD D7 A8             LDA $A8D7
+A99A   3D FA A8   LA99A     AND $A8FA,X
+A99D   8D D7 A8             STA $A8D7
+A9A0   A2 00                LDX #$00
+A9A2   AD D7 A8             LDA $A8D7
+A9A5   4A                   LSR A
+A9A6   4A                   LSR A
+A9A7   4A                   LSR A
+A9A8   4A                   LSR A
+A9A9   4A                   LSR A
+A9AA   4A                   LSR A
+A9AB   4A                   LSR A
+A9AC   20 DC A9             JSR LA9DC            ; call calculate a9dc
+A9AF   AD D7 A8             LDA $A8D7
+A9B2   4A                   LSR A
+A9B3   4A                   LSR A
+A9B4   4A                   LSR A
+A9B5   4A                   LSR A
+A9B6   20 DC A9             JSR LA9DC            ; call calculate a9dc
+A9B9   AD D7 A8             LDA $A8D7
+A9BC   4A                   LSR A
+A9BD   20 DC A9             JSR LA9DC            ; call calculate a9dc
+A9C0   AD D7 A8             LDA $A8D7
+A9C3   4A                   LSR A
+A9C4   AD D6 A8             LDA $A8D6
+A9C7   6A                   ROR A
+A9C8   4A                   LSR A
+A9C9   4A                   LSR A
+A9CA   4A                   LSR A
+A9CB   4A                   LSR A
+A9CC   4A                   LSR A
+A9CD   20 DC A9             JSR LA9DC            ; call calculate a9dc
+A9D0   AD D6 A8             LDA $A8D6
+A9D3   4A                   LSR A
+A9D4   4A                   LSR A
+A9D5   4A                   LSR A
+A9D6   20 DC A9             JSR LA9DC            ; call calculate a9dc
+A9D9   AD D6 A8             LDA $A8D6
+
+; -- calculate a9dc -----------------------------
+A9DC   29 07      LA9DC     AND #$07
+A9DE   09 B0                ORA #$B0
+A9E0   9D EA A9             STA $A9EA,X
+A9E3   E8                   INX
+A9E4   A9 FF                LDA #$FF
+A9E6   9D EA A9             STA $A9EA,X
+A9E9   60                   RTS
+
+A9EA   00                   BRK                  ; variable (probably the numbers)
+A9EB   00                   BRK                  ; variable
+A9EC   00                   BRK                  ; variable
+A9ED   00                   BRK                  ; variable
+A9EE   00                   BRK                  ; variable
+A9EF   00                   BRK                  ; variable
+A9F0   00                   BRK                  ; variable
+A9F1   00                   BRK                  ; variable (?? max 7 digits, as the last must be $ff)
+
+; -- check result ?? ----------------------------
+A9F2   AE F1 A9   LA9F2     LDX $A9F1
+A9F5   A0 00                LDY #$00
+A9F7   B9 00 02   LA9F7     LDA $0200,Y
+A9FA   DD EA A9             CMP $A9EA,X
+A9FD   D0 08                BNE LAA07
+A9FF   E8                   INX
+AA00   C8                   INY
+AA01   E0 07                CPX #$07
+AA03   90 F2                BCC LA9F7
+AA05   18                   CLC                  ; check successful
+AA06   60                   RTS
+AA07   38         LAA07     SEC                  ; check failed
+AA08   60                   RTS
+
+; list of words and texts?
+AA09   F0 A2                BEQ LA9AD
+AA0B   63                   ???                ;01100011 'c'
+AA0C   BD 8A 10             LDA $108A,X
+AA0F   00                   BRK
+AA10   F0 88                BEQ LA99A
+AA12   F8                   SED
+AA13   BA                   TSX
+AA14   40                   RTI
+AA15   F0 A3                BEQ LA9BA
+AA17   17                   ???                ;00010111
+AA18   DA                   ???                ;11011010
+AA19   41 79                EOR ($79,X)
+AA1B   C3                   ???                ;11000011
+AA1C   E6 28                INC $28
+AA1E   E6 00                INC $00
+AA20   F1 23                SBC ($23),Y
+AA22   79 4C 4C             ADC $4C4C,Y
+AA25   0F                   ???                ;00001111
+AA26   96 6B                STX $6B,Y
+AA28   80                   ???                ;10000000
+AA29   F1 22                SBC ($22),Y
+AA2B   FB                   ???                ;11111011
+AA2C   38                   SEC
+AA2D   2F                   ???                ;00101111 '/'
+AA2E   38                   SEC
+AA2F   7D 38 D2             ADC $D238,X
+AA32   69 00                ADC #$00
+AA34   F4         LAA34     ???                ;11110100
+AA35   A7                   ???                ;10100111
+AA36   15 1C                ORA $1C,X
+AA38   D2                   ???                ;11010010
+AA39   81 85                STA ($85,X)
+AA3B   10 00                BPL LAA3D
+AA3D   F4         LAA3D     ???                ;11110100
+AA3E   44                   ???                ;01000100 'D'
+AA3F   A7                   ???                ;10100111
+AA40   0D F6 0F             ORA $0FF6
+AA43   A2 F9                LDX #$F9
+AA45   18                   CLC
+AA46   00                   BRK
+AA47   F1 23      LAA47     SBC ($23),Y
+AA49   79 4C 4C             ADC $4C4C,Y
+AA4C   0F                   ???                ;00001111
+AA4D   98                   TYA
+AA4E   67                   ???                ;01100111 'g'
+AA4F   48                   PHA
+AA50   00                   BRK
+AA51   F4                   ???                ;11110100
+AA52   9A                   TXS
+AA53   F5 9A                SBC $9A,X
+AA55   E1 F3                SBC ($F3,X)
+AA57   0C                   ???                ;00001100
+AA58   E9 00                SBC #$00
+AA5A   F0 D8                BEQ LAA34
+AA5C   22                   ???                ;00100010 '"'
+AA5D   2C 3E 61             BIT $613E
+AA60   9D 20 00             STA $0020,X
+AA63   F4                   ???                ;11110100
+AA64   92                   ???                ;10010010
+AA65   22                   ???                ;00100010 '"'
+AA66   BE C1 F1             LDX $F1C1,Y
+AA69   5E F8 80             LSR $80F8,X
+AA6C   F4                   ???                ;11110100
+AA6D   92                   ???                ;10010010
+AA6E   22                   ???                ;00100010 '"'
+AA6F   BE C1 F3             LDX $F3C1,Y
+AA72   1E 45 80             ASL $8045,X
+AA75   F5 94                SBC $94,X
+AA77   E3                   ???                ;11100011
+AA78   49 6A                EOR #$6A
+AA7A   70 00                BVS LAA7C
+AA7C   F3         LAA7C     ???                ;11110011
+AA7D   94 84                STY $84,X
+AA7F   CE 50 30             DEC $3050
+AA82   A2 00                LDX #$00
+AA84   F2                   ???                ;11110010
+AA85   44                   ???                ;01000100 'D'
+AA86   D6 9A                DEC $9A,X
+AA88   21 79                AND ($79,X)
+AA8A   C3                   ???                ;11000011
+AA8B   EB                   ???                ;11101011
+AA8C   44                   ???                ;01000100 'D'
+AA8D   53                   ???                ;01010011 'S'
+AA8E   48                   PHA
+AA8F   00                   BRK
+AA90   F5 84                SBC $84,X
+AA92   E2                   ???                ;11100010
+AA93   85 E7                STA $E7
+AA95   0F                   ???                ;00001111
+AA96   A0 FB                LDY #$FB
+AA98   1A                   ???                ;00011010
+AA99   20 F3 44             JSR $44F3
+AA9C   C3                   ???                ;11000011
+AA9D   1D 42 00             ORA $0042,X
+AAA0   F5 44                SBC $44,X
+AAA2   C1 45                CMP ($45,X)
+AAA4   42                   ???                ;01000010 'B'
+AAA5   70 00                BVS LAAA7
+AAA7   F3         LAAA7     ???                ;11110011
+AAA8   04                   ???                ;00000100
+AAA9   E1 4D                SBC ($4D,X)
+AAAB   51 00                EOR ($00),Y
+AAAD   F0 98                BEQ LAA47
+AAAF   C5 45                CMP $45
+AAB1   42                   ???                ;01000010 'B'
+AAB2   00                   BRK
+AAB3   F1 CD                SBC ($CD),Y
+AAB5   17                   ???                ;00010111
+AAB6   9D 52 98             STA $9852,X
+AAB9   00                   BRK
+AABA   F4                   ???                ;11110100
+AABB   88                   DEY
+AABC   61 16                ADC ($16,X)
+AABE   80                   ???                ;10000000
+AABF   F5 8D                SBC $8D,X
+AAC1   18                   CLC
+AAC2   88                   DEY
+AAC3   00                   BRK
+AAC4   F4                   ???                ;11110100
+AAC5   C5 1F                CMP $1F
+AAC7   80                   ???                ;10000000
+AAC8   27                   ???                ;00100111 '''
+AAC9   00                   BRK
+AACA   F4                   ???                ;11110100
+AACB   96 28                STX $28,Y
+AACD   88                   DEY
+AACE   3E 1C 44             ROL $441C,X
+AAD1   60                   RTS
+AAD2   00                   BRK
+AAD3   F5 1D                SBC $1D,X
+AAD5   33                   ???                ;00110011 '3'
+AAD6   47                   ???                ;01000111 'G'
+AAD7   C3                   ???                ;11000011
+AAD8   88                   DEY
+AAD9   8C 00 F0             STY $F000
+AADC   A2 37                LDX #$37
+AADE   C5 42                CMP $42
+AAE0   00                   BRK
+AAE1   F2                   ???                ;11110010
+AAE2   0C                   ???                ;00001100
+AAE3   C5 15                CMP $15
+AAE5   42                   ???                ;01000010 'B'
+AAE6   00                   BRK
+AAE7   F3                   ???                ;11110011
+AAE8   28                   PLP
+AAE9   43                   ???                ;01000011 'C'
+AAEA   38                   SEC
+AAEB   8A                   TXA
+AAEC   10 00                BPL LAAEE
+AAEE   F2         LAAEE     ???                ;11110010
+AAEF   D4                   ???                ;11010100
+AAF0   E3                   ???                ;11100011
+AAF1   4A                   LSR A
+AAF2   6A         LAAF2     ROR A
+AAF3   10 00                BPL LAAF5
+AAF5   F4         LAAF5     ???                ;11110100
+AAF6   CC E3 0E             CPY $0EE3
+AAF9   2F                   ???                ;00101111 '/'
+AAFA   92                   ???                ;10010010
+AAFB   84 00                STY $00
+AAFD   F4                   ???                ;11110100
+AAFE   C5 16                CMP $16
+AB00   AA                   TAX
+AB01   6A                   ROR A
+AB02   10 00                BPL LAB04
+AB04   F1 14      LAB04     SBC ($14),Y
+AB06   68                   PLA
+AB07   88                   DEY
+AB08   3E 1C 44             ROL $441C,X
+AB0B   E7                   ???                ;11100111
+AB0C   28                   PLP
+AB0D   40                   RTI
+AB0E   F1 0C                SBC ($0C),Y
+AB10   C1 45                CMP ($45,X)
+AB12   42                   ???                ;01000010 'B'
+AB13   0F                   ???                ;00001111
+AB14   87                   ???                ;10000111
+AB15   13                   ???                ;00010011
+AB16   18                   CLC
+AB17   00                   BRK
+AB18   F0 D8                BEQ LAAF2
+AB1A   22                   ???                ;00100010 '"'
+AB1B   2C 3E 91             BIT $913E
+AB1E   05 10                ORA $10
+AB20   00                   BRK
+AB21   F1 45                SBC ($45),Y
+AB23   15 87                ORA $87,X
+AB25   C4 7C                CPY $7C
+AB27   24 60                BIT $60
+AB29   00                   BRK
+AB2A   F3                   ???                ;11110011
+AB2B   9F                   ???                ;10011111
+AB2C   64                   ???                ;01100100 'd'
+AB2D   9A                   TXS
+AB2E   26 00                ROL $00
+AB30   F1 CD                SBC ($CD),Y
+AB32   29 9A                AND #$9A
+AB34   2A                   ROL A
+AB35   72                   ???                ;01110010 'r'
+AB36   03                   ???                ;00000011
+AB37   E8                   INX
+AB38   2A                   ROL A
+AB39   60                   RTS
+AB3A   F4                   ???                ;11110100
+AB3B   84 48                STY $48
+AB3D   98                   TYA
+AB3E   A1 F2                LDA ($F2,X)
+AB40   22                   ???                ;00100010 '"'
+AB41   FA                   ???                ;11111010
+AB42   98                   TYA
+AB43   00                   BRK
+AB44   F2                   ???                ;11110010
+AB45   88                   DEY
+AB46   60                   RTS
+AB47   F9 66 34             SBC $3466,Y
+AB4A   00                   BRK
+AB4B   F4                   ???                ;11110100
+AB4C   92                   ???                ;10010010
+AB4D   22                   ???                ;00100010 '"'
+AB4E   BE C1 F1             LDX $F1C1,Y
+AB51   04                   ???                ;00000100
+AB52   EB                   ???                ;11101011
+AB53   BD C0 F4             LDA $F4C0,X
+AB56   C5 10                CMP $10
+AB58   FB                   ???                ;11111011
+AB59   E0 D0                CPX #$D0
+AB5B   51 8D                EOR ($8D),Y
+AB5D   C0 F1                CPY #$F1
+AB5F   1E C2 87             ASL $87C2,X
+AB62   D0 30                BNE LAB94
+AB64   96 00                STX $00,Y
+AB66   F1 23                SBC ($23),Y
+AB68   79 4C 4C             ADC $4C4C,Y
+AB6B   0F                   ???                ;00001111
+AB6C   A5 08                LDA $08
+AB6E   A9 C8                LDA #$C8
+AB70   00                   BRK
+AB71   F3                   ???                ;11110011
+AB72   D8                   CLD
+AB73   50 F8                BVC LAB6D
+AB75   B6 14                LDX $14,Y
+AB77   4E 1F 35             LSR $351F
+AB7A   4E 30 00             LSR $0030
+AB7D   F4                   ???                ;11110100
+AB7E   92                   ???                ;10010010
+AB7F   22                   ???                ;00100010 '"'
+AB80   BE C1 F4             LDX $F4C1,Y
+AB83   5E 45 80             LSR $8045,X
+AB86   F4                   ???                ;11110100
+AB87   A8                   TAY
+AB88   C8                   INY
+AB89   26 91                ROL $91
+AB8B   0F                   ???                ;00001111
+AB8C   A5 08                LDA $08
+AB8E   A9 C8                LDA #$C8
+AB90   90 00                BCC LAB92
+AB92   F5 85      LAB92     SBC $85,X
+AB94   18         LAB94     CLC
+AB95   A9 F1                LDA #$F1
+AB97   90 7D                BCC LAC16
+AB99   51 30                EOR ($30),Y
+AB9B   C0 F0                CPY #$F0
+AB9D   E2                   ???                ;11100010
+AB9E   A6 24                LDX $24
+ABA0   52                   ???                ;01010010 'R'
+ABA1   9A                   TXS
+ABA2   80                   ???                ;10000000
+ABA3   F5 22                SBC $22,X
+ABA5   D3                   ???                ;11010011
+ABA6   11 20                ORA ($20),Y
+ABA8   F4                   ???                ;11110100
+ABA9   E4 C7                CPX $C7
+ABAB   CD 22 00             CMP $0022
+ABAE   F1 2E                SBC ($2E),Y
+ABB0   27                   ???                ;00100111 '''
+ABB1   2A                   ROL A
+ABB2   40                   RTI
+ABB3   F4                   ???                ;11110100
+ABB4   D2                   ???                ;11010010
+ABB5   60                   RTS
+ABB6   F9 EC 28             SBC $28EC,Y
+ABB9   7C                   ???                ;01111100 '|'
+ABBA   D1 38                CMP ($38),Y
+ABBC   00                   BRK
+ABBD   F2                   ???                ;11110010
+ABBE   45 65                EOR $65
+ABC0   C9 82                CMP #$82
+ABC2   B9 A2 00             LDA $00A2,Y
+ABC5   F4                   ???                ;11110100
+ABC6   89                   ???                ;10001001
+ABC7   11 42                ORA ($42),Y
+ABC9   CF                   ???                ;11001111
+ABCA   79 40 F0             ADC $F040,Y
+ABCD   C5 12                CMP $12
+ABCF   EA                   NOP
+ABD0   41 F2                EOR ($F2,X)
+ABD2   44                   ???                ;01000100 'D'
+ABD3   C6 00                DEC $00
+ABD5   F4                   ???                ;11110100
+ABD6   A6 24                LDX $24
+ABD8   20 D1 0F             JSR $0FD1
+ABDB   94 E7                STY $E7,X
+ABDD   00                   BRK
+ABDE   F2                   ???                ;11110010
+ABDF   54                   ???                ;01010100 'T'
+ABE0   40                   RTI
+ABE1   F9 22 A9             SBC $A922,Y
+ABE4   9C                   ???                ;10011100
+ABE5   00                   BRK
+ABE6   F5 54                SBC $54,X
+ABE8   F6 1A                INC $1A,X
+ABEA   61 F3                ADC ($F3,X)
+ABEC   5F                   ???                ;01011111 '_'
+ABED   47                   ???                ;01000111 'G'
+ABEE   4C 4A 74             JMP $744A
+ABF1   80                   ???                ;10000000
+ABF2   F1 23                SBC ($23),Y
+ABF4   79 4C 4C             ADC $4C4C,Y
+ABF7   0F                   ???                ;00001111
+ABF8   A0 26                LDY #$26
+ABFA   08                   PHP
+ABFB   86 00                STX $00
+ABFD   F1 05                SBC ($05),Y
+ABFF   31 11                AND ($11),Y
+AC01   ED 1C 80             SBC $801C
+AC04   F4                   ???                ;11110100
+AC05   E8                   INX
+AC06   E7                   ???                ;11100111
+AC07   19 92 00             ORA $0092,Y
+AC0A   F5 9F                SBC $9F,X
+AC0C   15 C9                ORA $C9,X
+AC0E   2F                   ???                ;00101111 '/'
+AC0F   80                   ???                ;10000000
+AC10   00                   BRK
+AC11   F5 95                SBC $95,X
+AC13   F0 C5                BEQ LABDA
+AC15   12                   ???                ;00010010
+AC16   EA         LAC16     NOP
+AC17   41 F2                EOR ($F2,X)
+AC19   28                   PLP
+AC1A   A6 14                LDX $14
+AC1C   00                   BRK
+AC1D   00                   BRK
+AC1E   E3                   ???                ;11100011
+AC1F   04                   ???                ;00000100
+AC20   02                   ???                ;00000010
+AC21   05 01                ORA $01
+AC23   09 91                ORA #$91
+AC25   0A                   ASL A
+AC26   26 10                ROL $10
+AC28   60                   RTS
+AC29   46 0C                LSR $0C
+AC2B   03                   ???                ;00000011
+AC2C   E2                   ???                ;11100010
+AC2D   18                   CLC
+AC2E   CD 90 8A             CMP $8A90
+AC31   6B                   ???                ;01101011 'k'
+AC32   BA                   TSX
+AC33   5D 8E 47             EOR $478E,X
+AC36   2B                   ???                ;00101011 '+'
+AC37   C9 DC                CMP #$DC
+AC39   E5 79                SBC $79
+AC3B   BC FF 83             LDY $83FF,X
+AC3E   7F                   ???                ;01111111
+AC3F   85 02                STA $02
+AC41   89                   ???                ;10001001
+AC42   F8                   SED
+AC43   86 7D                STX $7D
+AC45   D7                   ???                ;11010111
+AC46   77                   ???                ;01110111 'w'
+AC47   53                   ???                ;01010011 'S'
+AC48   DD 27 73             CMP $7327,X
+AC4B   FD CD 77             SBC $77CD,X
+AC4E   2B                   ???                ;00101011 '+'
+AC4F   DC                   ???                ;11011100
+AC50   87                   ???                ;10000111
+AC51   71 7D                ADC ($7D),Y
+AC53   C3                   ???                ;11000011
+AC54   77                   ???                ;01110111 'w'
+AC55   03                   ???                ;00000011
+AC56   DD E7 0D             CMP $0DE7,X
+AC59   F8                   SED
+AC5A   65 C2                ADC $C2
+AC5C   DE 14 70             DEC $7014,X
+AC5F   8F                   ???                ;10001111
+AC60   83                   ???                ;10000011
+AC61   DC                   ???                ;11011100
+AC62   19 E0 A7             ORA $A7E0,Y
+AC65   03                   ???                ;00000011
+AC66   F8                   SED
+AC67   88                   DEY
+AC68   A4 44                LDY $44
+AC6A   44                   ???                ;01000100 'D'
+AC6B   44                   ???                ;01000100 'D'
+AC6C   CC C5 3F             CPY $3FC5
+AC6F   83                   ???                ;10000011
+AC70   80                   ???                ;10000000
+AC71   52                   ???                ;01010010 'R'
+AC72   91 13                STA ($13),Y
+AC74   33                   ???                ;00110011 '3'
+AC75   11 31                ORA ($31),Y
+AC77   11 11                ORA ($11),Y
+AC79   33                   ???                ;00110011 '3'
+AC7A   11 14                ORA ($14),Y
+AC7C   88                   DEY
+AC7D   88                   DEY
+AC7E   98                   TYA
+AC7F   88                   DEY
+AC80   88                   DEY
+AC81   89                   ???                ;10001001
+AC82   88                   DEY
+AC83   98                   TYA
+AC84   9F                   ???                ;10011111
+AC85   E1 40                SBC ($40,X)
+AC87   1E 79 E4             ASL $E479,X
+AC8A   45 22                EOR $22
+AC8C   62                   ???                ;01100010 'b'
+AC8D   62                   ???                ;01100010 'b'
+AC8E   22                   ???                ;00100010 '"'
+AC8F   22                   ???                ;00100010 '"'
+AC90   26 22                ROL $22
+AC92   21 E5                AND ($E5,X)
+AC94   E7                   ???                ;11100111
+AC95   F0 90                BEQ LAC27
+AC97   09 98                ORA #$98
+AC99   89                   ???                ;10001001
+AC9A   99 8F 3C             STA $3C8F,Y
+AC9D   F2                   ???                ;11110010
+AC9E   29 11                AND #$11
+ACA0   13                   ???                ;00010011
+ACA1   33                   ???                ;00110011 '3'
+ACA2   FC                   ???                ;11111100
+ACA3   1C                   ???                ;00011100
+ACA4   02                   ???                ;00000010
+ACA5   62                   ???                ;01100010 'b'
+ACA6   22                   ???                ;00100010 '"'
+ACA7   22                   ???                ;00100010 '"'
+ACA8   26 66                ROL $66
+ACAA   22                   ???                ;00100010 '"'
+ACAB   62                   ???                ;01100010 'b'
+ACAC   22                   ???                ;00100010 '"'
+ACAD   22                   ???                ;00100010 '"'
+ACAE   62                   ???                ;01100010 'b'
+ACAF   22                   ???                ;00100010 '"'
+ACB0   22                   ???                ;00100010 '"'
+ACB1   26 24                ROL $24
+ACB3   2B                   ???                ;00101011 '+'
+ACB4   02                   ???                ;00000010
+ACB5   18                   CLC
+ACB6   88                   DEY
+ACB7   89                   ???                ;10001001
+ACB8   98                   TYA
+ACB9   8A                   TXA
+ACBA   4C 44 44             JMP $4444
+ACBD   44                   ???                ;01000100 'D'
+ACBE   FF                   ???                ;11111111
+ACBF   09 00                ORA #$00
+ACC1   9F                   ???                ;10011111
+ACC2   E1 A0                SBC ($A0,X)
+ACC4   14                   ???                ;00010100
+ACC5   88                   DEY
+ACC6   89                   ???                ;10001001
+ACC7   9F                   ???                ;10011111
+ACC8   E1 20                SBC ($20,X)
+ACCA   13                   ???                ;00010011
+ACCB   11 31                ORA ($31),Y
+ACCD   48                   PHA
+ACCE   81 8C                STA ($8C,X)
+ACD0   44                   ???                ;01000100 'D'
+ACD1   C4 44                CPY $44
+ACD3   44                   ???                ;01000100 'D'
+ACD4   52                   ???                ;01010010 'R'
+ACD5   26 26                ROL $26
+ACD7   22                   ???                ;00100010 '"'
+ACD8   94 88                STY $88,X
+ACDA   89                   ???                ;10001001
+ACDB   88                   DEY
+ACDC   88                   DEY
+ACDD   A4 44                LDY $44
+ACDF   44                   ???                ;01000100 'D'
+ACE0   FF                   ???                ;11111111
+ACE1   07                   ???                ;00000111
+ACE2   00                   BRK
+ACE3   98         LACE3     TYA
+ACE4   88                   DEY
+ACE5   99 9F E1             STA $E19F,Y
+ACE8   00                   BRK
+ACE9   13                   ???                ;00010011
+ACEA   FC                   ???                ;11111100
+ACEB   20 02 62             JSR $6202
+ACEE   22                   ???                ;00100010 '"'
+ACEF   62                   ???                ;01100010 'b'
+ACF0   7F                   ???                ;01111111
+ACF1   83                   ???                ;10000011
+ACF2   80                   ???                ;10000000
+ACF3   52                   ???                ;01010010 'R'
+ACF4   29 4A                AND #$4A
+ACF6   44                   ???                ;01000100 'D'
+ACF7   CC FF 0C             CPY $0CFF
+ACFA   00                   BRK
+ACFB   A4 45                LDY $45
+ACFD   22                   ???                ;00100010 '"'
+ACFE   66 62                ROR $62
+AD00   22                   ???                ;00100010 '"'
+AD01   62                   ???                ;01100010 'b'
+AD02   22                   ???                ;00100010 '"'
+AD03   94 A4                STY $A4,X
+AD05   52                   ???                ;01010010 'R'
+AD06   91 4A                STA ($4A),Y
+AD08   44                   ???                ;01000100 'D'
+AD09   44                   ???                ;01000100 'D'
+AD0A   44                   ???                ;01000100 'D'
+AD0B   4C 44 52             JMP $5244
+AD0E   22                   ???                ;00100010 '"'
+AD0F   29 14                AND #$14
+AD11   8A                   TXA
+AD12   7F                   ???                ;01111111
+AD13   0B                   ???                ;00001011
+AD14   00                   BRK
+AD15   A4 53                LDY $53
+AD17   F8                   SED
+AD18   68                   PLA
+AD19   04                   ???                ;00000100
+AD1A   C4 C4                CPY $C4
+AD1C   45 22                EOR $22
+AD1E   20 2F 60             JSR $602F
+AD21   31 F2                AND ($F2),Y
+AD23   A8                   TAY
+AD24   50 32                BVC LAD58
+AD26   C2                   ???                ;11000010
+AD27   A1 38                LDA ($38,X)
+AD29   5C                   ???                ;01011100 '\'
+AD2A   D5 27                CMP $27,X
+AD2C   0F                   ???                ;00001111
+AD2D   FA                   ???                ;11111010
+AD2E   84 42                STY $42
+AD30   20 8E F2             JSR $F28E
+AD33   11 1F                ORA ($1F),Y
+AD35   77                   ???                ;01110111 'w'
+AD36   DD 48 FD             CMP $FD48,X
+AD39   A0 EA                LDY #$EA
+AD3B   83                   ???                ;10000011
+AD3C   EF                   ???                ;11101111
+AD3D   01 34                ORA ($34,X)
+AD3F   67                   ???                ;01100111 'g'
+AD40   68                   PLA
+AD41   90 9B                BCC LACDE
+AD43   43                   ???                ;01000011 'C'
+AD44   BD 69 B3             LDA $B369,X
+AD47   DF                   ???                ;11011111
+AD48   ED 07 69             SBC $6907
+AD4B   70 96                BVS LACE3
+AD4D   D4                   ???                ;11010100
+AD4E   40                   RTI
+AD4F   84 8D                STY $8D
+AD51   14                   ???                ;00010100
+AD52   07                   ???                ;00000111
+AD53   E8                   INX
+AD54   59 50 58             EOR $5850,Y
+AD57   3C                   ???                ;00111100 '<'
+AD58   6B         LAD58     ???                ;01101011 'k'
+AD59   50 58                BVC LADB3
+AD5B   44                   ???                ;01000100 'D'
+AD5C   99 5E 82             STA $825E,Y
+AD5F   44                   ???                ;01000100 'D'
+AD60   CA                   DEX
+AD61   82                   ???                ;10000010
+AD62   20 CB 5C             JSR $5CCB
+AD65   5C                   ???                ;01011100 '\'
+AD66   CB                   ???                ;11001011
+AD67   50 45                BVC LADAE
+AD69   4C B5 03             JMP $03B5
+AD6C   DC                   ???                ;11011100
+AD6D   CB                   ???                ;11001011
+AD6E   57                   ???                ;01010111 'W'
+AD6F   FB                   ???                ;11111011
+AD70   FC                   ???                ;11111100
+AD71   61 5E                ADC ($5E,X)
+AD73   F5 17                SBC $17,X
+AD75   DC                   ???                ;11011100
+AD76   2B                   ???                ;00101011 '+'
+AD77   9A                   TXS
+AD78   D2                   ???                ;11010010
+AD79   CF                   ???                ;11001111
+AD7A   46 F0                LSR $F0
+AD7C   65 48                ADC $48
+AD7E   C1 39                CMP ($39,X)
+AD80   C8                   INY
+AD81   D1 0A                CMP ($0A),Y
+AD83   52                   ???                ;01010010 'R'
+AD84   E9 A5                SBC #$A5
+AD86   C3                   ???                ;11000011
+AD87   11 8E                ORA ($8E),Y
+AD89   A2 EB                LDX #$EB
+AD8B   8F                   ???                ;10001111
+AD8C   A4 D4                LDY $D4
+AD8E   34                   ???                ;00110100 '4'
+AD8F   59 EA DF             EOR $DFEA,Y
+AD92   20 7E D8             JSR $D87E
+AD95   16 8D                ASL $8D,X
+AD97   78                   SEI
+AD98   29 83                AND #$83
+AD9A   2B                   ???                ;00101011 '+'
+AD9B   C1 F6                CMP ($F6,X)
+AD9D   44                   ???                ;01000100 'D'
+AD9E   42                   ???                ;01000010 'B'
+AD9F   82                   ???                ;10000010
+ADA0   CB                   ???                ;11001011
+ADA1   BC 50 7D             LDY $7D50,X
+ADA4   18                   CLC
+ADA5   95 1A                STA $1A,X
+ADA7   27                   ???                ;00100111 '''
+ADA8   68                   PLA
+ADA9   B3                   ???                ;10110011
+ADAA   D5 BE                CMP $BE,X
+ADAC   40                   RTI
+ADAD   FD B0 2D             SBC $2DB0,X
+ADB0   1A                   ???                ;00011010
+ADB1   F0 53                BEQ LAE06
+ADB3   06 57      LADB3     ASL $57
+ADB5   82                   ???                ;10000010
+ADB6   2E 93 5B             ROL $5B93
+ADB9   0C                   ???                ;00001100
+ADBA   06 44                ASL $44
+ADBC   C2                   ???                ;11000010
+ADBD   A4 F1                LDY $F1
+ADBF   16 78                ASL $78,X
+ADC1   93                   ???                ;10010011
+ADC2   0D 03 27             ORA $2703
+ADC5   09 2B                ORA #$2B
+ADC7   F1 4C                SBC ($4C),Y
+ADC9   70 2A                BVS LADF5
+ADCB   38                   SEC
+ADCC   1A                   ???                ;00011010
+ADCD   8D 09 42             STA $4209
+ADD0   72                   ???                ;01110010 'r'
+ADD1   60                   RTS
+ADD2   C9 90                CMP #$90
+ADD4   AB                   ???                ;10101011
+ADD5   D9 2C C3             CMP $C32C,Y
+ADD8   1A                   ???                ;00011010
+ADD9   2A                   ROL A
+ADDA   88                   DEY
+ADDB   24 42                BIT $42
+ADDD   F9 4E C5             SBC $C54E,Y
+ADE0   20 7B 05             JSR $057B
+ADE3   44                   ???                ;01000100 'D'
+ADE4   8D 18 22             STA $2218
+ADE7   58                   CLI
+ADE8   B8                   CLV
+ADE9   66 19                ROR $19
+ADEB   89                   ???                ;10001001
+ADEC   03                   ???                ;00000011
+ADED   51 A1                EOR ($A1),Y
+ADEF   BB                   ???                ;10111011
+ADF0   DF                   ???                ;11011111
+ADF1   48                   PHA
+ADF2   83                   ???                ;10000011
+ADF3   17                   ???                ;00010111
+ADF4   43                   ???                ;01000011 'C'
+ADF5   32         LADF5     ???                ;00110010 '2'
+ADF6   37                   ???                ;00110111 '7'
+ADF7   28                   PLP
+ADF8   66 B8                ROR $B8
+ADFA   E4 17                CPX $17
+ADFC   AA                   TAX
+ADFD   D9 E4 4D             CMP $4DE4,Y
+AE00   09 9B                ORA #$9B
+AE02   05 21                ORA $21
+AE04   30 79                BMI $AE7F
+AE06   84 B8      LAE06     STY $B8
+AE08   34                   ???                ;00110100 '4'
+AE09   40                   RTI
+AE0A   1F                   ???                ;00011111
+AE0B   0C                   ???                ;00001100
+AE0C   3C                   ???                ;00111100 '<'
+AE0D   9A                   TXS
+AE0E   45 1F                EOR $1F
+AE10   50 64                BVC $AE76
+AE12   41 F1                EOR ($F1,X)
+AE14   AD D0 E9             LDA $E9D0
+AE17   44                   ???                ;01000100 'D'
+AE18   93                   ???                ;10010011
+AE19   9B                   ???                ;10011011
+AE1A   06 C5                ASL $C5
+AE1C   38                   SEC
+AE1D   58                   CLI
+AE1E   82                   ???                ;10000010
+                            .END
+
+;auto-generated symbols and labels
+ LA912      $A912
+ LA816      $A816
+ LA832      $A832
+ LA8C9      $A8C9
+ LA8A1      $A8A1
+ LA9F2      $A9F2
+ LA8F9      $A8F9
+ LA844      $A844
+ LA90B      $A90B
+ LA903      $A903
+ LA948      $A948
+ LA974      $A974
+ LA981      $A981
+ LA8FE      $A8FE
+ LA9DC      $A9DC
+ LAA07      $AA07
+ LA9F7      $A9F7
+ LA9AD      $A9AD
+ LA99A      $A99A
+ LA9BA      $A9BA
+ LAA3D      $AA3D
+ LAA34      $AA34
+ LAA7C      $AA7C
+ LAAA7      $AAA7
+ LAA47      $AA47
+ LAAEE      $AAEE
+ LAAF5      $AAF5
+ LAB04      $AB04
+ LAAF2      $AAF2
+ LAB94      $AB94
+ LAB6D      $AB6D
+ LAB92      $AB92
+ LAC16      $AC16
+ LABDA      $ABDA
+ LAC27      $AC27
+ LAD58      $AD58
+ LACDE      $ACDE
+ LACE3      $ACE3
+ LADB3      $ADB3
+ LADAE      $ADAE
+ LAE06      $AE06
+ LADF5      $ADF5

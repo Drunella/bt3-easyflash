@@ -1,0 +1,229 @@
+                            * = $0300
+0300   78         L0300     SEI
+0301   D8                   CLD
+0302   A9 08                LDA #$08
+0304   8D 00 18             STA $1800      ; serial bus
+0307   A9 60                LDA #$60
+0309   8D 00 03             STA L0300      ; rts at address $0300
+030C   20 00 03             JSR L0300
+030F   BA                   TSX            ; sp in x
+0310   BD 00 01             LDA $0100,X    ; identify current buffer
+0313   85 15                STA $15
+0315   A0 00                LDY #$00
+0317   84 14                STY $14
+0319   B1 14      L0319     LDA ($14),Y    ; copy content to buffer $0700
+031B   99 00 07             STA $0700,Y
+031E   C8                   INY
+031F   D0 F8                BNE L0319
+0321   4C 24 07             JMP $0724      ; continue execution in buffer $0700
+; code copied from original buffer
+0724   A2 0E      L0724     LDX #$0E
+0726   BD 4D 07   L0726     LDA $074D,X    ; copy data (15 bytes to zero page)
+0729   95 00                STA $00,X
+072B   CA                   DEX
+072C   10 F8                BPL L0726
+072E   58                   CLI            ; let commands run
+072F   A5 00      L072F     LDA $00
+0731   05 01                ORA $01
+0733   05 02                ORA $02
+0735   05 03                ORA $03
+0737   30 F6                BMI L072F      ; wait
+0739   78                   SEI
+073A   A9 00                LDA #$00
+073C   85 D2                STA $D2        ; No buffer assigned to channel
+073E   A9 12                LDA #$12
+0740   85 22                STA $22        ; set current track to 18
+0742   A9 00                LDA #$00
+0744   85 30                STA $30        ; pointer to current buffer: $0200
+0746   A9 02                LDA #$02
+0748   85 31                STA $31
+074A   4C 00 03             JMP $0300      ; run code loaded in buffer $0300
+
+074D   80    ; $0000: command buffer 0: read sector
+074E   80    ; $0001: command buffer 1: read sector
+074F   80    ; $0002: command buffer 2: read sector
+0750   80    ; $0003: command buffer 3: read sector
+0751   00    ; $0004: command buffer 4: nop
+0752   00    ; $0005: 
+0753   12    ; $0006: buffer 0: track register (18)
+0754   0E    ; $0007: buffer 0: sector register (14)
+0755   12    ; $0008: buffer 1: track register (18)
+0756   0F    ; $0009: buffer 1: sector register (15)
+0757   12    ; $000a: buffer 2: track register (18)
+0758   10    ; $000b: buffer 2: sector register (16)
+0759   12    ; $000c: buffer 3: track register (18)
+075A   11    ; $000d: buffer 3: sector register (17)
+
+075B   00
+075C   00                   BRK
+075D   00                   BRK
+075E   00                   BRK
+075F   00                   BRK
+0760   00                   BRK
+0761   00                   BRK
+0762   00                   BRK
+0763   00                   BRK
+0764   00                   BRK
+0765   00                   BRK
+0766   00                   BRK
+0767   00                   BRK
+0768   00                   BRK
+0769   00                   BRK
+076A   00                   BRK
+076B   00                   BRK
+076C   00         L076C     BRK
+076D   00                   BRK
+076E   00                   BRK
+076F   00                   BRK
+0770   00                   BRK
+0771   00                   BRK
+0772   00                   BRK
+0773   00                   BRK
+0774   00                   BRK
+0775   00                   BRK
+0776   00                   BRK
+0777   00                   BRK
+0778   00                   BRK
+0779   00                   BRK
+077A   00                   BRK
+077B   00                   BRK
+077C   00                   BRK
+077D   00                   BRK
+077E   00                   BRK
+077F   00                   BRK
+0780   00                   BRK
+0781   00                   BRK
+0782   00                   BRK
+0783   00                   BRK
+0784   00                   BRK
+0785   00                   BRK
+0786   00                   BRK
+0787   00                   BRK
+0788   00                   BRK
+0789   00                   BRK
+078A   00                   BRK
+078B   00                   BRK
+078C   00                   BRK
+078D   00                   BRK
+078E   00                   BRK
+078F   00                   BRK
+0790   00                   BRK
+0791   00                   BRK
+0792   00                   BRK
+0793   00                   BRK
+0794   00                   BRK
+0795   00                   BRK
+0796   00                   BRK
+0797   00                   BRK
+0798   00                   BRK
+0799   00                   BRK
+079A   00                   BRK
+079B   00                   BRK
+079C   00                   BRK
+079D   00                   BRK
+079E   00                   BRK
+079F   00                   BRK
+07A0   00                   BRK
+07A1   00                   BRK
+07A2   00                   BRK
+07A3   00                   BRK
+07A4   00                   BRK
+07A5   00                   BRK
+07A6   00                   BRK
+07A7   00                   BRK
+07A8   00                   BRK
+07A9   00                   BRK
+07AA   00                   BRK
+07AB   00                   BRK
+07AC   00                   BRK
+07AD   00                   BRK
+07AE   00                   BRK
+07AF   00                   BRK
+07B0   00                   BRK
+07B1   00                   BRK
+07B2   00                   BRK
+07B3   00                   BRK
+07B4   00                   BRK
+07B5   00                   BRK
+07B6   00                   BRK
+07B7   00                   BRK
+07B8   00                   BRK
+07B9   00                   BRK
+07BA   00                   BRK
+07BB   00                   BRK
+07BC   00                   BRK
+07BD   00                   BRK
+07BE   00                   BRK
+07BF   00                   BRK
+07C0   00                   BRK
+07C1   00                   BRK
+07C2   00                   BRK
+07C3   00                   BRK
+07C4   00                   BRK
+07C5   00                   BRK
+07C6   00                   BRK
+07C7   00                   BRK
+07C8   00                   BRK
+07C9   00                   BRK
+07CA   00                   BRK
+07CB   00                   BRK
+07CC   00                   BRK
+07CD   00                   BRK
+07CE   00                   BRK
+07CF   00                   BRK
+07D0   00                   BRK
+07D1   00                   BRK
+07D2   00                   BRK
+07D3   00                   BRK
+07D4   00                   BRK
+07D5   00                   BRK
+07D6   00                   BRK
+07D7   00                   BRK
+07D8   00                   BRK
+07D9   00                   BRK
+07DA   00                   BRK
+07DB   00                   BRK
+07DC   00                   BRK
+07DD   00                   BRK
+07DE   00                   BRK
+07DF   00                   BRK
+07E0   00                   BRK
+07E1   00                   BRK
+07E2   00                   BRK
+07E3   00                   BRK
+07E4   00                   BRK
+07E5   00                   BRK
+07E6   00                   BRK
+07E7   00                   BRK
+07E8   00                   BRK
+07E9   00                   BRK
+07EA   00                   BRK
+07EB   00                   BRK
+07EC   00                   BRK
+07ED   00                   BRK
+07EE   00                   BRK
+07EF   00                   BRK
+07F0   00                   BRK
+07F1   00                   BRK
+07F2   00                   BRK
+07F3   00                   BRK
+07F4   00                   BRK
+07F5   00                   BRK
+07F6   00                   BRK
+07F7   00                   BRK
+07F8   00                   BRK
+07F9   00                   BRK
+07FA   00                   BRK
+07FB   00                   BRK
+07FC   00                   BRK
+07FD   00                   BRK
+07FE   00                   BRK
+07FF   00                   BRK
+                            .END
+
+;auto-generated symbols and labels
+ L0719      $0719
+ L0724      $0724
+ L0726      $0726
+ L072F      $072F
+ L076C      $076C

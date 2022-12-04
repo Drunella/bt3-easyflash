@@ -119,6 +119,7 @@
 66F8   A1 9B                LDA ($9B,X)
 66FA   20 B9 67             JSR L67B9
 66FD   4C 8D 66             JMP L668D
+
 6700   20 5C 68   L6700     JSR L685C
 6703   98                   TYA
 6704   48                   PHA
@@ -147,6 +148,7 @@
 6739   A9 00      L6739     LDA #$00
 673B   8D D2 6A             STA $6AD2
 673E   60                   RTS
+
 673F   38         L673F     SEC
 6740   BD 97 67             LDA $6797,X
 6743   8D D4 6A             STA $6AD4
@@ -176,6 +178,7 @@
 6789   20 AD 67             JSR L67AD
 678C   18                   CLC
 678D   90 AA                BCC L6739
+
 678F   00                   BRK
 6790   9B                   ???                ;10011011
 6791   00                   BRK
@@ -291,6 +294,7 @@
 6859   F8                   SED
 685A   78                   SEI
 685B   00                   BRK
+
 685C   A0 07      L685C     LDY #$07
 685E   AD D2 6A             LDA $6AD2
 6861   D0 0A                BNE L686D
@@ -300,6 +304,7 @@
 686A   88                   DEY
 686B   10 F8                BPL L6865
 686D   60         L686D     RTS
+
 686E   00                   BRK
 686F   04                   ???                ;00000100
 6870   0D 17 1D             ORA $1D17
@@ -385,7 +390,9 @@
 690F   A9 00                LDA #$00
 6911   8D D2 6A             STA $6AD2
 6914   4C CA 81   L6914     JMP L81CA
-6917   20 40 6A   L6917     JSR L6A40
+
+; -- ?? ----------------------------------------------------
+6917   20 40 6A   L6917     JSR L6A40  ; backup zero page
 691A   AD 57 BE             LDA $BE57
 691D   4A                   LSR A
 691E   85 47                STA $47
@@ -395,7 +402,7 @@
 6926   E6 46                INC $46
 6928   D0 02                BNE L692C
 692A   E6 47                INC $47
-692C   20 A4 6A   L692C     JSR L6AA4
+692C   20 A4 6A   L692C     JSR L6AA4  ; load data
 692F   B0 76                BCS L69A7
 6931   AD 4B BE             LDA $BE4B
 6934   85 44                STA $44
@@ -455,7 +462,7 @@
 69AF   CE 4E BE             DEC $BE4E
 69B2   CE 4E BE             DEC $BE4E
 69B5   D0 DC                BNE L6993
-69B7   20 A4 6A   L69B7     JSR L6AA4
+69B7   20 A4 6A   L69B7     JSR L6AA4  ; load data
 69BA   AD 4B BE             LDA $BE4B
 69BD   85 44                STA $44
 69BF   AD 4C BE             LDA $BE4C
@@ -567,10 +574,10 @@
 6A78   85 47                STA $47
 6A7A   68                   PLA
 6A7B   85 46                STA $46
-6A7D   20 A4 6A             JSR L6AA4
+6A7D   20 A4 6A             JSR L6AA4  ; load data
 6A80   4C 4B 6A             JMP L6A4B
 
-; -- save data -----------------------------------------------------------
+; -- save data (yx: sector number) ---------------------------------------
 6A83   8A                   TXA
 6A84   48                   PHA
 6A85   98                   TYA
@@ -791,6 +798,7 @@
 6C07   41 2C                EOR ($2C,X)
 6C09   6F                   ???                ;01101111 'o'
 6C0A   C0 00                CPY #$00
+
 6C0C   90 B8                BCC L6BC6
 6C0E   E9 01      L6C0E     SBC #$01
 6C10   91 36                STA ($36),Y
@@ -901,6 +909,7 @@
 6CF2   85 33                STA $33
 6CF4   38                   SEC
 6CF5   60                   RTS
+
 6CF6   20 07 74             JSR L7407
 6CF9   F5 92                SBC $92,X
 6CFB   F0 D9                BEQ L6CD6
@@ -910,6 +919,7 @@
 6D02   B1 7C                LDA ($7C),Y
 6D04   3F                   ???                ;00111111 '?'
 6D05   C0 00                CPY #$00
+
 6D07   20 0F 8B             JSR L8B0F
 6D0A   52                   ???                ;01010010 'R'
 6D0B   A0 01                LDY #$01
@@ -939,6 +949,7 @@
 6D35   33                   ???                ;00110011 '3'
 6D36   47                   ???                ;01000111 'G'
 6D37   00                   BRK
+
 6D38   4C 0D 6F             JMP L6F0D
 6D3B   8A         L6D3B     TXA
 6D3C   20 44 6D             JSR L6D44
@@ -991,6 +1002,7 @@
 6D96   66 FF                ROR $FF
 6D98   80                   ???                ;10000000
 6D99   00                   BRK
+
 6D9A   20 0F 8B             JSR L8B0F
 6D9D   52                   ???                ;01010010 'R'
 6D9E   A0 01                LDY #$01
@@ -1016,6 +1028,7 @@
 6DC3   2A                   ROL A
 6DC4   99 9B FE             STA $FE9B,Y
 6DC7   00                   BRK
+
 6DC8   A9 00                LDA #$00
 6DCA   20 6F 87             JSR L876F
 6DCD   B0 3A                BCS L6E09
@@ -1035,6 +1048,7 @@
 6DEA   F5 24                SBC $24,X
 6DEC   60                   RTS
 6DED   BD C1 00             LDA $00C1,X
+
 6DF0   68                   PLA
 6DF1   20 AB FA             JSR $FAAB
 6DF4   85 5D                STA $5D
@@ -1054,6 +1068,7 @@
 6E11   45 86                EOR $86
 6E13   94 B0                STY $B0,X
 6E15   00                   BRK
+
 6E16   4C 0D 6F             JMP L6F0D
 6E19   85 53      L6E19     STA $53
 6E1B   AA                   TAX
@@ -1110,6 +1125,7 @@
 6E72   33                   ???                ;00110011 '3'
 6E73   FC                   ???                ;11111100
 6E74   00                   BRK
+
 6E75   20 0F 8B             JSR L8B0F
 6E78   52         L6E78     ???                ;01010010 'R'
 6E79   A0 9B                LDY #$9B
@@ -1164,6 +1180,7 @@
 6ED7   06 63                ASL $63
 6ED9   38                   SEC
 6EDA   00                   BRK
+
 6EDB   90 30                BCC L6F0D
 6EDD   20 5B EC   L6EDD     JSR $EC5B
 6EE0   A0 25                LDY #$25
@@ -1186,6 +1203,7 @@
 6EFD   F5 3A                SBC $3A,X
 6EFF   72                   ???                ;01110010 'r'
 6F00   E0 00                CPX #$00
+
 6F02   90 09                BCC L6F0D
 6F04   A6 58      L6F04     LDX $58
 6F06   BD 2A ED             LDA $ED2A,X
@@ -1335,6 +1353,8 @@
 6FFE   8A                   TXA
 6FFF   A2 74                LDX #$74
 7001   A0 DA                LDY #$DA
+
+; -- ?? ----------------------------------------- (maybe write text?)
 7003   20 6F 70             JSR L706F
 7006   4C 19 74             JMP L7419
 7009   27                   ???                ;00100111 '''
@@ -1399,6 +1419,8 @@
 7068   F1 1E                SBC ($1E),Y
 706A   E9 89                SBC #$89
 706C   4E 34 40   L706C     LSR $4034
+
+; -- ?? -----------------------------------------
 706F   EC 00 BA   L706F     CPX $BA00
 7072   D0 05      L7072     BNE L7079
 7074   CC 01 BA             CPY $BA01
@@ -1417,6 +1439,7 @@
 708D   BC 01 BB             LDY $BB01,X
 7090   AA                   TAX
 7091   60                   RTS
+
 7092   8E 03 75   L7092     STX L7503
 7095   8C 04 75             STY $7504
 7098   A9 00                LDA #$00
@@ -1434,11 +1457,14 @@
 70B9   D0 FB                BNE L70B6
 70BB   F0 E5                BEQ L70A2
 70BD   60         L70BD     RTS
+
+; -- store and increase address -----------------
 70BE   8D FF FF   L70BE     STA $FFFF
 70C1   EE BF 70             INC $70BF
 70C4   D0 03                BNE L70C9
 70C6   EE C0 70             INC $70C0
 70C9   60         L70C9     RTS
+
 70CA   C8         L70CA     INY
 70CB   C8                   INY
 70CC   B1 36                LDA ($36),Y
@@ -1785,7 +1811,10 @@
 7314   00                   BRK
 7315   05 3B                ORA $3B
 7317   A9 10                LDA #$10
-7319   2C A9 00             BIT $00A9
+7319   2C 
+
+; -- enter text ?? ------------------------------
+731A   A9 00                LDA #$00
 731C   8D 37 73             STA $7337
 731F   20 20 85             JSR L8520
 7322   A2 0F                LDX #$0F
@@ -1912,19 +1941,21 @@
 7404   10 F9                BPL L73FF
 7406   60                   RTS
 
-7407   20 73 86   L7407     JSR L8673
-740A   68         L740A     PLA
+; -- ?? ---------------------------------------------------- (maybe enter text?)
+7407   20 73 86   L7407     JSR L8673            ; call clear screen or copy to screen (8673)
+740A   68         L740A     PLA                  ; get return address from stack
 740B   AA                   TAX
-740C   68                   PLA
+740C   68                   PLA                  ; get return address from stack
 740D   A8                   TAY
-740E   E8                   INX
+740E   E8                   INX                  ; and increase by one
 740F   D0 01                BNE L7412
 7411   C8                   INY
 7412   20 19 74   L7412     JSR L7419
 7415   18                   CLC
-7416   6C 03 75             JMP (L7503)
-7419   8E 03 75   L7419     STX L7503
-741C   8C 04 75             STY $7504
+7416   6C 03 75             JMP (L7503)          ; RTS
+
+7419   8E 03 75   L7419     STX L7503            ; store return address
+741C   8C 04 75             STY $7504            ; store return address
 741F   20 65 74             JSR L7465
 7422   20 6F 74   L7422     JSR L746F
 7425   F0 36                BEQ L745D
@@ -1954,7 +1985,7 @@
 745D   AE 03 75   L745D     LDX L7503
 7460   AC 04 75             LDY $7504
 7463   60                   RTS
-7464   00                   BRK
+7464   00                   BRK                  ; variable
 
 ; -- ??? -----------------------------------------------------------------
 7465   A2 FF      L7465     LDX #$FF
@@ -1988,6 +2019,7 @@
 7496   29 DF                AND #$DF
 7498   09 00      L7498     ORA #$00
 749A   60                   RTS
+
 749B   A0 E1                LDY #$E1
 749D   E2                   ???                ;11100010
 749E   E3         L749E     ???                ;11100011
@@ -2054,7 +2086,7 @@
 74FC   A9 00                LDA #$00
 74FE   24 B7      L74FE     BIT $B7
 7500   10 11                BPL L7513
-7502   AE FF FF             LDX $FFFF
+7502   AE FF FF             LDX $FFFF            ; dynamic code and variable
 7505   EE 03 75             INC L7503
 7508   D0 03                BNE L750D
 750A   EE 04 75             INC $7504
@@ -2767,6 +2799,7 @@
 7A08   0E 0C 7A   L7A08     ASL $7A0C
 7A0B   60                   RTS
 7A0C   00                   BRK
+
 7A0D   A0 02      L7A0D     LDY #$02
 7A0F   18                   CLC
 7A10   B1 12                LDA ($12),Y
@@ -2790,6 +2823,8 @@
 7A38   2C E8 7A             BIT $7AE8
 7A3B   30 E0                BMI L7A1D
 7A3D   60         L7A3D     RTS
+
+; -- some kind of jump table
 7A3E   F4                   ???                ;11110100
 7A3F   7A                   ???                ;01111010 'z'
 7A40   F7                   ???                ;11110111
@@ -2897,7 +2932,9 @@
 7AE4   68                   PLA
 7AE5   85 D1                STA $D1
 7AE7   60                   RTS
-7AE8   00                   BRK
+7AE8   00                   BRK            ; variable
+
+
 7AE9   A0 00      L7AE9     LDY #$00
 7AEB   B1 D1                LDA ($D1),Y
 7AED   E6 D1                INC $D1
@@ -2979,6 +3016,7 @@
 7B78   85 0C      L7B78     STA $0C
 7B7A   A9 00                LDA #$00
 7B7C   4C 00 66             JMP L6600
+
 7B7F   46 D3                LSR $D3
 7B81   20 E9 7A             JSR L7AE9
 7B84   18                   CLC
@@ -2991,6 +3029,7 @@
 7B92   A6 08                LDX $08
 7B94   D0 06                BNE L7B9C
 7B96   20 00 A8             JSR $A800
+
 7B99   4C 9F 7B             JMP L7B9F
 7B9C   20 00 AD   L7B9C     JSR $AD00
 7B9F   E6 2D      L7B9F     INC $2D
@@ -4425,7 +4464,7 @@
 8670   85 22      L8670     STA $22
 8672   60                   RTS
 
-; -- clear screen or copy to screen
+; -- clear screen or copy to screen (8673)
 8673   20 10 8C   L8673     JSR L8C10
 8676   A2 05                LDX #$05
 8678   A0 48      L8678     LDY #$48
