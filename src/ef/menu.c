@@ -22,7 +22,7 @@
 
 #include <stdbool.h>
 #include <conio.h>
-// #include <peekpoke.h>
+#include <stdio.h>
 
 #include "util.h"
 #include "menu_include.h"
@@ -51,6 +51,15 @@ static void draw_startmenu(void) {
           "\r\n");
 }
 
+static void draw_version()
+{
+    char text[8];
+    uint8_t n;
+    
+    n = sprintf(text, "v%d.%d", get_version_major(), get_version_minor());
+    cputsxy(39-n, 24, text);
+}
+
 
 void main(void)
 {
@@ -76,6 +85,7 @@ void main(void)
             menu_option('E', "Character editor");
             cputs("\r\n");
             menu_option('Q', "Quit to basic");
+            draw_version();
         }
         
         repaint = false;

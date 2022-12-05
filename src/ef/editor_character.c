@@ -24,12 +24,54 @@
 #include "editor.h"
 
 
-//bool character_changed = false;
+// restriction:
+// 0x10: spellcaster
+// 0x20: rogue
+// 0x40: hunter
+transition_t common_transitions[] = {
+//    restr,  up  right down  left
+    { 0x00, 0x00, 0x00, 0x00, 0x00 },  // last position
+    { 0x00, 0x00, 0x06, 0x02, 0x00 },  //  1, str
+    { 0x00, 0x01, 0x07, 0x03, 0x00 },  //  2, dex
+    { 0x00, 0x02, 0x07, 0x04, 0x00 },  //  3, luck
+    { 0x00, 0x03, 0x07, 0x05, 0x00 },  //  4, exp
+    { 0x00, 0x04, 0x08, 0x08, 0x00 },  //  5, gold
+    { 0x00, 0x00, 0x0b, 0x07, 0x01 },  //  6, max cond
+    { 0x00, 0x06, 0x0c, 0x08, 0x02 },  //  7, max sppt
+    { 0x00, 0x07, 0x11, 0x09, 0x05 },  //  8, int
+    { 0x00, 0x08, 0x12, 0x1e, 0x05 },  //  9, con
+    { 0x00, 0x00, 0x00, 0x0b, 0x06 },  //  a, item 1
+    { 0x00, 0x0a, 0x00, 0x0c, 0x06 },  //  b, item 2
+    { 0x00, 0x0b, 0x00, 0x0d, 0x07 },  //  c, item 3
+    { 0x00, 0x0c, 0x00, 0x0e, 0x07 },  //  d, item 4
+    { 0x00, 0x0d, 0x00, 0x0f, 0x07 },  //  e, item 5
+    { 0x00, 0x0e, 0x00, 0x10, 0x08 },  //  f, item 6
+    { 0x00, 0x0f, 0x00, 0x11, 0x08 },  // 10, item 7
+    { 0x00, 0x10, 0x00, 0x12, 0x08 },  // 11, item 8
+    { 0x00, 0x11, 0x00, 0x13, 0x09 },  // 12, item 9
+    { 0x00, 0x12, 0x00, 0x14, 0x09 },  // 13, item 10
+    { 0x00, 0x13, 0x00, 0x15, 0x09 },  // 14, item 11
+    { 0x00, 0x14, 0x00, 0x16, 0x1e },  // 15, item 12
+    { 0x10, 0x15, 0x1b, 0x17, 0x20 },  // 16, conj spells
+    { 0x10, 0x16, 0x1c, 0x18, 0x20 },  // 17, sorc spells
+    { 0x10, 0x17, 0x1d, 0x19, 0x20 },  // 18, arch spells
+    { 0x10, 0x18, 0x1d, 0x1a, 0x18 },  // 19, chrono spells
+    { 0x10, 0x19, 0x00, 0x00, 0x00 },  // 1a, misc spells
+    { 0x10, 0x15, 0x00, 0x1c, 0x16 },  // 1b, mag spells
+    { 0x10, 0x1b, 0x00, 0x1d, 0x17 },  // 1c, wiz spells
+    { 0x10, 0x1c, 0x00, 0x19, 0x18 },  // 1d, geo spells
+    { 0x60, 0x09, 0x15, 0x1f, 0x00 },  // 1e, disarm, critical
+    { 0x20, 0x1e, 0x00, 0x20, 0x00 },  // 1f, ident
+    { 0x20, 0x1f, 0x00, 0x00, 0x16 },  // 20, hide
+    
+};
+
 
 
 void draw_editor_characterdisplay(character_info_t* content)
 {
     uint8_t n;
+    
     textcolor(COLOR_GRAY2);
     chlinexy(1, 0, 38); // top
     cputcxy(19,0, 0xf2);
@@ -49,176 +91,403 @@ void draw_editor_characterdisplay(character_info_t* content)
     cputcxy(0, 23, 0xed);  // lower left
     cputcxy(39, 23, 0xfd);  // lower right
     
-    cputsxy(21,  1, "(  )Inventory");
+    cputsxy(21, 1, "Inventory");
+    cputcxy(19, 2, 0xeb); chlinexy(20, 2, 19); cputcxy(39, 2, 0xf3);
+    cputcxy(19,15, 0xeb); chlinexy(20,15, 19); cputcxy(39,15, 0xf3);
 
-    cputsxy( 1,  1, "Race:"); cputsxy(6,1, get_race_name(content->playerrace));
-    cputsxy( 1,  2, "Clss:"); cputsxy(6,2, get_class_name(content->playerclass));
+    cputsxy( 1, 1, "Race:"); cputsxy(6,1, get_race_name(content->playerrace));
+    cputsxy( 1, 2, "Clss:"); cputsxy(6,2, get_class_name(content->playerclass));
     cputcxy( 0,3, 0xeb); chlinexy(1, 3, 18); cputcxy(19,3, 0xf3);
-    //cputsxy( 1,  4, "\x12\x05S\x92\x9btr :");
-    cputsxy( 1,  4, "Str :");
-    cputsxy(10,  4, "Int :");
-    cputsxy( 1,  5, "Dex :");
-    cputsxy(10,  5, "Con :");
-    cputsxy( 1,  6, "Luck:");
-    cputsxy( 1,  7, "Exp :");
-    cputsxy( 1,  8, "Gold:");
-    cputsxy( 1,  9, "Lvl :");
+    cputsxy( 1, 4, "Str :");
+    cputsxy(10, 4, "Int :");
+    cputsxy( 1, 5, "Dex :");
+    cputsxy(10, 5, "Con :");
+    cputsxy( 1, 6, "Luck:");
+    cputsxy( 1, 7, "Exp :");
+    cputsxy( 1, 8, "Gold:");
+    cputsxy( 1, 9, "Lvl :");
+    cputsxy( 1,10, "Cond:");
+    cputsxy( 1,11, "SpPt:");
+    cputsxy( 1,12, "AC  :");
+    cputsxy( 1,13, "Stat:");
+    cputcxy( 0,14, 0xeb); chlinexy(1, 14, 18); cputcxy(19,14, 0xf3);
 
-    cputcxy( 0, 10, 0xeb); chlinexy(1,10, 18); cputcxy(19,10, 0xf3);
-    cputsxy( 1, 11, "Disarm:");
-    cputsxy( 1, 12, "Ident :");
-    cputsxy( 1, 13, "Hide  :");
-    cputcxy( 0, 10, 0xeb); chlinexy(1,10, 18); cputcxy(19,10, 0xf3);
-    cputsxy( 1, 11, "Disarm:");
-    cputsxy( 1, 12, "Ident :");
-    cputsxy( 1, 13, "Hide  :");
-
-    textcolor(COLOR_WHITE);
-    cputsxy(22,1, "F1");
-    cputcxy( 1,4, 'S');
-    cputcxy(10,4, 'I');
-    cputcxy( 1,5, 'D');
-    cputcxy(10,5, 'C');
-    cputcxy( 1,6, 'L');
-    cputcxy( 2,7, 'x');
-    cputcxy( 1,8, 'G');
-    if (content->playerclass == 0x05) {
-        cputcxy( 4,11, 'a');
-        cputcxy( 3,12, 'e');
-        cputcxy( 1,13, 'H');
-    
+    // spells for spellcaster
+    cputcxy(19,17, 0xeb); chlinexy(20,17, 19); cputcxy(39,17, 0xf3);
+    cputsxy(21, 16, "Spells:");
+    if (content->playerclass==1 || content->playerclass==2 || content->playerclass==3 ||
+        content->playerclass==4 || content->playerclass==10 || content->playerclass==11 ||
+        content->playerclass==12) {
+        cputsxy(20, 18, "Con:      Mag:");
+        cputsxy(20, 19, "Sor:      Wiz:");
+        cputsxy(20, 20, "Arc:      Geo:");
+        cputsxy(20, 21, "Chrono:");
+        cputsxy(20, 22, "Misc:");
     }
-    textcolor(COLOR_GRAY2);
 
-    cputsxy( 1, 14, "Armor :");
-    cputsxy( 1, 15, "Status:");
+    // skills for rogue    
+    if (content->playerclass == 5) {
+        cputsxy( 1, 15, "Disarm:"); 
+        cputsxy( 1, 16, "Ident :");
+        cputsxy( 1, 17, "Hide  :");
 
-    cputsxy( 1, 17, "Progress:");
+    }
 
+    // skills for bard
+    if (content->playerclass == 6) {
+        cputsxy( 1, 15, "Songs :"); 
+
+    }
+
+    // skills for monk and hunter
+    if (content->playerclass==8) {
+        cputsxy( 1, 15, "Critic:"); 
+
+    }
 }
 
-void draw_editor_charactercontent(character_info_t* content)
+bool process_field_8u(uint8_t* data, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
 {
-    uint8_t i, f;
-    item_t* item;
-    
-    textcolor(COLOR_GRAY2);
-
-    gotoxy( 6, 4); cprintf("%3u", content->strength);
-    gotoxy(15, 4); cprintf("%3u", content->intelligence);
-    gotoxy( 6, 5); cprintf("%3u", content->dexterity);
-    gotoxy(15, 5); cprintf("%3u", content->constitution);
-    gotoxy( 6, 6); cprintf("%3u", content->luck);
-
-    gotoxy( 7, 7); cprintf("%lu", content->experience);
-    gotoxy( 7, 8); cprintf("%lu", content->gold);
-    gotoxy( 7, 9); cprintf("%u", content->level);
-    if (content->playerclass == 0x05) {
-        gotoxy( 8, 11); cprintf("%3u", content->classdata[0]); // 0x54: disarm
-        gotoxy( 8, 12); cprintf("%3u", content->classdata[1]); // 0x55: identify
-        gotoxy( 8, 13); cprintf("%3u", content->classdata[2]); // 0x56: hide
-    } else {
-        cputcxy( 8, 11, '-');
-        cputcxy( 8, 12, '-');
-        cputcxy( 8, 13, '-');
+    bool changed = false;
+    uint32_t v = (uint32_t)*data;
+    if (edit && selected) {
+        changed = getunumberxy(x, y, len, &v);
+        if (changed) *data = (uint8_t)v;
     }
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    cclearxy(x, y, len);
+    gotoxy(x, y); cprintf("%u", *data);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
 
-    for (i=0; i<12; i++) {
-        item = &content->items[i];
-        cclearxy(20, 3+i, 19);
-        if (item->type != 0) {
-            if (item->flags & 0x01) {
-                cputcxy(20,3+i, 0xfa); // equipped
-            }
-            cputsxy(21, 3+i, get_item_name(item->type)); // name
-            // uses is type dependant
-            f = get_item_flags(item->type);
-            if (f == 1) {
-                if (item->uses<0xff) { // uses
-                    gotoxy(35, 3+i);
-                    cprintf("#%d", item->uses);
-                }
+bool process_field_8s(int8_t* data, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
+{
+    bool changed = false;
+    int32_t v = (int32_t)*data;
+    if (edit && selected) {
+        changed = getsnumberxy(x, y, len, &v);
+        if (changed) *data = (int8_t)v;
+    }
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    cclearxy(x, y, len);
+    gotoxy(x, y); cprintf("%d", *data);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
+
+bool process_field_16u(uint16_t* data, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
+{
+    bool changed = false;
+    uint32_t v = (uint32_t)*data;
+    if (edit && selected) {
+        changed = getunumberxy(x, y, len, &v);
+        if (changed) *data = (uint16_t)v;
+    }
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    cclearxy(x, y, len);
+    gotoxy(x, y); cprintf("%u", *data);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
+
+bool process_field_32u(uint32_t* data, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
+{
+    bool changed = false;
+    uint32_t v = *data;
+    if (edit && selected) {
+        changed = getunumberxy(x, y, len, &v);
+        if (changed) *data = v;
+    }
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    cclearxy(x, y, len);
+    gotoxy(x, y); cprintf("%lu", *data);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
+
+bool process_field_item(item_t* item, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
+{
+    uint8_t n, f;
+    bool changed = false;
+    if (edit && selected) {
+        // changed = getunumberxy(x, y, len, &v);
+        // ### edit item ###
+        // if (changed) *data = v;
+    }
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    if (item->type != 0) {
+        cclearxy(x, y, len);
+        if (item->flags & 0x01) {
+            textcolor(COLOR_GRAY2);
+            cputcxy(x, y, 0xfa); // equipped
+        } else if (item->flags & 0xc0) {
+            textcolor(COLOR_GRAY2);
+            cputcxy(x, y, 0x3f); // unidentified
+        }
+        textcolor(COLOR_WHITE);
+        gotoxy(x+1, y);
+        n = cprintf("%s", get_item_name(item->type)); // name
+        cclearxy(x+n, y, len-n);
+        // uses is type dependant
+        f = get_item_flags(item->type);
+        if (f == 1) {
+            if (item->uses<0xff) { // uses
+                gotoxy(x+15, y);
+                cprintf("#%d", item->uses);
             }
         }
+    } else {
+        cclearxy(x, y, len);
     }
 
+//    cclearxy(x, y, len);
+//    gotoxy(x, y); cprintf("%lu", *data);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
+
+bool process_field_spells(uint8_t x, uint8_t y, uint8_t clss, uint8_t amount, uint8_t max, bool selected, bool edit)
+{
+    bool changed = false;
+    spellinfo_t* list = spells_list(clss);
+    
+    if (edit && selected) {
+        // ### edit item ###
+        // ### change ###
+    }
+    
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    gotoxy(x,y);
+    cprintf("%2d/%2d", amount, max);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
+
+
+uint8_t all_spells, max_all_spells;
+uint8_t conjurer_spells, max_conjurer_spells;
+uint8_t magician_spells, max_magician_spells;
+uint8_t sorcerer_spells, max_sorcerer_spells;
+uint8_t wizard_spells, max_wizard_spells;
+uint8_t archmage_spells, max_archmage_spells;
+uint8_t chronomancer_spells, max_chronomancer_spells;
+uint8_t geomancer_spells, max_geomancer_spells;
+uint8_t misc_spells, max_misc_spells;
+
+void recalculate_intermediates(character_info_t* content)
+{
+    //all_spells = count_spells(content, 0xff); // all
+    //max_all_spells = spells_amount(0xff);
+    conjurer_spells = count_spells(content, 3); // conj: 3
+    max_conjurer_spells = spells_amount(3);
+    magician_spells = count_spells(content, 4); // mag: 4
+    max_magician_spells = spells_amount(4);
+    sorcerer_spells = count_spells(content, 2); // sorc: 2
+    max_sorcerer_spells = spells_amount(2);
+    wizard_spells = count_spells(content, 1); // wiz: 1
+    max_wizard_spells = spells_amount(1);
+    archmage_spells = count_spells(content, 10); //  archmage 10
+    max_archmage_spells = spells_amount(10);
+    chronomancer_spells = count_spells(content, 11); // chrono 11
+    max_chronomancer_spells = spells_amount(11);
+    geomancer_spells = count_spells(content, 12); // geo 12
+    max_geomancer_spells = spells_amount(12);
+    misc_spells = count_spells(content, 0); // misc
+    max_misc_spells = spells_amount(0);
+    all_spells = conjurer_spells + magician_spells + sorcerer_spells + wizard_spells + 
+                 archmage_spells + chronomancer_spells + geomancer_spells + misc_spells;
+    max_all_spells = max_conjurer_spells + max_magician_spells + max_sorcerer_spells + max_wizard_spells + 
+                     max_archmage_spells + max_chronomancer_spells + max_geomancer_spells + max_misc_spells;
+}    
+
+
+bool draw_editor_charactercontent(character_info_t* content, uint8_t position, bool edit)
+{
+    uint8_t i, value;
+    uint16_t percent, v16;
+    bool changed;
+    
+    textcolor(COLOR_GRAY2);
+    changed = false;
+
+    changed |= process_field_8u(&content->strength,      6, 4, 4, (position == 1), edit);
+    changed |= process_field_8u(&content->intelligence, 15, 4, 4, (position == 6), edit);
+    changed |= process_field_8u(&content->dexterity,     6, 5, 4, (position == 2), edit);
+    changed |= process_field_8u(&content->constitution, 15, 5, 4, (position == 7), edit);
+    changed |= process_field_8u(&content->luck,          6, 6, 4, (position == 3), edit);
+    
+    changed |= process_field_32u(&content->experience,   7, 7,10, (position == 4), edit);
+    changed |= process_field_32u(&content->gold,         7, 8,10, (position == 5), edit);
+
+    gotoxy(7, 10); cprintf("%u", content->current_hitpoints);
+    cputcxy(12,10, '/');
+    changed |= process_field_16u(&content->maximum_hitpoints,   14,10, 5, (position == 8), edit);
+    
+    gotoxy(7, 11); cprintf("%u", content->current_spellpoints);
+    cputcxy(12,11, '/');
+    changed |= process_field_16u(&content->maximum_spellpoints, 14,11, 5, (position == 9), edit);
+
+    gotoxy(7, 12); cprintf("%d", content->armorclass);
+
+    value = content->status;
+    if (value & 0x01) cputcxy( 7, 13, 'P'); else cputcxy( 7, 13, ' '); // poisoned
+    if (value & 0x02) cputcxy( 8, 13, 'O'); else cputcxy( 8, 13, ' '); // old
+    if (value & 0x04) cputcxy( 9, 13, 'D'); else cputcxy( 9, 13, ' '); // dead
+    if (value & 0x08) cputcxy(10, 13, 'S'); else cputcxy(10, 13, ' '); // stoned
+    if (value & 0x10) cputsxy(11, 13, "Pa"); else cputsxy(11, 13, "  "); // paralyzed
+    if (value & 0x20) cputsxy(13, 13, "Ps"); else cputsxy(12, 13, "  "); // possessed
+    if (value & 0x40) cputsxy(15, 13, "In"); else cputsxy(13, 13, "  "); // insane
+    //if (value & 0x01) cputcxy(14, 13, '?'); else cputcxy(14, 13, ' '); // ? withered ?
+
+    // items
+    for (i=0; i<12; i++) {
+        // item position start at 0x0a;
+        changed |= process_field_item(&(content->items[i]), 20, 3+i, 19, (position == 0x0a+i), edit);
+    }
+
+    // spells for spellcaster
+    if (content->playerclass==1 || content->playerclass==2 || content->playerclass==3 ||
+        content->playerclass==4 || content->playerclass==10 || content->playerclass==11 ||
+        content->playerclass==12) {
+        gotoxy(30,16); cprintf("%3d/%3d", all_spells, max_all_spells);
+        changed |= process_field_spells(24, 18, 3, conjurer_spells, max_conjurer_spells, (position==0x16), edit); // conjurer 3
+        changed |= process_field_spells(34, 18, 4, magician_spells, max_magician_spells, (position==0x1b), edit); // magician 4
+        changed |= process_field_spells(24, 19, 2, sorcerer_spells, max_sorcerer_spells, (position==0x17), edit); // sorcerer 2
+        changed |= process_field_spells(34, 19, 1, wizard_spells, max_wizard_spells, (position==0x1c), edit); // wizard 1
+        changed |= process_field_spells(24, 20, 10, archmage_spells, max_archmage_spells, (position==0x18), edit); // archmage 10
+        changed |= process_field_spells(34, 20, 12, geomancer_spells, max_geomancer_spells, (position==0x1d), edit); // geomancer 12
+        changed |= process_field_spells(28, 21, 11, chronomancer_spells, max_chronomancer_spells, (position==0x19), edit); // chronomancer 11
+        changed |= process_field_spells(28, 22, 0, misc_spells, max_misc_spells, (position==0x1a), edit); // misc 0
+    }
+        
+    if (content->playerclass == 5) {
+        changed |= process_field_8u(&(content->classdata[0]), 8, 15, 3, (position==0x1e), edit);
+        v16 = (uint16_t)content->classdata[0];
+        percent = (v16*100) / 256;
+        gotoxy( 12, 15); cprintf("(%d%%)", percent);
+
+        changed |= process_field_8u(&(content->classdata[1]), 8, 16, 3, (position==0x1f), edit);
+        v16 = (uint16_t)content->classdata[1];
+        percent = (v16*100) / 256;
+        gotoxy( 12, 16); cprintf("(%d%%)", percent);
+
+        changed |= process_field_8u(&(content->classdata[2]), 8, 17, 3, (position==0x20), edit);
+        v16 = (uint16_t)content->classdata[2];
+        percent = (v16*100) / 256;
+        gotoxy( 12, 17); cprintf("(%d%%)", percent);
+    }
+
+    // skills for bard
+    if (content->playerclass == 6) {
+        gotoxy( 8, 15); cprintf("%3d", content->classdata[0]);
+    }
+
+    // skills for hunter
+    if (content->playerclass==8) {
+        v16 = (uint16_t)content->classdata[0];
+        percent = (v16*100) / 255;
+        gotoxy( 8, 15); cprintf("%3d (%3d%%)", v16, percent);
+    }
+    
+    return changed;
 }
 
 void draw_status_characterdisplay(bool changed)
 {
-    cclearxy(0,24,40);
+// ###    cclearxy(0,24,40);
     //             0123456789012345678901234567890123456789
-    cputsxy(0,24, " ( )back");
-    if (changed) cputsxy(31,24, "(  )save");
+    cputsxy(0,24, "( )back          (     )edit  (    )nav");
+    if (changed) cputsxy( 8,24, "(  )save");
     
     textcolor(COLOR_WHITE);
-    cputcxy(2,24, 0x5f);
-    if (changed) cputsxy(32,24, "F7");
+    cputcxy(1,24, 0x5f);
+    if (changed) cputsxy( 9,24, "F7");
+    cputsxy(18,24, "Enter");
+    cputsxy(31,24, "CRSR");
     textcolor(COLOR_GRAY2);
 }
 
 
-bool input_strength(character_info_t* content)
+bool is_move_allowed(character_info_t* content, uint8_t restriction)
 {
-    bool changed = false;
-    uint32_t value = (uint32_t)content->strength;
-    changed = getnumberxy(6, 4, 3, &value);
-    if (changed) content->strength = (uint8_t)value;
-    return changed;
+    uint8_t playerclass;
+
+    if (restriction == 0) return true;
+    playerclass = content->playerclass;    
+    if (restriction & 0x10) {
+        // only for spellcaster
+        if (content->playerclass==1 || content->playerclass==2 || content->playerclass==3 ||
+            content->playerclass==4 || content->playerclass==10 || content->playerclass==11 ||
+            content->playerclass==12) return true;
+    } else if (restriction & 0x20) {
+        // only for rogue
+        if (content->playerclass==5) return true;
+    } else if (restriction & 0x40) {
+        // only for hunter
+        if (content->playerclass==8) return true;
+    }
+    return false;
 }
 
-bool input_intelligence(character_info_t* content)
+uint8_t move_down(character_info_t* content, uint8_t position)
 {
-    bool changed = false;
-    uint32_t value = (uint32_t)content->intelligence;
-    changed = getnumberxy(15, 4, 3, &value);
-    if (changed) content->intelligence = (uint8_t)value;
-    return changed;
+    uint8_t p = common_transitions[position].down;
+
+    if (p == 0) return position;
+    if (common_transitions[0].down != 0) p = common_transitions[0].down;
+    if (!is_move_allowed(content, common_transitions[p].restriction)) return position;
+    memset(&common_transitions[0], 0, sizeof(transition_t));
+    common_transitions[0].up = position;
+    return p;
 }
 
-bool input_dexterity(character_info_t* content)
+uint8_t move_right(character_info_t* content, uint8_t position)
 {
-    bool changed = false;
-    uint32_t value = (uint32_t)content->dexterity;
-    changed = getnumberxy(6, 5, 3, &value);
-    if (changed) content->dexterity = (uint8_t)value;
-    return changed;
+    uint8_t p = common_transitions[position].right;
+
+    if (p == 0) return position;
+    if (common_transitions[0].right != 0) p = common_transitions[0].right;
+    if (!is_move_allowed(content, common_transitions[p].restriction)) return position;
+    memset(&common_transitions[0], 0, sizeof(transition_t));
+    common_transitions[0].left = position;
+    return p;
 }
 
-bool input_constitution(character_info_t* content)
+uint8_t move_up(character_info_t* content, uint8_t position)
 {
-    bool changed = false;
-    uint32_t value = (uint32_t)content->constitution;
-    changed = getnumberxy(15, 5, 3, &value);
-    if (changed) content->constitution = (uint8_t)value;
-    return changed;
+    uint8_t p = common_transitions[position].up;
+
+    if (p == 0) return position;
+    if (common_transitions[0].up != 0) p = common_transitions[0].up;
+    if (!is_move_allowed(content, common_transitions[p].restriction)) return position;
+    memset(&common_transitions[0], 0, sizeof(transition_t));
+    common_transitions[0].down = position;
+    return p;
 }
 
-bool input_luck(character_info_t* content)
+uint8_t move_left(character_info_t* content, uint8_t position)
 {
-    bool changed = false;
-    uint32_t value = (uint32_t)content->luck;
-    changed = getnumberxy(6, 6, 3, &value);
-    if (changed) content->luck = (uint8_t)value;
-    return changed;
-}
+    uint8_t p = common_transitions[position].left;
 
-bool input_experience(character_info_t* content)
-{
-    bool changed = false;
-    uint32_t value = (uint32_t)content->experience;
-    changed = getnumberxy(7, 7, 10, &value);
-    if (changed) content->experience = (uint32_t)value;
-    return changed;
-}
-
-bool input_gold(character_info_t* content)
-{
-    bool changed = false;
-    uint32_t value = (uint32_t)content->gold;
-    changed = getnumberxy(7, 8, 10, &value);
-    if (changed) content->gold = (uint32_t)value;
-    return changed;
+    if (p == 0) return position;
+    if (common_transitions[0].left != 0) p = common_transitions[0].left;
+    if (!is_move_allowed(content, common_transitions[p].restriction)) return position;
+    memset(&common_transitions[0], 0, sizeof(transition_t));
+    common_transitions[0].right = position;
+    return p;
 }
 
 
@@ -240,33 +509,33 @@ void character_main(character_entry_t* character)
     uint8_t repaint;
     bool changed;
     uint8_t retval;
+    uint16_t position;
+    bool edit;
     
     // we assume eapi already installed at $c000
     // we assume the sector load/save functions are installed at $cxxx
     // we assume the wrappers are installed at $b7xx
 
     // init
-    //cart_bankout();
-    //bgcolor(COLOR_BLACK);
-    //bordercolor(COLOR_GRAY1);
     clrscr();
     textcolor(COLOR_GRAY2);
     repaint = 1;
     changed = false;
+    position = 1;
+    memset(&common_transitions[0], 0, sizeof(transition_t));
+    edit = false;
 
     // prepare
     draw_editor_characterdisplay(character->content);
-    //draw_editor_characterlist_frame();
-    //set_ef_diskid(1);
-    //load_sectors();
-    //prepare_characters();
-    //index = previous_index(next_index(index));
+    recalculate_intermediates(character->content);
 
     while (kbhit()) cgetc();
     
     for (;;) {
         if (repaint > 0) {
-            draw_editor_charactercontent(character->content);
+            if (draw_editor_charactercontent(character->content, position, edit)) changed = true;
+            //if (changed) recalculate_intermediates(character->content);
+            edit = false;
             if (repaint == 1) draw_status_characterdisplay(changed);
             repaint = 0;
         }
@@ -274,7 +543,7 @@ void character_main(character_entry_t* character)
 //        gotoxy(20,24); cprintf("%d,%d chars", amount_save, amount_camp); // debug
 
         retval = cgetc();
-//        gotoxy(0,24); cprintf("cgetc: %x (%c)", retval, retval); // debug
+        gotoxy(0,24); cprintf("cgetc: %x (%c)", retval, retval); // debug
         switch (retval) {
             case CH_F7: // F7
                 if (changed) {
@@ -300,38 +569,32 @@ void character_main(character_entry_t* character)
                     }
                 }
                 return;
+
+            case 0x11: // down
+                position = move_down(character->content, position);
+                repaint = 1;
+                break;
+            case 0x1d: // right
+                position = move_right(character->content, position);
+                repaint = 1;
+                break;
+            case 0x91: // up
+                position = move_up(character->content, position);
+                repaint = 1;
+                break;
+            case 0x9d: // left
+                position = move_left(character->content, position);
+                repaint = 1;
+                break;
+            case 0x0d: // enter
+                edit = true;
+                repaint = 1;
+                break;
                 
-            case 's': // strength
-                if (input_strength(character->content)) changed = true;
-                repaint = 1;
-                break;
-            case 'i': // intelligence
-                if (input_intelligence(character->content)) changed = true;
-                repaint = 1;
-                break;
-            case 'd': // dexterity
-                if (input_dexterity(character->content)) changed = true;
-                repaint = 1;
-                break;
-            case 'c': // constitution
-                if (input_constitution(character->content)) changed = true;
-                repaint = 1;
-                break;
-            case 'l': // luck
-                if (input_luck(character->content)) changed = true;
-                repaint = 1;
-                break;
-            case 'x': // experience
-                if (input_experience(character->content)) changed = true;
-                repaint = 1;
-                break;
-            case 'g': // gold
-                if (input_gold(character->content)) changed = true;
-                repaint = 1;
-                break;
         }
     }
 }
+
 
 /*
 

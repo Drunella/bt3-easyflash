@@ -108,7 +108,7 @@ bool draw_status_confirmation(char* content)
 }
 
 
-bool getnumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original)
+bool getunumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original)
 {
     char c;
     uint8_t n;
@@ -157,6 +157,68 @@ bool getnumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original)
             break;
 
         } else if (c >= '0' && c <= '9') {
+            if (n < len) {
+                content[n] = c;
+                content[n+1] = 0;
+                n++;
+            }
+        }
+
+    }
+
+    textcolor(COLOR_GRAY2);
+    return changed;
+}
+
+bool getsnumberxy(uint8_t x, uint8_t y, uint8_t len, int32_t* original)
+{
+    char c;
+    uint8_t n;
+    bool changed = false;
+    char content[16];
+
+    textcolor(COLOR_GRAY2);
+    cclearxy(0,24,40);
+    //              123456789012345678901234567890123456789
+    cputsxy( 1,24, "( )cancel  (     )accept  (   )clear");
+    textcolor(COLOR_WHITE);
+    cputcxy(2,24, 0x5f);
+    cputsxy(13,24, "Enter");
+    cputsxy(28,24, "CLR");
+    
+    n = 0;
+    content[0] = 0;
+
+    for (;;) {
+        gotoxy(x, y);
+        cclearxy(x, y, len);
+        cputsxy(x, y, content);
+
+        cursor(1);
+        c = cgetc();
+        cursor(0);
+
+        if (c == CH_ENTER) {
+            // enter
+            *original = atol(content);
+            changed = true;
+            break;
+        
+        } else if (c == CH_DEL) {
+            // del
+            if (n > 0) content[n-1] = 0;
+            n--;
+
+        } else if (c == CH_HOME || c == 0x93) {
+            // clear
+            content[0] = 0;
+            n = 0;
+        
+        } else if (c == 0x5f) {
+            // cancel
+            break;
+
+        } else if ((c >= '0' && c <= '9') || c == '-') {
             if (n < len) {
                 content[n] = c;
                 content[n+1] = 0;

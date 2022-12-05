@@ -42,7 +42,7 @@ io_set_current_disk_addr = $be38
 io_load_file_addr = $be02
 
 
-; startup functions
+; startup functions, also in util.h
 jt_startup_startmenu = $1800
 jt_startup_editor = $1803
 jt_startup_game = $1806

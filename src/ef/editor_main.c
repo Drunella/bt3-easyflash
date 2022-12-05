@@ -227,7 +227,7 @@ void main(void)
             repaint = false;
         }
 
-//        gotoxy(20,24); cprintf("%d,%d chars", amount_save, amount_camp); // debug
+        gotoxy(20,24); cprintf("sf1=%d sfi=%d", sizeof(character_info_t), sizeof(item_t)); // debug
 
         retval = cgetc();
 //        gotoxy(0,24); cprintf("cgetc: %x (%c)", retval, retval); // debug
@@ -254,11 +254,12 @@ void main(void)
                 repaint = true;
                 break;
             case 0x5f: // back arrow
-                cart_reset(); // does not return
+                //cart_reset(); // does not return
+                startup_startmenu_ext(); // does not return
                 break;
-            case 'S': // debug 's'
+            /*case 'S': // debug 's'
                 write_sectors_save();
-                break;
+                break;*/
         }
     }
 }

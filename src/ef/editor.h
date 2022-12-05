@@ -27,34 +27,30 @@ typedef struct {
 } item_t;
 
 typedef struct {
-    unsigned char name[16];
-    // 0x10
-    uint8_t strength, intelligence, dexterity, constitution, luck;
-    uint32_t experience;
-    uint32_t gold;
-    uint16_t level;
-    // 0x1f
-    uint16_t undrained_level;
-    uint16_t current_hitpoints, maximum_hitpoints;
-    uint16_t current_magepoints, maximum_magepoints;
-    uint8_t playerclass;
-    uint8_t playerrace;
-    uint8_t dummy_2b;
-    uint8_t dummy_2c;
-    uint8_t status;
-    uint8_t armorclass; // always recalculated
-    // 0x30
-    //uint8_t items[36];
-    item_t items[12];
-    // 0x50
-    uint8_t classdata[12];
-    uint8_t bardsongs;
-    // 0x65
-    uint8_t dummy_65[5];
+    unsigned char name[16];  // 16 bytes
+    uint8_t strength, intelligence, dexterity, constitution, luck; // 5 bytes
+    uint32_t experience, gold; // 8 bytes
+    uint16_t level, undrained_level; // 4 bytes
+    uint16_t current_hitpoints, maximum_hitpoints; // 4 bytes
+    uint16_t current_spellpoints, maximum_spellpoints; // 4 bytes
+    uint8_t playerclass, playerrace; // 2 bytes
+    uint8_t dummy_2b, dummy_2c; // 2 bytes
+    uint8_t status, armorclass; // 2 bytes
+    uint8_t dummy_2f; // 1 byte
+    // 0x30 (48)
+    item_t items[12];  // 36 bytes
+    // 0x54 (84)
+    uint8_t spells[16];
+    // 0x64 (100)
+    uint8_t classdata[3]; // bard, rogue
+    uint8_t dummy_65[3];
+    // 0x6a (106)
     uint8_t unwithered_stats[5];
-    uint8_t dummy_70[2];
-    uint16_t gameflags;
-    uint8_t dummy_74[12];
+    uint8_t dummy_70[3];
+    // 0x72 (115)
+    uint8_t gameflags[2];
+    // 0x75 (117)
+    //uint8_t dummy_74[11];
 } character_info_t;
 
 typedef struct {
@@ -69,15 +65,42 @@ typedef struct {
     uint8_t flags;
 } text_entry_t;
 
+typedef struct {
+    unsigned char code[5];
+    uint8_t offset;
+    uint8_t bit;
+    uint8_t playerclass;
+    uint8_t level;
+    unsigned char description[24];
+} spellinfo_t;
+
+/*typedef struct {
+    uint8_t bits;
+    uint8_t x, y;
+    uint8_t length;
+} editable_field_t;*/
+
+typedef struct {
+    uint8_t restriction;
+    uint8_t up;
+    uint8_t right;
+    uint8_t down;
+    uint8_t left;
+} transition_t;
 
 char* get_class_name(uint8_t cl);
 char* get_race_name(uint8_t rc);
 char* get_item_name(uint8_t id);
 uint8_t get_item_flags(uint8_t id);
 
+spellinfo_t* spells_list(uint8_t clss);
+uint8_t spells_amount(uint8_t clss);
+uint8_t count_spells(character_info_t* character, uint8_t clss);
+
 char convert_char_bd3_to_editor(char c);
 uint8_t cprint_name(uint8_t x, uint8_t y, char* name);
-bool getnumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original);
+bool getunumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original);
+bool getsnumberxy(uint8_t x, uint8_t y, uint8_t len, int32_t* original);
 bool draw_status_confirmation(char* content);
 
 void character_main(character_entry_t* character);

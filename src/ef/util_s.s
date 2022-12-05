@@ -50,6 +50,8 @@
     _startup_editor:
         jmp jt_startup_editor
 
+    _startup_startmenu:
+        jmp jt_startup_startmenu
 
 
 ; -- easyflash sector io -----------------------------------------------------
@@ -62,7 +64,7 @@
         jmp io_set_current_disk_addr
 
 
-    ; uint8_t __fastcall__ read_pd_sector(uint16_t sector, char* destination)
+    ; uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination)
     _read_ef_sector:
         ; $42 mode (1: read, 2: write, 3:?)
         ; $43 ?
@@ -78,7 +80,7 @@
         sta $47
         lda #$01   ; read mode
         sta $42
-        sta io_set_current_disk_addr
+        ;jsr io_set_current_disk_addr
     
         lda $01
         pha
@@ -93,7 +95,7 @@
         lda #$01
         rts
 
-    ; uint8_t __fastcall__ write_pd_sector(uint16_t sector, char* source)
+    ; uint8_t __fastcall__ write_ef_sector(uint16_t sector, char* source)
     _write_ef_sector:
         ; $42 mode (1: read, 2: write, 3:?)
         ; $43 ?
@@ -109,8 +111,8 @@
         sta $47
         lda #$02   ; writemode
         sta $42
-        lda #$01
-        sta io_set_current_disk_addr
+        ;lda #$01
+        ;jsr io_set_current_disk_addr
     
         lda $01
         pha

@@ -25,6 +25,43 @@
 
 
 
+uint8_t version[2] = {
+#include "../../version.txt"
+};
+
+
+uint8_t get_version_major()
+{
+    return version[0];
+}
+
+uint8_t get_version_minor()
+{
+    return version[1];
+}
+
+static const void * const jumptable[3] = {
+    JT_STARTUP_STARTMENU,
+    JT_STARTUP_EDITOR,
+    JT_STARTUP_GAME        
+};
+
+void startup_startmenu_ext()
+{
+    goto *jumptable[0];
+}
+
+void startup_editor_ext()
+{
+    goto *jumptable[1];
+}
+
+void startup_game_ext()
+{
+    goto *jumptable[2];
+}
+
+
 void cart_kill()
 {
     __asm__("lda #$37"); // default
@@ -90,6 +127,7 @@ void cart_reset()
 
 void load_sectors()
 {
+    set_ef_diskid(1);
     read_ef_sector(0x010b, (char*)0xa000);
     read_ef_sector(0x010c, (char*)0xa200);
     read_ef_sector(0x010d, (char*)0xa400);
@@ -109,6 +147,7 @@ void load_sectors()
 
 uint8_t write_sectors_save()
 {
+    set_ef_diskid(1);
     write_ef_sector(0x010b, (char*)0xa000);
     write_ef_sector(0x010c, (char*)0xa200);
     return write_ef_sector(0x010d, (char*)0xa400);
@@ -116,12 +155,14 @@ uint8_t write_sectors_save()
 
 uint8_t write_sectors_storage()
 {
+    set_ef_diskid(1);
     write_ef_sector(0x010e, (char*)0xa600);
     return write_ef_sector(0x010f, (char*)0xa800);
 }
 
 uint8_t write_sectors_camp()
 {
+    set_ef_diskid(1);
     write_ef_sector(0x0110, (char*)0xaa00);
     write_ef_sector(0x0111, (char*)0xac00);
     write_ef_sector(0x0112, (char*)0xae00);
