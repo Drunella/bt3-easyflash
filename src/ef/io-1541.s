@@ -14,290 +14,20 @@
 ; limitations under the License.
 ; ----------------------------------------------------------------------------
 
+
 .feature c_comments
 
 
-.include "easyflash.i"
-
-.import sp, popax, popa
-
-.export _startup_game
-.export _startup_editor
-
-.export _set_ef_diskid
-.export _read_ef_sector
-.export _write_ef_sector 
-
-.export _load_ef_file
-.export _load_ef_file_ext
-
-.export _read_cbm_sector
-.export _write_cbm_sector_ext
-;.export _write_cbm_sector_open
-;.export _write_cbm_sector_data
-;.export _write_cbm_sector_close
-.export _device_present
-.export _device_last_status
-.export _device_last_statuscode
-.export _device_clear_status
-
-.import cbm_read_sector
-.import cbm_write_sector
-.import cbm_device_present
-.import cbm_device_last_status
-.import cbm_device_last_statuscode
-.import cbm_device_clear_status
-.import cbm_backup_zeropage
-.import cbm_restore_zeropage
+.export cbm_read_sector
+.export cbm_write_sector
+.export cbm_device_present
+.export cbm_device_last_status
+.export cbm_device_last_statuscode
+.export cbm_device_clear_status
+.export cbm_backup_zeropage
+.export cbm_restore_zeropage
 
 
-
-; -- easyflash startup -------------------------------------------------------
-
-.segment "CODE"
-
-    _startup_game:
-        jmp jt_startup_game
-
-    _startup_editor:
-        jmp jt_startup_editor
-
-    _startup_startmenu:
-        jmp jt_startup_startmenu
-
-
-; -- easyflash sector io -----------------------------------------------------
-
-.segment "CODE"
-
-    ; void __fastcall__ set_ef_diskid(uint8_t diskid)
-    _set_ef_diskid:
-        ; diskid in a
-        jmp io_set_current_disk_addr
-
-
-    ; uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination)
-    _read_ef_sector:
-        ; $42 mode (1: read, 2: write, 3:?)
-        ; $43 ?
-        ; $44 low address destination buffer
-        ; $45 high address destination buffer
-        ; $46 low sector number
-        ; $47 high sector number
-        sta $44    ; a: destination low byte
-        stx $45    ; x: destination high byte
-        jsr popa   ; sector low byte
-        sta $46
-        jsr popa   ; sector high byte
-        sta $47
-        lda #$01   ; read mode
-        sta $42
-        ;jsr io_set_current_disk_addr
-    
-        lda $01
-        pha
-        jsr io_loadsave_sector_addr
-        pla
-        sta $01
-        bcs :+     ; carry set is error
-        ldx #$00
-        lda #$00
-        rts
-    :   ldx #$00   ; error
-        lda #$01
-        rts
-
-
-    ; uint8_t __fastcall__ write_ef_sector(uint16_t sector, char* source)
-    _write_ef_sector:
-        ; $42 mode (1: read, 2: write, 3:?)
-        ; $43 ?
-        ; $44 low address destination buffer
-        ; $45 high address destination buffer
-        ; $46 low sector number
-        ; $47 high sector number
-        sta $44    ; a: destination low byte
-        stx $45    ; x: destination high byte
-        jsr popa   ; sector low byte
-        sta $46
-        jsr popa   ; sector high byte
-        sta $47
-        lda #$02   ; writemode
-        sta $42
-        ;lda #$01
-        ;jsr io_set_current_disk_addr
-    
-        lda $01
-        pha
-        jsr io_loadsave_sector_addr
-        pla
-        sta $01
-        bcs :+     ; carry set is error
-        ldx #$00
-        lda #$00
-        rts
-    :   ldx #$00   ; error
-        lda #$01
-        rts
-
-
-
-; -- easyflash load file -----------------------------------------------------
-
-.segment "CODE"
-
-    _load_ef_file:
-        ; uint8_t __fastcall__ load_ef_file(uint8_t fileid);
-        tax
-        lda $ff
-        pha
-        lda $fe
-        pha
-        lda $fd
-        pha
-        lda $fc
-        pha
-        lda $fb
-        pha
-        txa
-        jsr io_load_file_addr
-        tax
-        pla
-        sta $fb
-        pla
-        sta $fc
-        pla
-        sta $fd
-        pla
-        sta $fe
-        pla
-        sta $ff
-        txa
-        ldx #$00
-        rts
-
-
-    _load_ef_file_ext:
-        ; uint8_t __fastcall__ load_ef_file_ext(char* destination, uint8_t fileid)
-        tax
-        lda $ff
-        pha
-        lda $fe
-        pha
-        lda $fd
-        pha
-        lda $fc
-        pha
-        lda $fb
-        pha
-        txa
-        pha
-        jsr popax  ; address
-        sta $fc
-        stx $fd
-        pla
-        jsr io_load_file_addr
-        lda $fb
-        tax
-        pla
-        sta $fb
-        pla
-        sta $fc
-        pla
-        sta $fd
-        pla
-        sta $fe
-        pla
-        sta $ff
-        txa
-        ldx #$00
-        rts
-
-
-
-; -- 1541 block io -----------------------------------------------------------
-
-; protect zeropage outside
-; parameter:
-;   $ab: track number
-;   $ac: sector number
-;   $ad: device number
-;   $ae: low address of source/destination
-;   $af: high address of source/destination
-; return:
-;   A: 0=success, x=error
-
-.segment "CODE"
-
-    _device_clear_status:
-        ; void __fastcall__ device_clear_status();
-        jmp cbm_device_clear_status
-
-
-    _device_last_statuscode:
-        ; uint8_t __fastcall__ _device_last_statuscode();
-        ; a: status code
-        jmp cbm_device_last_statuscode
-
-
-    _device_last_status:
-        ; char* __fastcall__ _device_last_status();
-        jmp cbm_device_last_status
-
-
-    _device_present:
-        ; uint8_t __fastcall__ device_present(uint8_t device);
-        jmp cbm_device_present
-
-
-    _read_cbm_sector:
-        ; uint8_t __fastcall__ read_cbm_sector(char* dest, uint8_t device, uint8_t track, uint8_t sector);
-        pha
-        jsr cbm_backup_zeropage
-        pla
-        sta $ac   ; sector in a
-        jsr popa  ; track
-        sta $ab
-        jsr popa  ; device
-        sta $ad
-        jsr popa  ; address low
-        sta $ae
-        jsr popa  ; address high
-        sta $af
-
-        jsr cbm_read_sector
-
-        pha 
-        jsr cbm_restore_zeropage
-        pla
-        rts
-
-
-    _write_cbm_sector_ext:
-        ; uint8_t __fastcall__ write_cbm_sector(char* source, uint8_t device, uint8_t track, uint8_t sector);
-        pha
-        jsr cbm_backup_zeropage
-        pla
-        sta $ac   ; sector in a
-        jsr popa  ; track
-        sta $ab
-        jsr popa  ; device
-        sta $ad
-        jsr popa  ; address low
-        sta $ae
-        jsr popa  ; address high
-        sta $af
-
-        jsr cbm_write_sector
-
-        pha
-        jsr cbm_restore_zeropage
-        pla
-        rts
-
-
-
-/*
 
 ; -- 1541 block io -----------------------------------------------------------
 
@@ -338,11 +68,37 @@
     block_io_backup:
         .byte $00, $00, $00
 
+    block_io_zeropage_backup:
+        .byte $00, $00, $00, $00, $00, $00, $00, $00
+        .byte $00, $00, $00, $00, $00, $00, $00, $00
+
 
 .segment "CODE"
 
-    _device_clear_status:
-        ; void __fastcall__ device_clear_status();
+    cbm_backup_zeropage:
+        ; no parameter
+        ldx #$0f
+    :   lda $a0, x
+        sta block_io_zeropage_backup, x
+        dex
+        bpl :-
+        rts
+
+
+    cbm_restore_zeropage:
+        ; parameter: none
+        ; return: none
+        ldx #$0f
+    :   lda block_io_zeropage_backup, x
+        sta $a0, x
+        dex
+        bpl :-
+        rts
+
+
+    cbm_device_clear_status:
+        ; parameter: none
+        ; return: none
         lda #$00
         sta blockio_status_cursor
         sta blockio_status
@@ -359,9 +115,9 @@
         rts
 
 
-    _device_last_statuscode:
-        ; uint8_t __fastcall__ _device_last_statuscode();
-        ; a: status code        
+    cbm_device_last_statuscode:
+        ; parameter: none
+        ; return: A:status code
         lda blockio_status
         bne :+  ; return 0 if string is empty
         sta blockio_status_code
@@ -387,22 +143,24 @@
         rts
         
 
-    _device_last_status:
-        ; char* __fastcall__ _device_last_status();
+    cbm_device_last_status:
+        ; parameter: none
+        ; return: A/X (low/high) pointer to status text
         lda #<blockio_status
         ldx #>blockio_status
         rts
 
 
-    _device_present:
-        ; uint8_t __fastcall__ device_present(uint8_t device);
+    cbm_device_present:
+        ; parameter: A:device number
+        ; return: A:0=device present, 1=device not present
         tax
         lda $ba
         pha
         txa
         sta $ba
 
-        jsr _device_clear_status
+        jsr cbm_device_clear_status
         lda #$00
         sta $90       ; clear STATUS flags
 
@@ -468,21 +226,27 @@
         rts
 
 
-    _read_cbm_sector:
-        ; uint8_t __fastcall__ read_cbm_sector(char* dest, uint8_t device, uint8_t track, uint8_t sector);
-        ; sector in a
+    cbm_read_sector:
+        ; protect zeropage outside
+        ; parameter: 
+        ;   $ab: track number
+        ;   $ac: sector number
+        ;   $ad: device number
+        ;   $ae: low address of destination
+        ;   $af: high address of destination
+        ; return:
+        ;   A: 0=success, x=error
+
+        lda $ac   ; sector
         ldx #blockio_u_command_sector
         jsr write_u_command
-        jsr popa  ; track
+        lda $ab   ; track
         ldx #blockio_u_command_track
         jsr write_u_command
-        jsr popa  ; device
+        lda $ad   ; device
         sta blockio_drivenumber
-        jsr popa  ; address low
-        sta $ae
-        jsr popa  ; address high
-        sta $af
-        jsr _device_clear_status
+        
+        jsr cbm_device_clear_status
         lda #$31  ; U1 command
         sta blockio_u_command_id
 
@@ -520,7 +284,7 @@
         jsr $ffcf     ; call CHRIN
         jsr device_writestatus
         jmp :-
-    :   jsr _device_last_statuscode
+    :   jsr cbm_device_last_statuscode
         bne read_sector_close_error
 
         ; read data
@@ -560,6 +324,117 @@
         pha
         jmp read_sector_close
 
+
+    cbm_write_sector:
+        ; protect zeropage outside
+        ; parameter:
+        ;   $ab: track number
+        ;   $ac: sector number
+        ;   $ad: device number
+        ;   $ae: low address of source
+        ;   $af: high address of source
+        ; return:
+        ;   A: 0=success, x=error
+
+        lda $ac
+        ldx #blockio_u_command_sector
+        jsr write_u_command
+        lda $ab   ; track
+        ldx #blockio_u_command_track
+        jsr write_u_command
+        lda $ad  ; device
+        sta blockio_drivenumber
+        jsr cbm_device_clear_status
+        lda #$32  ; U2 command
+        sta blockio_u_command_id
+
+        ; open the drive memory channel
+        lda #$01
+        ldx #<blockio_buffer_filename
+        ldy #>blockio_buffer_filename
+        jsr $ffbd     ; call SETNAM
+
+        lda #$02      ; file number 2
+        ldx blockio_drivenumber
+        ldy #$02      ; secondary address 2
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN
+        bcs write_sector_ext_fixerr
+
+        ; open the command channel
+        lda #blockio_bp_command_len
+        ldx #<blockio_bp_command
+        ldy #>blockio_bp_command
+        jsr $ffbd     ; call SETNAM
+        lda #$0f      ; file number 15
+        ldx blockio_drivenumber
+        ldy #$0f      ; secondary address 15
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN (open command channel and send B-P command)
+        bcs write_sector_ext_fixerr
+
+        ldx #$02      ; filenumber 2
+        jsr $ffc9     ; call CHKOUT (file 2 now used as output)
+        bcs write_sector_ext_fixerr
+
+        ldy #$00
+    :   lda ($ae), y  ; read byte from memory
+        jsr $ffd2     ; call CHROUT (write byte to channel buffer)
+        iny
+        bne :-        ; next byte, end when 256 bytes are read
+
+        ldx #$0f      ; filenumber 15
+        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
+        bcs write_sector_ext_fixerr
+
+        ldy #$00
+    :   lda blockio_u_command, y  ; read byte from command string
+        jsr $ffd2     ; call CHROUT (write byte to command channel)
+        iny
+        cpy #blockio_u2_command_len
+        bne :-
+
+        ; check drive error channel here to test for
+        jsr $ffcc     ; call CLRCHN
+        ldx #$0f
+        jsr $ffc6     ; call CHKIN (file 15 now used as input)
+    :   jsr $ffb7     ; call READST
+        bne :+
+        jsr $ffcf     ; call CHRIN
+        jsr device_writestatus
+        jmp :-
+    :   jsr cbm_device_last_statuscode
+        bne write_sector_ext_error
+
+        lda #$00
+        pha
+
+    write_sector_ext_close:
+        lda #$0f      ; filenumber 15
+        jsr $ffc3     ; call CLOSE
+
+        lda #$02      ; filenumber 2
+        jsr $ffc3     ; call CLOSE
+
+        jsr $ffcc     ; call CLRCHN
+
+        pla
+        rts
+
+    write_sector_ext_error:
+        pha
+        jmp write_sector_ext_close
+
+    write_sector_ext_fixerr:
+        lda $ff
+        pha
+        jmp write_sector_ext_close
+
+
+
+/*
 
     _write_cbm_sector_open:
         ; uint8_t __fastcall__ write_cbm_sector_open(uint8_t device);
@@ -723,118 +598,5 @@
         tax
         jmp write_sector_data_finish
 
-
-    _write_cbm_sector_ext:
-        ; uint8_t __fastcall__ write_cbm_sector(char* source, uint8_t device, uint8_t track, uint8_t sector);
-        ; sector in a
-        ldx #blockio_u_command_sector
-        jsr write_u_command
-        jsr popa  ; track
-        ldx #blockio_u_command_track
-        jsr write_u_command
-        jsr popa  ; device
-        sta blockio_drivenumber
-        jsr popa  ; address low
-        sta $ae
-        jsr popa  ; address high
-        sta $af
-        jsr _device_clear_status
-        lda #$32  ; U2 command
-        sta blockio_u_command_id
-
-        ; open the drive memory channel
-        lda #$01
-        ldx #<blockio_buffer_filename
-        ldy #>blockio_buffer_filename
-        jsr $ffbd     ; call SETNAM
-
-        lda #$02      ; file number 2
-        ldx blockio_drivenumber
-        ldy #$02      ; secondary address 2
-        jsr $ffba     ; call SETLFS
-
-        jsr $ffc0     ; call OPEN
-        bcs write_sector_ext_fixerr
-
-        ; open the command channel
-        lda #blockio_bp_command_len
-        ldx #<blockio_bp_command
-        ldy #>blockio_bp_command
-        jsr $ffbd     ; call SETNAM
-        lda #$0f      ; file number 15
-        ldx blockio_drivenumber
-        ldy #$0f      ; secondary address 15
-        jsr $ffba     ; call SETLFS
-
-        jsr $ffc0     ; call OPEN (open command channel and send B-P command)
-        bcs write_sector_ext_fixerr
-
-        ; check drive error channel here to test for
-;        ldx #$0f
-;        jsr $ffc6     ; call CHKIN (file 15 now used as input)
-;    :   jsr $ffb7     ; call READST
-;        bne :+
-;        jsr $ffcf     ; call CHRIN
-;        jsr device_writestatus
-;        jmp :-
-;    :   jsr _device_last_statuscode
-;        bne write_sector_ext_error
-
-        ldx #$02      ; filenumber 2
-        jsr $ffc9     ; call CHKOUT (file 2 now used as output)
-        bcs write_sector_ext_fixerr
-
-        ldy #$00
-    :   lda ($ae), y  ; read byte from memory
-        jsr $ffd2     ; call CHROUT (write byte to channel buffer)
-        iny
-        bne :-        ; next byte, end when 256 bytes are read
-
-        ldx #$0f      ; filenumber 15
-        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
-        bcs write_sector_ext_fixerr
-
-        ldy #$00
-    :   lda blockio_u_command, y  ; read byte from command string
-        jsr $ffd2     ; call CHROUT (write byte to command channel)
-        iny
-        cpy #blockio_u2_command_len
-        bne :-
-
-        ; check drive error channel here to test for
-        jsr $ffcc     ; call CLRCHN
-        ldx #$0f
-        jsr $ffc6     ; call CHKIN (file 15 now used as input)
-    :   jsr $ffb7     ; call READST
-        bne :+
-        jsr $ffcf     ; call CHRIN
-        jsr device_writestatus
-        jmp :-
-    :   jsr _device_last_statuscode
-        bne write_sector_ext_error
-
-        lda #$00
-        pha
-
-    write_sector_ext_close:
-        lda #$0f      ; filenumber 15
-        jsr $ffc3     ; call CLOSE
-
-        lda #$02      ; filenumber 2
-        jsr $ffc3     ; call CLOSE
-
-        jsr $ffcc     ; call CLRCHN
-
-        pla
-        rts
-
-    write_sector_ext_error:
-        pha
-        jmp write_sector_ext_close
-
-    write_sector_ext_fixerr:
-        lda $ff
-        pha
-        jmp write_sector_ext_close
 
 */

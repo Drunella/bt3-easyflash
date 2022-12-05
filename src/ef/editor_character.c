@@ -495,10 +495,10 @@ bool save_character(character_entry_t* character)
 {
     if (character->type == 1) {
         // savegame
-        return write_sectors_save();
+        return write_sectors_save((char*)SAVEGAME_ADDR);
     } else if (character->type == 2) {
         // refugee camp
-        return write_sectors_camp();
+        return write_sectors_camp((char*)SAVEGAME_ADDR);
     }
     return false;
 }

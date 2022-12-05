@@ -31,9 +31,9 @@ CC65FLAGS=-t $(TARGET) -O
 .PHONY: clean subdirs all easyflash mrproper
 
 #EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
-EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o
-STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
-EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o
+EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o 
+STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o build/ef/io-1541.o
+EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o build/ef/io-1541.o
 
 # all
 all: easyflash
@@ -99,7 +99,7 @@ build/ef/editor.prg: subdirs $(EDITOR_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.info -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
 
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin
+build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
@@ -144,6 +144,12 @@ build/ef/track18.bin: subdirs
 # to track09-sector14.bin
 build/ef/track09-sector14.bin: subdirs
 	dd if=disks/character.d64 of=build/ef/track09-sector14.bin bs=256 count=1 skip=182
+
+build/ef/track01-sector00.bin: subdirs
+	dd if=disks/character.d64 of=build/ef/track01-sector00.bin bs=256 count=1 skip=0
+
+build/ef/track01-sector11.bin: subdirs
+	dd if=disks/character.d64 of=build/ef/track01-sector11.bin bs=256 count=1 skip=11
 
 # fastloader 1541 part, track 18 sector 14-17 (371 sectors in)
 build/ef/1541-fastloader.bin: subdirs

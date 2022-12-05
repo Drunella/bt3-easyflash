@@ -20,8 +20,6 @@
 #include <stdint.h>
 
 
-#define SAVE_ADDRESS 0xa000
-#define TEMP_ADDRESS 0x1800
 
 // startup addresses, also in easyflash.i
 #define JT_STARTUP_STARTMENU  0x1800
@@ -49,22 +47,23 @@ void __fastcall__ set_ef_diskid(uint8_t diskid);
 uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination);
 uint8_t __fastcall__ write_ef_sector(uint16_t sector, char* destination);
 
-void __fastcall__ load_ef_file(uint8_t fileid);
+uint8_t __fastcall__ load_ef_file(uint8_t fileid);
+uint8_t __fastcall__ load_ef_file_ext(char* destination, uint8_t fileid);
 
 uint8_t __fastcall__ read_cbm_sector(char* dest, uint8_t device, uint8_t track, uint8_t sector);
-uint8_t __fastcall__ write_cbm_sector_open(uint8_t device);
-uint8_t __fastcall__ write_cbm_sector_data(char* source, uint8_t track, uint8_t sector);
-void __fastcall__ write_cbm_sector_close();
+//uint8_t __fastcall__ write_cbm_sector_open(uint8_t device);
+//uint8_t __fastcall__ write_cbm_sector_data(char* source, uint8_t track, uint8_t sector);
+//void __fastcall__ write_cbm_sector_close();
 uint8_t __fastcall__ write_cbm_sector_ext(char* source, uint8_t device, uint8_t track, uint8_t sector);
 uint8_t __fastcall__ device_present(uint8_t device);
 char* __fastcall__ device_last_status();
 uint8_t __fastcall__ device_last_statuscode();
 void __fastcall__ device_clear_status();
 
-void load_sectors();
-uint8_t write_sectors_save();
-uint8_t write_sectors_storage();
-uint8_t write_sectors_camp();
+//void load_sectors();
+//uint8_t write_sectors_save();
+//uint8_t write_sectors_storage();
+//uint8_t write_sectors_camp();
 
 
 void menu_clear(uint8_t start, uint8_t stop);

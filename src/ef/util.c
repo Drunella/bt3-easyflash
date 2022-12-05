@@ -125,7 +125,7 @@ void cart_reset()
 }
 
 
-void load_sectors()
+/*void load_sectors()
 {
     set_ef_diskid(1);
     read_ef_sector(0x010b, (char*)0xa000);
@@ -171,7 +171,7 @@ uint8_t write_sectors_camp()
     write_ef_sector(0x0115, (char*)0xb400);
     write_ef_sector(0x0116, (char*)0xb600);
     return write_ef_sector(0x0117, (char*)0xb800);
-}
+}*/
 
 
 void menu_clear(uint8_t start, uint8_t stop)

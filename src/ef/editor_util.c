@@ -231,3 +231,52 @@ bool getsnumberxy(uint8_t x, uint8_t y, uint8_t len, int32_t* original)
     textcolor(COLOR_GRAY2);
     return changed;
 }
+
+
+uint8_t write_sectors_save(char* base)
+{
+    set_ef_diskid(1);
+    write_ef_sector(0x010b, base + 0x0000);
+    write_ef_sector(0x010c, base + 0x0200);
+    return write_ef_sector(0x010d, base + 0x0400);
+}
+
+uint8_t write_sectors_storage(char* base)
+{
+    set_ef_diskid(1);
+    write_ef_sector(0x010e, base + 0x0600);
+    return write_ef_sector(0x010f, base + 0x0800);
+}
+
+uint8_t write_sectors_camp(char* base)
+{
+    set_ef_diskid(1);
+    write_ef_sector(0x0110, (char*)SAVEGAME_ADDR + 0x0a00);
+    write_ef_sector(0x0111, base + 0x0c00);
+    write_ef_sector(0x0112, base + 0x0e00);
+    write_ef_sector(0x0113, base + 0x1000);
+    write_ef_sector(0x0114, base + 0x1200);
+    write_ef_sector(0x0115, base + 0x1400);
+    write_ef_sector(0x0116, base + 0x1600);
+    return write_ef_sector(0x0117, base + 0x1800);
+}
+
+void load_sectors(char* base)
+{
+    set_ef_diskid(1);
+    read_ef_sector(0x010b, base + 0x0000);
+    read_ef_sector(0x010c, base + 0x0200);
+    read_ef_sector(0x010d, base + 0x0400);
+
+    read_ef_sector(0x010e, base + 0x0600);
+    read_ef_sector(0x010f, base + 0x0800);
+
+    read_ef_sector(0x0110, base + 0x0a00);
+    read_ef_sector(0x0111, base + 0x0c00);
+    read_ef_sector(0x0112, base + 0x0e00);
+    read_ef_sector(0x0113, base + 0x1000);
+    read_ef_sector(0x0114, base + 0x1200);
+    read_ef_sector(0x0115, base + 0x1400);
+    read_ef_sector(0x0116, base + 0x1600);
+    read_ef_sector(0x0117, base + 0x1800);
+}

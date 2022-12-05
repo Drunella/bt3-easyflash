@@ -1,0 +1,47 @@
+# ----------------------------------------------------------------------------
+# Copyright 2023 Drunella
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ----------------------------------------------------------------------------
+
+GLOBAL {
+    INPUTNAME       "build/ef/2.0.prg";
+    STARTADDR       $c000;    # takes start addr into account
+    PAGELENGTH      0;        # No paging
+    INPUTOFFS       2;
+    CPU             "6502";
+    COMMENTS        4;
+};
+
+
+# outside labels
+
+
+# code segment for code and data
+SEGMENT { START $c000;  END $c9e9; NAME "CODE"; };
+
+# ranges
+RANGE { START $c000;  END $c214; TYPE skip; };
+
+LABEL { ADDR $c215; NAME "track_number"; };
+LABEL { ADDR $c216; NAME "sector_number"; };
+RANGE { START $c215;  END $c216; TYPE ByteTable; };
+
+RANGE { START $c217;  END $c368; TYPE skip; };
+
+RANGE { START $c369;  END $c3b1; TYPE code; };
+RANGE { START $c3b2;  END $c3d4; TYPE ByteTable; };
+RANGE { START $c3d5;  END $c3f8; TYPE code; };
+RANGE { START $c3f9;  END $c44f; TYPE ByteTable; };
+
+RANGE { START $c450;  END $c9e9; TYPE skip; };

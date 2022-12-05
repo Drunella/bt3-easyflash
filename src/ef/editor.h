@@ -20,6 +20,9 @@
 #include <stdint.h>
 
 
+#define SAVEGAME_ADDR 0xa000
+
+
 typedef struct {
     uint8_t flags;
     uint8_t type;
@@ -105,6 +108,11 @@ bool draw_status_confirmation(char* content);
 
 void character_main(character_entry_t* character);
 
+
+uint8_t write_sectors_save(char* base);
+uint8_t write_sectors_storage(char* base);
+uint8_t write_sectors_camp(char* base);
+void load_sectors(char* base);
 
 
 #endif

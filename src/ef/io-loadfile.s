@@ -29,44 +29,8 @@ file_directory_entry = $10
 ;.export _load_file
 .export loadfile_startaddress
 .export loadfile_body
-
-
-;.segment "CLEARCLC_CALL"
-;
-;    ; clear_clc(void)
-;    ; I do not know if this is necessary
-;    _clear_clc:
-;        clc
-;        rts
-
-
-;.segment "LOADFILE_CALL"
-;
-;    ; load_file(uint8_t filenumber) @ $be02
-;    _load_file:
-;        ; save id
-;        sta $fd
-;
-;        ; save directory location
-;        lda #>FILES_DIR_START
-;        sta $ff
-;        lda #$00
-;        sta $fe
-;
-;        jmp loadfile_body
-
-
-;.segment "LOAD_DATA"
-;
-;        ; meaning yet to be determined: data @ bd40
-;        .byte $00, $00, $00, $03, $7E, $BE, $00, $BA
-;        .byte $00, $04, $00, $00, $00, $00, $00, $00
-;        .byte $00, $01, $00, $02, $00, $00, $00, $00
-;        .byte $0A, $7E, $BE, $C3, $06, $00, $00, $00
-;        .byte $00, $00, $00, $00, $00, $00, $00, $00
-;        .byte $00, $00, $03, $60, $00, $BA, $00, $00
-;        .byte $01, $7E, $BE, $04, $00, $00, $00, $00
-;        .byte $00, $00
+.export load_destination_low
+.export load_destination_high
 
 
 .segment "LOADFILE_BODY"
@@ -77,6 +41,8 @@ file_directory_entry = $10
         .byte $00, $00
 
     ; loadfile_body
+    ; parameter: $fd:fileid; return $fc:0=ok, 1=error
+    ; $ff/$fe: directory address; $fd/$fe
     loadfile_body:
         ; bank in
         lda #FILES_DIR_BANK
@@ -86,7 +52,7 @@ file_directory_entry = $10
         ; id(1), bank(1), offset(2), size(3), load(2), init(2), dummy(5)
         ldy #data_directory::id
     :   lda ($fe),y           ; load id
-        cmp $fd
+        cmp $fb
         beq loadfile_found    ; id matches
         cmp #$ff
         beq loadfile_finish   ; eof marker found
@@ -101,13 +67,22 @@ file_directory_entry = $10
 
     loadfile_found:
         ; destination
+        ldy #data_directory::load_high
+        lda ($fe), y
+        bne :+  ; branch if load address is in list
+        lda $fd
+        beq loadfile_no_address  ; branch if param address is zero
+        sta load_destination_high
+        lda $fc
+        sta load_destination_low
+        jmp loadfile_found_address
+
+    :   sta load_destination_high
         ldy #data_directory::load_low
         lda ($fe), y
         sta load_destination_low
-        ldy #data_directory::load_high
-        lda ($fe), y
-        sta load_destination_high
 
+    loadfile_found_address:
         ; call address
         ldy #data_directory::init_low
         lda ($fe), y
@@ -145,13 +120,14 @@ file_directory_entry = $10
         ldy #$37
     data_loader:
         jsr EAPIReadFlashInc
+        bcs loadfile_finish
         stx $01
     load_destination_low = load_destination + 1
     load_destination_high = load_destination + 2
     load_destination:
         sta $ffff
         sty $01
-        bcs loadfile_finish
+;        bcs loadfile_finish
         inc load_destination_low
         bne :+
         inc load_destination_high
@@ -163,11 +139,19 @@ file_directory_entry = $10
          sta $fe
          lda loadfile_startaddress_high
          sta $ff
+         lda #$00
+         sta $fb
          jmp loadfile_bankout
+
+    loadfile_no_address:
+        lda #$01  ; error case
+        sta $fb
+        jmp loadfile_bankout;
 
 
     loadfile_mapping:
         .byte $37
+
 
     loadfile_bankin:
         ; a: bank to switch to

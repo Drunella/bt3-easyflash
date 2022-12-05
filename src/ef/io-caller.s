@@ -41,7 +41,7 @@
     ; load_file(uint8_t filenumber) @ $be02
     _load_file:
         ; save id
-        sta $fd
+        sta $fb
 
         ; save directory location
         lda #>FILES_DIR_START
@@ -49,6 +49,7 @@
         lda #$00
         sta $fe
 
+        ; result in $fb
         jmp loadfile_body
 
 

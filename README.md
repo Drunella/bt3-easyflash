@@ -10,6 +10,7 @@ Bard's Tale III disks.
 To build you need the following:
 * cc65
 * cartconv from VICE
+* c1541 from VICE
 * Python 3.6 or greater
 * GNU Make
 * C compiler

@@ -28,6 +28,7 @@
 #define CAMP_HEIGHT 9
 
 
+
 static character_entry_t character_list[MAX_CHARACTERS];
 static uint8_t amount_save;
 static uint8_t amount_camp;
@@ -212,7 +213,7 @@ void main(void)
 
     // prepare
     set_ef_diskid(1);
-    load_sectors();
+    load_sectors((char*)SAVEGAME_ADDR);
     prepare_characters();
     index = previous_index(next_index(index));
 

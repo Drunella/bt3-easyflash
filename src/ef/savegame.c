@@ -28,8 +28,64 @@
 #define MENU_START_X 12
 #define OUTPUT_START_Y 16
 
+#define SAVEGAME_ADDR  ((char*)(0x8000))
+#define TEMPMEM_ADDR   ((char*)(0x1000))
+
+
+//extern char* _SAVEGAME__;
+//extern char* _TEMPMEM__;
 
 static char temp_line[41];
+
+
+/*
+uint8_t write_sectors_save(char* base)
+{
+    set_ef_diskid(1);
+    write_ef_sector(0x010b, base + 0x0000);
+    write_ef_sector(0x010c, base + 0x0200);
+    return write_ef_sector(0x010d, base + 0x0400);
+}
+
+uint8_t write_sectors_storage(char* base)
+{
+    set_ef_diskid(1);
+    write_ef_sector(0x010e, base + 0x0000);
+    return write_ef_sector(0x010f, base + 0x0200);
+}
+
+uint8_t write_sectors_camp(char* base)
+{
+    set_ef_diskid(1);
+    write_ef_sector(0x0110, (char*)SAVEGAME_ADDR + 0x0000);
+    write_ef_sector(0x0111, base + 0x0200);
+    write_ef_sector(0x0112, base + 0x0400);
+    write_ef_sector(0x0113, base + 0x0600);
+    write_ef_sector(0x0114, base + 0x0800);
+    write_ef_sector(0x0115, base + 0x0a00);
+    write_ef_sector(0x0116, base + 0x0c00);
+    return write_ef_sector(0x0117, base + 0x0e00);
+}
+
+void load_sectors(char* base)
+{
+    set_ef_diskid(1);
+    read_ef_sector(0x010b, base + 0x0000);
+    read_ef_sector(0x010c, base + 0x0200);
+    read_ef_sector(0x010d, base + 0x0400);
+
+    read_ef_sector(0x010e, base + 0x0600);
+    read_ef_sector(0x010f, base + 0x0800);
+
+    read_ef_sector(0x0110, base + 0x0a00);
+    read_ef_sector(0x0111, base + 0x0c00);
+    read_ef_sector(0x0112, base + 0x0e00);
+    read_ef_sector(0x0113, base + 0x1000);
+    read_ef_sector(0x0114, base + 0x1200);
+    read_ef_sector(0x0115, base + 0x1400);
+    read_ef_sector(0x0116, base + 0x1600);
+    read_ef_sector(0x0117, base + 0x1800);
+}*/
 
 
 bool sure(uint8_t x, uint8_t y)
@@ -150,9 +206,15 @@ void draw_menu()
 
 }
 
-void draw_progress(int progress, int max)
+void draw_progress_write(int progress, int max)
 {
     cprintf("writing sector %d of %d ...  ", progress, max);
+    gotox(0);
+}
+
+void draw_progress_read(int progress, int max)
+{
+    cprintf("reading sector %d of %d ...  ", progress, max);
     gotox(0);
 }
 
@@ -160,7 +222,7 @@ void draw_progress(int progress, int max)
 uint8_t check_bd3_character_disk(uint8_t device)
 {
     uint8_t retval;
-    char* work = (char*)TEMP_ADDRESS;
+    char* work = TEMPMEM_ADDR;
     
     retval = read_cbm_sector(work, device, 1, 0);
     if (retval != 0) return retval;
@@ -192,23 +254,23 @@ uint8_t create_character_disk(uint8_t device)
     anykey(0, wherey());
 
     set_ef_diskid(1);
-    source = (char*)SAVE_ADDRESS;
     
     // open
     //retval = write_cbm_sector_open(device);
     //if (retval != 0) return 0x40;
     
     // load original track 18
-    load_ef_file(41); // track 18
+    source = SAVEGAME_ADDR;
+    load_ef_file_ext(41, source); // track 18
     for (i=0; i<19; i++) {
         retval = write_cbm_sector_ext(source, device, 18, (uint8_t)i);
         if (retval != 0) return 0x40;
-        draw_progress(++progress, ALL_SECTORS + 19 + 1);
+        draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
         source += 0x0100;
     }
     
     // write character disk && savegame
-    source = (char*)SAVE_ADDRESS;
+    source = SAVEGAME_ADDR;
     for (i=0; i<ALL_SECTORS/2; i++) {
         retval = read_ef_sector(i, source);
         if (retval != 0) {
@@ -218,17 +280,18 @@ uint8_t create_character_disk(uint8_t device)
         }
         retval = write_cbm_sector_ext(source, device, sectors_all[i*2].track, sectors_all[i*2].sector);
         if (retval != 0) return 0x40;
-        draw_progress(++progress, ALL_SECTORS + 19 + 1);
+        draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
         retval = write_cbm_sector_ext(source+0x0100, device, sectors_all[i*2+1].track, sectors_all[i*2+1].sector);
         if (retval != 0) return 0x40;
-        draw_progress(++progress, ALL_SECTORS + 19 + 1);
+        draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
     }
     
     // write original sector with codewheel code
-    load_ef_file(42); // codewheel sector
+    source = TEMPMEM_ADDR;
+    load_ef_file_ext(source, 42); // codewheel sector
     retval = write_cbm_sector_ext(source, device, 9, 14);
     if (retval != 0) return 0x40;
-    draw_progress(++progress, ALL_SECTORS + 19 + 1);
+    draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
 
     // close
     //write_cbm_sector_close();
@@ -245,6 +308,7 @@ uint8_t backup_to_disk(uint8_t device)
     uint8_t retval;
     char* source;
     int progress = 0;
+    int maxprogress = SAVE_SECTORS + 2;
 
     cprintf("Please insert a disk into #%d.\n\r", device);
     cprintf("You can use a valid\n\r"
@@ -252,18 +316,29 @@ uint8_t backup_to_disk(uint8_t device)
     anykey(0, wherey());
 
     set_ef_diskid(1);
-    source = (char*)SAVE_ADDRESS;
-    
-    load_sectors();
+
+    // write disk identification
+    // track01-sector00.bin: 45; track01-sector11.bin: 46
+    source = TEMPMEM_ADDR;
+    load_ef_file_ext(source, 45);
+    load_ef_file_ext(source + 0x0100, 46);
+
+    retval = write_cbm_sector_ext(source, device, 1, 0);
+    if (retval != 0) return 0x40;
+    draw_progress_write(++progress, maxprogress);
+
+    retval = write_cbm_sector_ext(source + 0x0100, device, 1, 11);
+    if (retval != 0) return 0x40;
+    draw_progress_write(++progress, maxprogress);
     
     // open
     //retval = write_cbm_sector_open(device);
     //if (retval != 0) return 0x40;
     
     // write savegame
-    source = (char*)SAVE_ADDRESS;
+    source = SAVEGAME_ADDR;
     for (i=0; i<SAVE_SECTORS/2; i++) {
-        retval = read_ef_sector(i, source);
+        retval = read_ef_sector(0x10b + i, source);
         if (retval != 0) {
             sprintf(temp_line, "backup failed");
             print_error(temp_line);
@@ -271,11 +346,11 @@ uint8_t backup_to_disk(uint8_t device)
         }
         retval = write_cbm_sector_ext(source, device, sectors_save[i*2].track, sectors_save[i*2].sector);
         if (retval != 0) return 0x40;
-        draw_progress(++progress, SAVE_SECTORS);
+        draw_progress_write(++progress, maxprogress);
         source += 0x0100;
         retval = write_cbm_sector_ext(source, device, sectors_save[i*2+1].track, sectors_save[i*2+1].sector);
         if (retval != 0) return 0x40;
-        draw_progress(++progress, SAVE_SECTORS);
+        draw_progress_write(++progress, maxprogress);
         source += 0x0100;
     }
     
@@ -311,23 +386,24 @@ uint8_t restore_from_disk(uint8_t device)
     }
 
     // load 26 sectors from disk
-    dest = (char*)SAVE_ADDRESS;
+    dest = SAVEGAME_ADDR;
     for (i=0; i<SAVE_SECTORS; i++) {
         retval = read_cbm_sector(dest, device, sectors_save[i].track, sectors_save[i].sector);
         if (retval != 0) return 0x40;
-        cprintf("loading sector %d of %d...  ", i, SAVE_SECTORS);
-        gotox(0);
+        //cprintf("loading sector %d of %d...  ", i+1, SAVE_SECTORS);
+        //gotox(0);
         dest += 0x0100;
+        draw_progress_read(i+1, SAVE_SECTORS);
     }
     cprintf("\n\r");
 
     // saving to easyflash
     cprintf("restoring savegame ...");
-    write_sectors_save();
+/*    write_sectors_save();
     cprintf(" ...");
     write_sectors_storage();
     cprintf(" ...");
-    write_sectors_camp();
+    write_sectors_camp();*/
     cprintf(" done.");
         
     return 1;
