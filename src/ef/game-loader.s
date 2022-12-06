@@ -87,6 +87,10 @@ diskswitcher_run = $67cb
         ; @1806
         jmp startup_game
 
+    call_startup_import:
+        ; @1809
+        jmp startup_import
+
 
     diskswitcher_load:
         ; we replace the following code in BARDSUBS1 (8 bytes)
@@ -176,11 +180,11 @@ diskswitcher_run = $67cb
     label_19d9:
         inx
         bne label_19aa
-        lda $dd00                   ; init cia2 (?)
-        ora #$03
-        sta $dd00
-        lda #$3f
-        sta $dd02
+;        lda $dd00                   ; init cia2 (?)
+;        ora #$03
+;        sta $dd00
+;        lda #$3f
+;        sta $dd02
         lda #$34                    ; set port direction
         sta $01
         rts
@@ -260,7 +264,7 @@ diskswitcher_run = $67cb
 
         ; splash
         cli
-;        jsr $4000             ; we ignore the pressed key
+; ###       jsr $4000             ; we ignore the pressed key
 
         lda #$35 
         sta $01  
@@ -351,3 +355,37 @@ diskswitcher_run = $67cb
 
         jmp ($00fe)
 
+
+    startup_import:
+        sei
+        ; set dummy interrupt
+        ldx #<startup_dummy_vector
+        ldy #>startup_dummy_vector
+        stx $fffa
+        sty $fffb
+        stx $fffe
+        sty $ffff
+        lda #$7f   ;   disable interrupts (?)
+        sta $dc0d
+        sta $dd0d
+        lda $dc0d
+        sta $dd0d
+        cli
+
+        ; load modified util64
+        lda #51
+        jsr _load_file
+        ldx #$ff             ; reset stack
+        txs
+        cli
+        cld                  ; no decimal
+
+        lda $fe
+        sta startup_import_jsr + 1
+        lda $ff
+        sta startup_import_jsr + 2
+        lda #$01             ; no immediate return in util64
+    startup_import_jsr:
+        jsr $2000
+
+        jmp startup_startmenu

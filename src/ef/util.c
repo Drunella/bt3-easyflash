@@ -40,10 +40,11 @@ uint8_t get_version_minor()
     return version[1];
 }
 
-static const void * const jumptable[3] = {
-    JT_STARTUP_STARTMENU,
-    JT_STARTUP_EDITOR,
-    JT_STARTUP_GAME        
+static const void * const jumptable[4] = {
+    (void*)(JT_STARTUP_STARTMENU),
+    (void*)(JT_STARTUP_EDITOR),
+    (void*)(JT_STARTUP_GAME),      
+    (void*)(JT_STARTUP_IMPORT)
 };
 
 void startup_startmenu_ext()
@@ -59,6 +60,11 @@ void startup_editor_ext()
 void startup_game_ext()
 {
     goto *jumptable[2];
+}
+
+void startup_import_ext()
+{
+    goto *jumptable[3];
 }
 
 

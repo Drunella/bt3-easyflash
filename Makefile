@@ -28,7 +28,7 @@ CC65FLAGS=-t $(TARGET) -O
 #export LD65_LIB=/opt/cc65/share/cc65/lib
 
 .SUFFIXES: .prg .s .c
-.PHONY: clean subdirs all easyflash mrproper
+.PHONY: clean all easyflash mrproper
 
 #EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
 EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o 
@@ -39,23 +39,29 @@ EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/e
 all: easyflash
 
 # easyflash
-easyflash: subdirs build/bd3-easyflash.crt
+easyflash: build/bd3-easyflash.crt
 
 # assemble
 build/%.o: src/%.s
+	@mkdir -p ./build/temp
+	@mkdir -p ./build/ef
 	$(CA65) $(CA65FLAGS) -g -o $@ $<
 
 # compile
 build/%.s: src/%.c
+	@mkdir -p ./build/temp
+	@mkdir -p ./build/ef
 	$(CC65) $(CC65FLAGS) -g -o $@ $<
 
 # assemble2
 build/%.o: build/%.s
+	@mkdir -p ./build/temp
+	@mkdir -p ./build/ef
 	$(CA65) $(CA65FLAGS) -g -o $@ $<
 
-subdirs:
-	@mkdir -p ./build/temp 
-	@mkdir -p ./build/ef
+#subdirs:
+#	@mkdir -p ./build/temp 
+#	@mkdir -p ./build/ef
 
 clean:
 	rm -rf build/ef
@@ -79,27 +85,31 @@ build/ef/init.prg: build/ef/init.o
 	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/init.cfg $^
 
 # easyflash loader.prg
-build/ef/loader.prg: $(EF_LOADER_FILES) subdirs
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -Ln ./build/ef/loader.info -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
+build/ef/loader.prg: $(EF_LOADER_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -Ln ./build/ef/loader.lst -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
 
 # sector-rom.prg
-build/ef/sector-rom.bin: build/ef/io-sector.o subdirs
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -Ln ./build/ef/sector-rom.info -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
+build/ef/sector-rom.bin: build/ef/io-sector.o
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/sector-rom.map -Ln ./build/ef/sector-rom.lst -o $@ -C src/ef/sector-rom.cfg build/ef/io-sector.o
 
-# startmenu.prg subdirs
-build/ef/startmenu.prg: subdirs $(STARTMENU_FILES)
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/startmenu.map -Ln ./build/ef/startmenu.info -o $@ -C src/ef/startmenu.cfg c64.lib $(STARTMENU_FILES)
+# startmenu.prg
+build/ef/startmenu.prg: $(STARTMENU_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/startmenu.map -Ln ./build/ef/startmenu.lst -o $@ -C src/ef/startmenu.cfg c64.lib $(STARTMENU_FILES)
 
-## savegame.prg subdirs
-#build/ef/savegame.prg: subdirs $(SAVEGAME_FILES)
-#	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -Ln ./build/ef/savegame.info -o $@ -C src/ef/savegame.cfg c64.lib $(SAVEGAME_FILES)
+## savegame.prg
+#build/ef/savegame.prg: $(SAVEGAME_FILES)
+#	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/savegame.map -Ln ./build/ef/savegame.lst -o $@ -C src/ef/savegame.cfg c64.lib $(SAVEGAME_FILES)
 
-# editor.prg subdirs
-build/ef/editor.prg: subdirs $(EDITOR_FILES)
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.info -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
+# editor.prg
+build/ef/editor.prg: $(EDITOR_FILES)
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.lst -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
+
+# import-util64.prg
+build/ef/import-util64.prg: build/ef/util64-da.o
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/import-util64.map -Ln ./build/ef/import-util64.lst -o $@ -C src/ef/import-util64.cfg build/ef/util64-da.o
 
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin
+build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin build/ef/import-util64.prg
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
@@ -119,38 +129,55 @@ build/ef/patched.done: build/ef/character.bin
 	touch ./build/ef/patched.done
 	
 # sanitized disks
-build/ef/boot.prodos: subdirs
+build/ef/boot.prodos: disks/boot.d64
+	@mkdir -p ./build/ef
 	tools/sanitize.py -v -i 0 -s ./disks/boot.d64 -d ./build/ef/boot.prodos
 
-build/ef/character.bin: subdirs
+build/ef/character.bin: disks/character.d64
+	@mkdir -p ./build/ef
 	tools/sanitize.py -v -i 1 -s ./disks/character.d64 -d ./build/ef/character.bin
 
-build/ef/dungeona.bin: subdirs
+build/ef/dungeona.bin: disks/dungeona.d64
+	@mkdir -p ./build/ef
 	tools/sanitize.py -v -i 2 -s ./disks/dungeona.d64 -d ./build/ef/dungeona.bin
 
-build/ef/dungeonb.bin: subdirs
+build/ef/dungeonb.bin: disks/dungeonb.d64
+	@mkdir -p ./build/ef
 	tools/sanitize.py -v -i 3 -s ./disks/dungeonb.d64 -d ./build/ef/dungeonb.bin
 	
 # application files
-build/ef/files.list: subdirs build/ef/boot.prodos build/prodos/prodos
+build/ef/files.list: build/ef/boot.prodos build/prodos/prodos
 	build/prodos/prodos -i ./build/ef/boot.prodos ls > build/ef/files.list
 	tools/extract.sh build/ef/files.list build/ef
 
 # copy track 18 of character disk
-build/ef/track18.bin: subdirs
+build/ef/track18.bin: disks/character.d64
+	@mkdir -p ./build/ef
 	dd if=disks/character.d64 of=build/ef/track18.bin bs=256 skip=357 count=19
 
 # copy prodos sector 87.1 at track 9 sector 14, summed 168 + 14
 # to track09-sector14.bin
-build/ef/track09-sector14.bin: subdirs
+build/ef/track09-sector14.bin: disks/character.d64
+	@mkdir -p ./build/ef
 	dd if=disks/character.d64 of=build/ef/track09-sector14.bin bs=256 count=1 skip=182
 
-build/ef/track01-sector00.bin: subdirs
+build/ef/track01-sector00.bin: disks/character.d64
+	@mkdir -p ./build/ef
 	dd if=disks/character.d64 of=build/ef/track01-sector00.bin bs=256 count=1 skip=0
 
-build/ef/track01-sector11.bin: subdirs
+build/ef/track01-sector11.bin: disks/character.d64
+	@mkdir -p ./build/ef
 	dd if=disks/character.d64 of=build/ef/track01-sector11.bin bs=256 count=1 skip=11
 
 # fastloader 1541 part, track 18 sector 14-17 (371 sectors in)
-build/ef/1541-fastloader.bin: subdirs
+build/ef/1541-fastloader.bin: disks/boot.d64
+	@mkdir -p ./build/ef
 	dd if=disks/boot.d64 of=build/ef/1541-fastloader.bin bs=256 count=4 skip=371
+
+# disassemble of prodos 2.0
+build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info
+	$(DA65) -i ./src/ef/io-sectortable-da.info -o build/ef/io-sectortable-da.s
+
+# disassemble of util64
+build/ef/util64-da.s: build/ef/files.list src/ef/util64-da.info
+	$(DA65) -i ./src/ef/util64-da.info -o build/ef/util64-da.s

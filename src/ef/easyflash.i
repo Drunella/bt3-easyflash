@@ -46,6 +46,7 @@ io_load_file_addr = $be02
 jt_startup_startmenu = $1800
 jt_startup_editor = $1803
 jt_startup_game = $1806
+jt_startup_import = $1809
 
 
 ; eapi functions

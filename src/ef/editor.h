@@ -20,7 +20,7 @@
 #include <stdint.h>
 
 
-#define SAVEGAME_ADDR 0xa000
+#define SAVEGAME_ADDR ((char*)(0xa000))
 
 
 typedef struct {

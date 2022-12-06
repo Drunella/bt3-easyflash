@@ -213,7 +213,7 @@ void main(void)
 
     // prepare
     set_ef_diskid(1);
-    load_sectors((char*)SAVEGAME_ADDR);
+    load_sectors(SAVEGAME_ADDR);
     prepare_characters();
     index = previous_index(next_index(index));
 

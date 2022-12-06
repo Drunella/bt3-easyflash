@@ -23,6 +23,7 @@
 
 .export _startup_game
 .export _startup_editor
+.export _startup_import
 
 .export _set_ef_diskid
 .export _read_ef_sector
@@ -64,6 +65,9 @@
 
     _startup_startmenu:
         jmp jt_startup_startmenu
+
+    _startup_import:
+        jmp jt_startup_import
 
 
 ; -- easyflash sector io -----------------------------------------------------

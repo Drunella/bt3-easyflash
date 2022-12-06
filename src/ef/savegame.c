@@ -32,60 +32,7 @@
 #define TEMPMEM_ADDR   ((char*)(0x1000))
 
 
-//extern char* _SAVEGAME__;
-//extern char* _TEMPMEM__;
-
 static char temp_line[41];
-
-
-/*
-uint8_t write_sectors_save(char* base)
-{
-    set_ef_diskid(1);
-    write_ef_sector(0x010b, base + 0x0000);
-    write_ef_sector(0x010c, base + 0x0200);
-    return write_ef_sector(0x010d, base + 0x0400);
-}
-
-uint8_t write_sectors_storage(char* base)
-{
-    set_ef_diskid(1);
-    write_ef_sector(0x010e, base + 0x0000);
-    return write_ef_sector(0x010f, base + 0x0200);
-}
-
-uint8_t write_sectors_camp(char* base)
-{
-    set_ef_diskid(1);
-    write_ef_sector(0x0110, (char*)SAVEGAME_ADDR + 0x0000);
-    write_ef_sector(0x0111, base + 0x0200);
-    write_ef_sector(0x0112, base + 0x0400);
-    write_ef_sector(0x0113, base + 0x0600);
-    write_ef_sector(0x0114, base + 0x0800);
-    write_ef_sector(0x0115, base + 0x0a00);
-    write_ef_sector(0x0116, base + 0x0c00);
-    return write_ef_sector(0x0117, base + 0x0e00);
-}
-
-void load_sectors(char* base)
-{
-    set_ef_diskid(1);
-    read_ef_sector(0x010b, base + 0x0000);
-    read_ef_sector(0x010c, base + 0x0200);
-    read_ef_sector(0x010d, base + 0x0400);
-
-    read_ef_sector(0x010e, base + 0x0600);
-    read_ef_sector(0x010f, base + 0x0800);
-
-    read_ef_sector(0x0110, base + 0x0a00);
-    read_ef_sector(0x0111, base + 0x0c00);
-    read_ef_sector(0x0112, base + 0x0e00);
-    read_ef_sector(0x0113, base + 0x1000);
-    read_ef_sector(0x0114, base + 0x1200);
-    read_ef_sector(0x0115, base + 0x1400);
-    read_ef_sector(0x0116, base + 0x1600);
-    read_ef_sector(0x0117, base + 0x1800);
-}*/
 
 
 bool sure(uint8_t x, uint8_t y)
@@ -261,7 +208,7 @@ uint8_t create_character_disk(uint8_t device)
     
     // load original track 18
     source = SAVEGAME_ADDR;
-    load_ef_file_ext(41, source); // track 18
+    load_ef_file_ext(source, 41); // track 18
     for (i=0; i<19; i++) {
         retval = write_cbm_sector_ext(source, device, 18, (uint8_t)i);
         if (retval != 0) return 0x40;
@@ -390,8 +337,6 @@ uint8_t restore_from_disk(uint8_t device)
     for (i=0; i<SAVE_SECTORS; i++) {
         retval = read_cbm_sector(dest, device, sectors_save[i].track, sectors_save[i].sector);
         if (retval != 0) return 0x40;
-        //cprintf("loading sector %d of %d...  ", i+1, SAVE_SECTORS);
-        //gotox(0);
         dest += 0x0100;
         draw_progress_read(i+1, SAVE_SECTORS);
     }
@@ -399,11 +344,12 @@ uint8_t restore_from_disk(uint8_t device)
 
     // saving to easyflash
     cprintf("restoring savegame ...");
-/*    write_sectors_save();
-    cprintf(" ...");
-    write_sectors_storage();
-    cprintf(" ...");
-    write_sectors_camp();*/
+    dest = SAVEGAME_ADDR;
+    for (i=0; i<SAVE_SECTORS/2; i++) {
+        write_ef_sector(i + 0x010b, dest);
+        dest += 0x0200;
+    }
+    
     cprintf(" done.");
         
     return 1;
@@ -443,10 +389,8 @@ void savegame_main()
             cputs("\r\n");
             menu_option('C', "Create character disk");
             cputs("\r\n");
-            /*menu_option('1', "Import from Bard's Tale I");
+            menu_option('I', "Import from Bard's Tale I/II");
             cputs("\r\n");
-            menu_option('2', "Import from Bard's Tale II");
-            cputs("\r\n");*/
             menu_option(0x5f, "Return to main menu");
             print_device(MENU_START_X + 8, MENU_START_Y, device);
             if (repaint & 0x80) clear_output();
@@ -485,14 +429,12 @@ void savegame_main()
                 clear_output();
                 repaint = create_character_disk(device);
                 break;
-            /*case '1':
+            case 'i':
                 clear_output();
-                repaint = 0x80;
+                repaint = 1;
+                // ### start
+                startup_import(); // does not return
                 break;
-            case '2':
-                clear_output();
-                repaint = 0x80;
-                break;*/
         }
     }
 

@@ -27,28 +27,220 @@ GLOBAL {
 # outside labels
 LABEL { ADDR $c208; NAME "extern_rw_prodos_sector"; };
 LABEL { ADDR $c211; NAME "extern_r_1541_sector"; };
+LABEL { ADDR $c215; NAME "extern_var_track"; };
+LABEL { ADDR $c216; NAME "extern_var_sector"; };
+
+# label definitions to patch the file
+LABEL { ADDR $2048; NAME "start_main_menu"; COMMENT "patch_begin_cut_1"; };
+LABEL { ADDR $2208; NAME "screen_clear_2208"; COMMENT "patch_end_cut_1\n; patch_line_insert 2"; };
+LABEL { ADDR $29B1; NAME "menu_return_main"; COMMENT "patch_line_replace 3"; };
 
 
 # code segment for code and data
 SEGMENT { START $2000;  END $39fc; NAME "CODE"; };
 
-LABEL { ADDR $2302; NAME "rw_prodos_sector"; };
-LABEL { ADDR $2328; NAME "backup_zeropage_30"; };
-LABEL { ADDR $2333; NAME "restore_zeropage_30"; };
+LABEL { ADDR $2302; NAME "rw_prodos_sector_2302"; };
+LABEL { ADDR $2328; NAME "backup_zeropage_2328"; };
+LABEL { ADDR $2333; NAME "restore_zeropage_2328"; };
+LABEL { ADDR $25ae; NAME "screen_clear_1_25ae"; };
+LABEL { ADDR $25ab; NAME "screen_clear_2_25ab"; };
+LABEL { ADDR $22a6; NAME "screen_print_xytext_22a6"; COMMENT "parameter: x, y, text"; };
+LABEL { ADDR $22c5; NAME "screen_print_text_22c5"; COMMENT "parameter: text"; };
+LABEL { ADDR $3814; NAME "io_load_prodos_sector_3814"; };
+LABEL { ADDR $22D8; NAME "screen_print_text_low_22d8"; SIZE 1; };
+LABEL { ADDR $22D9; NAME "screen_print_text_high_22d9"; SIZE 1; };
+LABEL { ADDR $2805; NAME "read_keyboard_2805"; };
+LABEL { ADDR $2890; NAME "read_keyboard_2290"; };
+LABEL { ADDR $21b1; NAME "screen_wait_for_destination_21b1"; };
+LABEL { ADDR $2283; NAME "screen_press_any_key_2283"; };
+
+LABEL { ADDR $39e7; NAME "load_1541_sector_39e7"; };
+
+LABEL { ADDR $2214; NAME "var_transfer_selection_2214"; };
+LABEL { ADDR $233e; NAME "var_zeropage_backup_233e"; };
+LABEL { ADDR $24a0; NAME "auto_24a0"; SIZE 1; };
+LABEL { ADDR $2618; NAME "var_2618"; };
+LABEL { ADDR $24e3; NAME "auto_24e3"; SIZE 1; };
+LABEL { ADDR $25e7; NAME "auto_25e7"; SIZE 1; };
+LABEL { ADDR $304d; NAME "auto_304d"; SIZE 1; };
+LABEL { ADDR $3079; NAME "auto_3079"; SIZE 1; };
+
+LABEL { ADDR $2155; NAME "menu_backup_2155"; };
+LABEL { ADDR $28df; NAME "menu_transfer_28df"; };
+LABEL { ADDR $2152; NAME "menu_play_2152"; };
+LABEL { ADDR $212c; NAME "menu_return_212c"; };
 
 
 # ranges
-RANGE { START $2000;  END $39fc; TYPE code; };
+RANGE { START $2000;  END $2047; TYPE code; };  # startup code
 
-#LABEL { ADDR $c215; NAME "track_number"; };
-#LABEL { ADDR $c216; NAME "sector_number"; };
-#RANGE { START $c215;  END $c216; TYPE ByteTable; };
+# main menu
+RANGE { START $2048;  END $204a; TYPE code; };
+RANGE { START $204b;  END $2066; TYPE texttable; };
+RANGE { START $2067;  END $2069; TYPE code; };
+RANGE { START $206a;  END $2094; TYPE texttable; };
+RANGE { START $2095;  END $2097; TYPE code; };
+RANGE { START $2098;  END $20ad; TYPE texttable; };
+RANGE { START $20ae;  END $20b0; TYPE code; };
+RANGE { START $20b1;  END $20c8; TYPE texttable; };
+RANGE { START $20c9;  END $20cb; TYPE code; };
+RANGE { START $20cc;  END $20e3; TYPE texttable; };
+RANGE { START $20e4;  END $20e6; TYPE code; };
+RANGE { START $20e7;  END $2100; TYPE texttable; };
 
-#RANGE { START $c217;  END $c368; TYPE skip; };
+# selection and backup menu
+RANGE { START $2101;  END $211f; TYPE code; };
+RANGE { START $2120;  END $2123; TYPE texttable; };
+RANGE { START $2124;  END $212b; TYPE addrtable; }; # addrtable
+RANGE { START $212c;  END $2155; TYPE code; }; # return code
+RANGE { START $2156;  END $2188; TYPE code; };
+RANGE { START $2189;  END $21a5; TYPE texttable; };
+RANGE { START $21a6;  END $21ad; TYPE code; };
+RANGE { START $21ae;  END $21b9; TYPE code; };
+RANGE { START $21ba;  END $21cd; TYPE texttable; };
+RANGE { START $21ce;  END $21d3; TYPE code; };
+RANGE { START $21d4;  END $21da; TYPE texttable; };
+RANGE { START $21db;  END $21e0; TYPE code; };
+RANGE { START $21e1;  END $21ec; TYPE texttable; };
+RANGE { START $21ed;  END $21ef; TYPE code; };
+RANGE { START $21f0;  END $2203; TYPE texttable; };
+RANGE { START $2204;  END $2207;  TYPE code; };
 
-#RANGE { START $c369;  END $c3b1; TYPE code; };
-#RANGE { START $c3b2;  END $c3d4; TYPE ByteTable; };
-#RANGE { START $c3d5;  END $c3f8; TYPE code; };
-#RANGE { START $c3f9;  END $c44f; TYPE ByteTable; };
+# insert jmp $28df 
 
-#RANGE { START $c450;  END $c9e9; TYPE skip; };
+
+RANGE { START $2208;  END $2213; TYPE code; };
+RANGE { START $2214;  END $2257; TYPE bytetable; };
+
+RANGE { START $2258;  END $226c; TYPE code; };
+RANGE { START $226d;  END $226f; TYPE texttable; };
+
+RANGE { START $2270;  END $2275; TYPE code; };
+RANGE { START $2276;  END $2278; TYPE texttable; };
+
+RANGE { START $2279;  END $2281; TYPE code; };
+RANGE { START $2282;  END $2282; TYPE bytetable; };
+
+RANGE { START $2283;  END $2285; TYPE code; };
+RANGE { START $2286;  END $2295; TYPE texttable; };
+
+RANGE { START $2296;  END $22ea; TYPE code; };
+
+RANGE { START $22eb;  END $22ec; TYPE bytetable; };
+
+RANGE { START $22ed;  END $22ed; TYPE code; };
+
+RANGE { START $22ee;  END $2301; TYPE bytetable; };
+
+RANGE { START $2302;  END $233d; TYPE code; };
+RANGE { START $233e;  END $235d; TYPE bytetable; };
+
+RANGE { START $235e;  END $23d9; TYPE code; };
+RANGE { START $23da;  END $23df; TYPE bytetable; };
+RANGE { START $23e0;  END $23ed; TYPE bytetable; }; # addrtable
+
+RANGE { START $23ee;  END $24b4; TYPE code; };
+RANGE { START $24b5;  END $24b6; TYPE bytetable; }; # addrtable
+RANGE { START $24b7;  END $2523; TYPE code; };
+
+RANGE { START $2535;  END $2554; TYPE bytetable; };
+
+RANGE { START $2555;  END $2557; TYPE code; };
+RANGE { START $2558;  END $2578; TYPE texttable; };
+RANGE { START $2579;  END $2579; TYPE code; };
+
+RANGE { START $257a;  END $25a9; TYPE bytetable; };
+
+RANGE { START $25ab;  END $2617; TYPE code; };
+RANGE { START $2618;  END $2618; TYPE bytetable; };
+
+RANGE { START $2619;  END $265b; TYPE code; };
+
+RANGE { START $265c;  END $2661; TYPE code; };
+RANGE { START $2662;  END $266d; TYPE texttable; };
+RANGE { START $266e;  END $26be; TYPE code; };
+RANGE { START $26bf;  END $26c0; TYPE bytetable; };
+
+RANGE { START $26c1;  END $26c9; TYPE code; };
+RANGE { START $26ca;  END $26d5; TYPE texttable; };
+
+RANGE { START $26d6;  END $27a5; TYPE code; };
+RANGE { START $27a6;  END $27e5; TYPE bytetable; };
+
+RANGE { START $27e6;  END $286d; TYPE code; };
+RANGE { START $286f;  END $288f; TYPE bytetable; };
+
+RANGE { START $2890;  END $28be; TYPE code; };
+RANGE { START $28bf;  END $28de; TYPE bytetable; };
+
+RANGE { START $28df;  END $28e2; TYPE code; };
+RANGE { START $28e3;  END $29a9; TYPE texttable; };
+
+RANGE { START $29aa;  END $29dc; TYPE code; };
+
+RANGE { START $29dd;  END $29e7; TYPE code; };
+RANGE { START $29e8;  END $2a34; TYPE texttable; };
+
+RANGE { START $2a35;  END $2a45; TYPE code; };
+RANGE { START $2a46;  END $2a63; TYPE texttable; };
+
+RANGE { START $2a64;  END $2a66; TYPE code; };
+RANGE { START $2a67;  END $2a75; TYPE texttable; };
+
+RANGE { START $2a76;  END $2a9c; TYPE code; };
+RANGE { START $2a9d;  END $2b09; TYPE texttable; };
+
+RANGE { START $2b0a;  END $2b21; TYPE code; };
+RANGE { START $2b22;  END $2b2a; TYPE texttable; };
+
+RANGE { START $2b2b;  END $2b34; TYPE code; };
+RANGE { START $2b35;  END $2b43; TYPE texttable; };
+
+RANGE { START $2b44;  END $2b7c; TYPE code; };
+RANGE { START $2b7d;  END $2b7e; TYPE bytetable; };
+
+RANGE { START $2b7f;  END $2b91; TYPE code; };
+RANGE { START $2b92;  END $2ba1; TYPE texttable; };
+
+RANGE { START $2ba2;  END $2ba8; TYPE code; };
+RANGE { START $2ba9;  END $2bb6; TYPE texttable; };
+
+RANGE { START $2bb7;  END $2bcc; TYPE code; };
+
+RANGE { START $2bcd;  END $2d1b; TYPE bytetable; };
+
+RANGE { START $2d1c;  END $2df9; TYPE code; };
+
+RANGE { START $2dfa;  END $2ebb; TYPE bytetable; };
+
+RANGE { START $2ebc;  END $2f33; TYPE code; };
+RANGE { START $2f34;  END $306f; TYPE bytetable; };
+
+RANGE { START $3070;  END $30b6; TYPE code; };
+RANGE { START $30b7;  END $30bc; TYPE bytetable; }; // addrtable
+
+RANGE { START $30bd;  END $3181; TYPE code; };
+RANGE { START $3182;  END $318a; TYPE bytetable; };
+
+RANGE { START $318b;  END $31f4; TYPE code; };
+RANGE { START $31f5;  END $3374; TYPE bytetable; };
+
+RANGE { START $3375;  END $3553; TYPE code; };
+RANGE { START $3554;  END $3762; TYPE bytetable; };
+
+RANGE { START $3763;  END $37cb; TYPE code; };
+RANGE { START $37cc;  END $3807; TYPE texttable; };
+
+RANGE { START $3808;  END $380d; TYPE code; };
+
+RANGE { START $380e;  END $3845; TYPE code; };
+RANGE { START $3846;  END $3873; TYPE texttable; };
+RANGE { START $3874;  END $3879; TYPE code; };
+
+RANGE { START $387a;  END $3888; TYPE bytetable; };
+RANGE { START $3889;  END $38ce; TYPE bytetable; }; # wordtable
+
+RANGE { START $38cf;  END $38f4; TYPE code; };
+RANGE { START $38f5;  END $391f; TYPE bytetable; };
+
+RANGE { START $3920;  END $39fb; TYPE code; };

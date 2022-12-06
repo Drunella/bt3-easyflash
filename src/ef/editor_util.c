@@ -251,7 +251,7 @@ uint8_t write_sectors_storage(char* base)
 uint8_t write_sectors_camp(char* base)
 {
     set_ef_diskid(1);
-    write_ef_sector(0x0110, (char*)SAVEGAME_ADDR + 0x0a00);
+    write_ef_sector(0x0110, base + 0x0a00);
     write_ef_sector(0x0111, base + 0x0c00);
     write_ef_sector(0x0112, base + 0x0e00);
     write_ef_sector(0x0113, base + 0x1000);

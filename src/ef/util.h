@@ -23,9 +23,9 @@
 
 // startup addresses, also in easyflash.i
 #define JT_STARTUP_STARTMENU  0x1800
-#define JT_STARTUP_EDITOR  0x1803
-#define JT_STARTUP_GAME  0x1806
-
+#define JT_STARTUP_EDITOR     0x1803
+#define JT_STARTUP_GAME       0x1806
+#define JT_STARTUP_IMPORT     0x1809
 
 uint8_t get_version_major();
 uint8_t get_version_minor();
@@ -39,9 +39,12 @@ void cart_reset(void);
 void startup_game_ext();
 void startup_editor_ext();
 void startup_startmenu_ext();
+void startup_import_ext();
+
 void __fastcall__ startup_game();
 void __fastcall__ startup_editor();
 void __fastcall__ startup_startmenu();
+void __fastcall__ startup_import();
 
 void __fastcall__ set_ef_diskid(uint8_t diskid);
 uint8_t __fastcall__ read_ef_sector(uint16_t sector, char* destination);
