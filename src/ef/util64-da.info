@@ -58,6 +58,12 @@ LABEL { ADDR $23da; NAME "var_keycodes_select_character_23da"; };
 LABEL { ADDR $2b7f; NAME "screen_prodos_error"; };
 LABEL { ADDR $3763; NAME "load_ef_camp"; };
 LABEL { ADDR $3766; NAME "save_ef_camp"; };
+LABEL { ADDR $318b; NAME "memcopy_character_bd1"; };
+LABEL { ADDR $31b2; NAME "memcopy_character_bd2"; };
+LABEL { ADDR $3506; NAME "memcopy_character_bd3"; };
+LABEL { ADDR $2dd6; NAME "count_characters"; };
+LABEL { ADDR $2d45; NAME "identify_valid_characters"; };
+LABEL { ADDR $2da6; NAME "check_for_name_already_exists"; };
 
 LABEL { ADDR $29dd; NAME "menu_select_characters_29dd"; };
 
@@ -68,15 +74,18 @@ LABEL { ADDR $2214; NAME "var_transfer_selection_2214"; };
 LABEL { ADDR $233e; NAME "var_zeropage_backup_233e"; };
 LABEL { ADDR $24a0; NAME "auto_24a0"; SIZE 1; };
 LABEL { ADDR $2618; NAME "var_2618"; };
-LABEL { ADDR $24e3; NAME "auto_24e3"; SIZE 1; };
-LABEL { ADDR $25e7; NAME "auto_25e7"; SIZE 1; };
-LABEL { ADDR $304d; NAME "auto_304d"; SIZE 1; };
-LABEL { ADDR $3079; NAME "auto_3079"; SIZE 1; };
 
 #LABEL { ADDR $2155; NAME "menu_backup_2155"; };
 LABEL { ADDR $28df; NAME "menu_transfer_28df"; }; # will be used in other file
 #LABEL { ADDR $2152; NAME "menu_play_2152"; };
 #LABEL { ADDR $212c; NAME "menu_return_212c"; };
+
+LABEL { ADDR $2dfa; NAME "source_character_addresses_low"; };
+LABEL { ADDR $2dfb; NAME "source_character_addresses_high"; };
+LABEL { ADDR $2e3a; NAME "destination_character_addresses_low"; };
+LABEL { ADDR $2e3b; NAME "destination_character_addresses_high"; };
+
+LABEL { ADDR $3138; NAME "filename_roster_bd1"; };
 
 
 # ranges
@@ -196,7 +205,12 @@ RANGE { START $28bf;  END $28de; TYPE bytetable; };
 RANGE { START $28df;  END $28e2; TYPE code; };
 RANGE { START $28e3;  END $29a9; TYPE texttable; };
 
-RANGE { START $29aa;  END $29cd; TYPE code; };
+RANGE { START $29aa;  END $29b0; TYPE code; };
+RANGE { START $29b1;  END $29b3; TYPE skip; }; # change return to main menu
+LABEL { ADDR $29b4; NAME "return_to_main_29b1"; COMMENT "patch_line_replace_4";  };
+
+RANGE { START $29b4;  END $29cd; TYPE code; };
+
 RANGE { START $29ce;  END $29d0; TYPE skip; }; # remove wait for destination
 RANGE { START $29d1;  END $29dc; TYPE code; };
 
@@ -206,11 +220,13 @@ RANGE { START $29e8;  END $2a34; TYPE texttable; };
 RANGE { START $2a35;  END $2a45; TYPE code; };
 RANGE { START $2a46;  END $2a63; TYPE texttable; };
 
-RANGE { START $2a64;  END $2a66; TYPE code; };
-RANGE { START $2a67;  END $2a75; TYPE texttable; };
+RANGE { START $2a64;  END $2a67; TYPE code; };
 
-RANGE { START $2a76;  END $2a9c; TYPE code; };
-RANGE { START $2a9d;  END $2b09; TYPE texttable; };
+RANGE { START $2a68;  END $2a6a; TYPE code; };
+RANGE { START $2a6b;  END $2a75; TYPE texttable; };
+
+RANGE { START $2a76;  END $2a9f; TYPE code; };
+RANGE { START $2aa0;  END $2b09; TYPE texttable; };
 
 RANGE { START $2b0a;  END $2b21; TYPE code; };
 RANGE { START $2b22;  END $2b2a; TYPE texttable; };
@@ -236,12 +252,19 @@ RANGE { START $2d1c;  END $2df9; TYPE code; };
 RANGE { START $2dfa;  END $2ebb; TYPE bytetable; };
 
 RANGE { START $2ebc;  END $2f33; TYPE code; };
-RANGE { START $2f34;  END $306f; TYPE bytetable; };
+RANGE { START $2f34;  END $3032; TYPE bytetable; };
 
-RANGE { START $3070;  END $30b6; TYPE code; };
+RANGE { START $3033;  END $30b6; TYPE code; };
 RANGE { START $30b7;  END $30bc; TYPE addrtable; }; # addrtable
 
-RANGE { START $30bd;  END $3181; TYPE code; };
+RANGE { START $30bd;  END $3130; TYPE code; };
+
+RANGE { START $3131;  END $3134; TYPE skip; }; # replace with correct address
+LABEL { ADDR $3135; NAME "set_bd1_filename_3135"; COMMENT "patch_line_replace_3";  };
+
+RANGE { START $3135;  END $3137; TYPE code; };
+RANGE { START $3138;  END $313c; TYPE texttable; };
+RANGE { START $313d;  END $3181; TYPE code; };
 RANGE { START $3182;  END $3183; TYPE addrtable; };
 RANGE { START $3184;  END $3184; TYPE bytetable; };
 RANGE { START $3185;  END $3186; TYPE addrtable; };

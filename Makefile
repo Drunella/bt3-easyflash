@@ -44,19 +44,19 @@ easyflash: build/bd3-easyflash.crt
 
 # assemble
 build/%.o: src/%.s
-	@mkdir -p ./build/temp
+#	@mkdir -p ./build/temp
 	@mkdir -p ./build/ef
 	$(CA65) $(CA65FLAGS) -g -o $@ $<
 
 # compile
 build/%.s: src/%.c
-	@mkdir -p ./build/temp
+#	@mkdir -p ./build/temp
 	@mkdir -p ./build/ef
 	$(CC65) $(CC65FLAGS) -g -o $@ $<
 
 # assemble2
 build/%.o: build/%.s
-	@mkdir -p ./build/temp
+#	@mkdir -p ./build/temp
 	@mkdir -p ./build/ef
 	$(CA65) $(CA65FLAGS) -g -o $@ $<
 
@@ -66,7 +66,7 @@ build/%.o: build/%.s
 
 clean:
 	rm -rf build/ef
-	rm -rf build/temp
+#	rm -rf build/temp
 	rm -f build/bd3-easyflash.crt
 
 mrproper:
@@ -106,7 +106,7 @@ build/ef/editor.prg: $(EDITOR_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.lst -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
 
 # import-util64.prg
-build/ef/import-util64.prg: $(IMPORT_UTIL64_FILES) build/ef/global.i
+build/ef/import-util64.prg: $(IMPORT_UTIL64_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/import-util64.map -Ln ./build/ef/import-util64.lst -o $@ -C src/ef/import-util64.cfg c64.lib $(IMPORT_UTIL64_FILES)
 
 # build image dir and data
@@ -182,7 +182,7 @@ build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info 
 	rm -f build/ef/temp1.s
 
 # disassemble of util64
-build/ef/util64-da.s: src/ef/util64-da.info build/ef/2.0.prg src/ef/util64-patch.sh src/ef/util64-exp.inc
+build/ef/util64-da.s: build/ef/global.i src/ef/util64-da.info build/ef/2.0.prg src/ef/util64-patch.sh src/ef/util64-exp.inc
 	$(DA65) -i ./src/ef/util64-da.info -o build/ef/temp2.s
 	src/ef/util64-patch.sh src/ef/util64-exp.inc build/ef/temp2.s > build/ef/util64-da.s
 	rm -f build/ef/temp2.s

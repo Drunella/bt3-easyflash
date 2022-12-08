@@ -30,9 +30,12 @@
 
 .import cbm_read_sector, cbm_backup_zeropage, cbm_restore_zeropage
 
+.import screen_clear_1_25ae, screen_clear_2_25ab
+
 .export util64_rw_ef_sector
 .export util64_r_cbm_sector
 .export util64_r_prodos_sector
+.export return_to_main
 
 
 .segment "CODE"
@@ -52,10 +55,9 @@
         lda var_io_sector_high
         sta $47
         jsr loadsave_sector_body_addr
-        pha            
+        php
         jsr restore_zeropage_2328
-        pla
-        cmp #$01
+        plp
         rts
 
 
@@ -105,3 +107,26 @@
         dec $45
     :   rts
 
+
+    return_to_main:
+        ; return to main menu
+        sei
+        lda #$36   ; memory mapping
+        sta $01
+
+        jsr screen_clear_1_25ae
+
+        lda #$00
+        sta $D021
+        lda #$1B
+        sta $D011
+        lda #$C8
+        sta $D016
+        lda #$17
+        sta $D018
+
+        lda #$81   ; start timer for interrupts
+        sta $dc0d
+
+        cli
+        jmp jt_startup_startmenu

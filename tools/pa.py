@@ -33,7 +33,7 @@ import argparse
 def main(argc, argv):
     for i in range(1, argc):
         c = int(argv[i], 16);
-        if (c >= 0x80 and c <=0xda):
+        if (c >= 0x80 and c <=0xff):
             c -= 0x80
         
         if (c == 32):

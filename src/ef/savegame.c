@@ -26,7 +26,7 @@
 
 #define MENU_START_Y 6
 #define MENU_START_X 12
-#define OUTPUT_START_Y 16
+#define OUTPUT_START_Y 18
 
 #define SAVEGAME_ADDR  ((char*)(0x8000))
 #define TEMPMEM_ADDR   ((char*)(0x1000))

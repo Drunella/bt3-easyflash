@@ -326,11 +326,7 @@ diskswitcher_run = $67cb
 
 
     startup_startmenu:
-        ;jsr startup_init_startmenu
-        ;lda #42
-        ;jsr _load_file       ; load UTIL64
-        ; load own backup/restore code
-        ; ###
+        ; load startmenu
         lda #32
         jsr _load_file       ; load startmenu
 
