@@ -23,19 +23,19 @@ GLOBAL {
     COMMENTS        4;
 };
 
-
 # outside labels
-LABEL { ADDR $c208; NAME "extern_rw_prodos_sector"; };
-LABEL { ADDR $c211; NAME "extern_r_1541_sector"; };
-LABEL { ADDR $c215; NAME "extern_var_track"; };
-LABEL { ADDR $c216; NAME "extern_var_sector"; };
-
-# patch label: do not ask for destination disk
-LABEL { ADDR $29CE; NAME "screen_wfd_29ce"; COMMENT "patch_line_delete_after 2"; };
-
+LABEL { ADDR $c208; NAME "util64_r_prodos_sector"; COMMENT "patch_line_remove"; };
+LABEL { ADDR $c211; NAME "util64_r_cbm_sector"; COMMENT "patch_line_remove"; };
+LABEL { ADDR $c215; NAME "calc_track_number"; COMMENT "patch_line_remove"; };
+LABEL { ADDR $c216; NAME "calc_sector_number"; COMMENT "patch_line_remove"; };
 
 # code segment for code and data
 SEGMENT { START $2000;  END $39fc; NAME "CODE"; };
+
+LABEL { ADDR $22ee; NAME "var_io_buffer_low"; };
+LABEL { ADDR $22ef; NAME "var_io_buffer_high"; };
+LABEL { ADDR $22f0; NAME "var_io_sector_low"; };
+LABEL { ADDR $22f1; NAME "var_io_sector_high"; };
 
 LABEL { ADDR $2302; NAME "rw_prodos_sector_2302"; };
 LABEL { ADDR $2328; NAME "backup_zeropage_2328"; };
@@ -50,13 +50,14 @@ LABEL { ADDR $22D9; NAME "screen_print_text_high_22d9"; SIZE 1; };
 LABEL { ADDR $2805; NAME "read_keyboard_2805"; };
 LABEL { ADDR $2890; NAME "read_keyboard_2290"; };
 LABEL { ADDR $21b1; NAME "screen_wait_for_destination_21b1"; };
-LABEL { ADDR $21ae; NAME "screen_wait_for_source_21ae"; COMMENT "patch_line_insert_before 1"; }; # jmp to transfer menu
 LABEL { ADDR $2283; NAME "screen_press_any_key_2283"; };
 LABEL { ADDR $309b; NAME "io_load_from_source_309b"; };
 LABEL { ADDR $313d; NAME "process_transfer_characters_313d"; };
 LABEL { ADDR $235e; NAME "menu_select_character_235e"; };
 LABEL { ADDR $23da; NAME "var_keycodes_select_character_23da"; };
 LABEL { ADDR $2b7f; NAME "screen_prodos_error"; };
+LABEL { ADDR $3763; NAME "load_ef_camp"; };
+LABEL { ADDR $3766; NAME "save_ef_camp"; };
 
 LABEL { ADDR $29dd; NAME "menu_select_characters_29dd"; };
 
@@ -73,7 +74,7 @@ LABEL { ADDR $304d; NAME "auto_304d"; SIZE 1; };
 LABEL { ADDR $3079; NAME "auto_3079"; SIZE 1; };
 
 #LABEL { ADDR $2155; NAME "menu_backup_2155"; };
-LABEL { ADDR $28df; NAME "menu_transfer_28df"; };
+LABEL { ADDR $28df; NAME "menu_transfer_28df"; }; # will be used in other file
 #LABEL { ADDR $2152; NAME "menu_play_2152"; };
 #LABEL { ADDR $212c; NAME "menu_return_212c"; };
 
@@ -81,12 +82,14 @@ LABEL { ADDR $28df; NAME "menu_transfer_28df"; };
 # ranges
 RANGE { START $2000;  END $2047; TYPE code; };  # startup code
 
+# headline
+RANGE { START $2048;  END $204a; TYPE code; };
+RANGE { START $204b;  END $2066; TYPE texttable; };
+RANGE { START $2067;  END $2069; TYPE code; };
+RANGE { START $206a;  END $2094; TYPE texttable; };
+
 # main menu
-RANGE { START $2048;  END $212b; TYPE skip; };
-#RANGE { START $2048;  END $204a; TYPE code; };
-#RANGE { START $204b;  END $2066; TYPE texttable; };
-#RANGE { START $2067;  END $2069; TYPE code; };
-#RANGE { START $206a;  END $2094; TYPE texttable; };
+RANGE { START $2095;  END $212b; TYPE skip; };
 #RANGE { START $2095;  END $2097; TYPE code; };
 #RANGE { START $2098;  END $20ad; TYPE texttable; };
 #RANGE { START $20ae;  END $20b0; TYPE code; };
@@ -102,6 +105,7 @@ RANGE { START $2048;  END $212b; TYPE skip; };
 
 # return menu
 RANGE { START $212c;  END $21ad; TYPE skip; };
+LABEL { ADDR $21ae; NAME "screen_wait_for_source_21ae"; COMMENT "patch_line_replace_1"; }; # jmp to transfer menu
 #RANGE { START $212c;  END $2154; TYPE code; }; # return code
 #RANGE { START $2155;  END $2188; TYPE code; };
 #RANGE { START $2189;  END $21a5; TYPE texttable; };
@@ -192,7 +196,9 @@ RANGE { START $28bf;  END $28de; TYPE bytetable; };
 RANGE { START $28df;  END $28e2; TYPE code; };
 RANGE { START $28e3;  END $29a9; TYPE texttable; };
 
-RANGE { START $29aa;  END $29dc; TYPE code; };
+RANGE { START $29aa;  END $29cd; TYPE code; };
+RANGE { START $29ce;  END $29d0; TYPE skip; }; # remove wait for destination
+RANGE { START $29d1;  END $29dc; TYPE code; };
 
 RANGE { START $29dd;  END $29e7; TYPE code; };
 RANGE { START $29e8;  END $2a34; TYPE texttable; };
@@ -233,10 +239,16 @@ RANGE { START $2ebc;  END $2f33; TYPE code; };
 RANGE { START $2f34;  END $306f; TYPE bytetable; };
 
 RANGE { START $3070;  END $30b6; TYPE code; };
-RANGE { START $30b7;  END $30bc; TYPE bytetable; }; // addrtable
+RANGE { START $30b7;  END $30bc; TYPE addrtable; }; # addrtable
 
 RANGE { START $30bd;  END $3181; TYPE code; };
-RANGE { START $3182;  END $318a; TYPE bytetable; };
+RANGE { START $3182;  END $3183; TYPE addrtable; };
+RANGE { START $3184;  END $3184; TYPE bytetable; };
+RANGE { START $3185;  END $3186; TYPE addrtable; };
+RANGE { START $3187;  END $3187; TYPE bytetable; };
+RANGE { START $3188;  END $3189; TYPE addrtable; };
+RANGE { START $318a;  END $318a; TYPE bytetable; };
+
 
 RANGE { START $318b;  END $31f4; TYPE code; };
 RANGE { START $31f5;  END $3374; TYPE bytetable; };
@@ -244,12 +256,25 @@ RANGE { START $31f5;  END $3374; TYPE bytetable; };
 RANGE { START $3375;  END $3553; TYPE code; };
 RANGE { START $3554;  END $3762; TYPE bytetable; };
 
-RANGE { START $3763;  END $37cb; TYPE code; };
+RANGE { START $3763;  END $3783; TYPE code; };
+
+RANGE { START $3784;  END $3786; TYPE skip; }; # remove call to load sector
+LABEL { ADDR $3787; NAME "load_ef_sector_3784"; COMMENT "patch_line_replace_2";  };
+
+RANGE { START $3787;  END $37b2; TYPE code; };
+RANGE { START $37b3;  END $37b5; TYPE skip; }; # remove call to load sector
+LABEL { ADDR $37b6; NAME "load_ef_sector_37b3"; COMMENT "patch_line_replace_2"; };
+
+RANGE { START $37b6;  END $37cb; TYPE code; };
+
 RANGE { START $37cc;  END $3807; TYPE texttable; };
 
-RANGE { START $3808;  END $380d; TYPE code; };
+RANGE { START $3808;  END $3829; TYPE code; };
 
-RANGE { START $380e;  END $3845; TYPE code; };
+RANGE { START $382a;  END $382c; TYPE skip; }; # remove call to load sector
+LABEL { ADDR $382d; NAME "load_ef_sector_382a"; COMMENT "patch_line_replace_2"; };
+RANGE { START $382d;  END $3845; TYPE code; };
+
 RANGE { START $3846;  END $3873; TYPE texttable; };
 RANGE { START $3874;  END $3879; TYPE code; };
 

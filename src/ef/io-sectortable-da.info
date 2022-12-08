@@ -32,9 +32,10 @@ SEGMENT { START $c000;  END $c9e9; NAME "CODE"; };
 
 # ranges
 RANGE { START $c000;  END $c214; TYPE skip; };
+LABEL { ADDR $c369; NAME "calculate_track_sector"; };
 
-LABEL { ADDR $c215; NAME "track_number"; };
-LABEL { ADDR $c216; NAME "sector_number"; };
+LABEL { ADDR $c215; NAME "calc_track_number"; };
+LABEL { ADDR $c216; NAME "calc_sector_number"; };
 RANGE { START $c215;  END $c216; TYPE ByteTable; };
 
 RANGE { START $c217;  END $c368; TYPE skip; };
@@ -42,6 +43,8 @@ RANGE { START $c217;  END $c368; TYPE skip; };
 RANGE { START $c369;  END $c3b1; TYPE code; };
 RANGE { START $c3b2;  END $c3d4; TYPE ByteTable; };
 RANGE { START $c3d5;  END $c3f8; TYPE code; };
-RANGE { START $c3f9;  END $c44f; TYPE ByteTable; };
+RANGE { START $c3f9;  END $c3fc; TYPE bytetable; };
+RANGE { START $c3fd;  END $c404; TYPE addrtable; };
+RANGE { START $c405;  END $c44f; TYPE ByteTable; };
 
 RANGE { START $c450;  END $c9e9; TYPE skip; };

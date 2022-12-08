@@ -22,7 +22,7 @@ CC65=cc65
 DA65=da65
 #LD65=ld65
 LD65FLAGS=-t $(TARGET)
-CA65FLAGS=-t $(TARGET) -I . --debug-info
+CA65FLAGS=-t $(TARGET) -I . -I build/ef --debug-info
 CC65FLAGS=-t $(TARGET) -O
 #LD65FLAGS=
 #export LD65_LIB=/opt/cc65/share/cc65/lib
@@ -34,6 +34,7 @@ CC65FLAGS=-t $(TARGET) -O
 EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o 
 STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o build/ef/io-1541.o
 EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o build/ef/io-1541.o
+IMPORT_UTIL64_FILES=build/ef/util64-da.o build/ef/io-sectortable-da.o build/ef/util64-additional.o build/ef/io-1541.o
 
 # all
 all: easyflash
@@ -84,8 +85,8 @@ build/prodos/prodos:
 build/ef/init.prg: build/ef/init.o
 	$(LD65) $(LD65FLAGS) -o $@ -C src/ef/init.cfg $^
 
-# easyflash loader.prg
-build/ef/loader.prg: $(EF_LOADER_FILES)
+# loader.prg
+build/ef/loader.prg build/ef/loader.map: $(EF_LOADER_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/loader.map -Ln ./build/ef/loader.lst -o $@ -C src/ef/loader.cfg c64.lib $(EF_LOADER_FILES)
 
 # sector-rom.prg
@@ -105,8 +106,8 @@ build/ef/editor.prg: $(EDITOR_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/editor.map -Ln ./build/ef/editor.lst -o $@ -C src/ef/editor.cfg c64.lib $(EDITOR_FILES)
 
 # import-util64.prg
-build/ef/import-util64.prg: build/ef/util64-da.o
-	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/import-util64.map -Ln ./build/ef/import-util64.lst -o $@ -C src/ef/import-util64.cfg build/ef/util64-da.o
+build/ef/import-util64.prg: $(IMPORT_UTIL64_FILES) build/ef/global.i
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/import-util64.map -Ln ./build/ef/import-util64.lst -o $@ -C src/ef/import-util64.cfg c64.lib $(IMPORT_UTIL64_FILES)
 
 # build image dir and data
 build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin build/ef/import-util64.prg
@@ -175,9 +176,21 @@ build/ef/1541-fastloader.bin: disks/boot.d64
 	dd if=disks/boot.d64 of=build/ef/1541-fastloader.bin bs=256 count=4 skip=371
 
 # disassemble of prodos 2.0
-build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info
-	$(DA65) -i ./src/ef/io-sectortable-da.info -o build/ef/io-sectortable-da.s
+build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info src/ef/io-sectortable-exp.inc
+	$(DA65) -i ./src/ef/io-sectortable-da.info -o build/ef/temp1.s
+	cat src/ef/io-sectortable-exp.inc build/ef/temp1.s > build/ef/io-sectortable-da.s
+	rm -f build/ef/temp1.s
 
 # disassemble of util64
-build/ef/util64-da.s: build/ef/files.list src/ef/util64-da.info
-	$(DA65) -i ./src/ef/util64-da.info -o build/ef/util64-da.s
+build/ef/util64-da.s: src/ef/util64-da.info build/ef/2.0.prg src/ef/util64-patch.sh src/ef/util64-exp.inc
+	$(DA65) -i ./src/ef/util64-da.info -o build/ef/temp2.s
+	src/ef/util64-patch.sh src/ef/util64-exp.inc build/ef/temp2.s > build/ef/util64-da.s
+	rm -f build/ef/temp2.s
+
+# get 2.0.prg
+build/ef/2.0.prg: disks/boot.d64
+	SDL_VIDEODRIVER=dummy c1541 -attach disks/boot.d64 -read 2.0 ./build/ef/2.0.prg
+
+# global addresses
+build/ef/global.i: build/ef/loader.map
+	tools/mkglobal.py -v -m ./build/ef/loader.map -o ./build/ef/global.i loadsave_sector_body
