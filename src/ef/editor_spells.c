@@ -224,7 +224,7 @@ spellinfo_t* spells_list(uint8_t clss)
 }
 
 
-uint8_t count_spells(character_info_t* character, uint8_t clss)
+/*uint8_t count_spells(character_info_t* character, uint8_t clss)
 {
     uint8_t i, amount, count;
     spellinfo_t* spell;  
@@ -239,6 +239,67 @@ uint8_t count_spells(character_info_t* character, uint8_t clss)
         //if (clss != 0xff && spell->playerclass != clss) continue;
         if (character->spells[spell->offset - 0x54] & spell->bit) count++;
     }
+    return count;
+}*/
+
+uint8_t count_ones(uint8_t byte)
+{
+    static const uint8_t NIBBLE_LOOKUP [16] =
+    {
+      0, 1, 1, 2, 1, 2, 2, 3,
+      1, 2, 2, 3, 2, 3, 3, 4
+    };
+
+
+    return NIBBLE_LOOKUP[byte & 0x0F] + NIBBLE_LOOKUP[byte >> 4];
+}
+
+uint8_t count_spells(character_info_t* character, uint8_t clss)
+{
+    uint8_t count = 0;
+    
+    switch(clss) {
+        case 0: // misc
+            count += count_ones(character->spells[0x63 - 0x54]&0x38);
+            break;
+        case 3: // conjurer
+            count += count_ones(character->spells[0x54 - 0x54]);
+            count += count_ones(character->spells[0x55 - 0x54]);
+            count += count_ones(character->spells[0x56 - 0x54]&0xe0);
+            break;
+        case 4: // magician
+            count += count_ones(character->spells[0x56 - 0x54]&0x1f);
+            count += count_ones(character->spells[0x57 - 0x54]);
+            count += count_ones(character->spells[0x58 - 0x54]&0xfc);
+            break;
+        case 2: // sorcerer
+            count += count_ones(character->spells[0x58 - 0x54]&0x03);
+            count += count_ones(character->spells[0x59 - 0x54]);
+            count += count_ones(character->spells[0x5a - 0x54]);
+            count += count_ones(character->spells[0x5b - 0x54]&0x80);
+            break;
+        case 1: // wizard
+            count += count_ones(character->spells[0x5b - 0x54]&0x7f);
+            count += count_ones(character->spells[0x5c - 0x54]&0xfe);
+            break;
+        case 10: // archmage
+            count += count_ones(character->spells[0x5c - 0x54]&0x01);
+            count += count_ones(character->spells[0x5d - 0x54]&0xfe);
+            break;
+        case 11: // chronomancer
+            count += count_ones(character->spells[0x5d - 0x54]&0x01);
+            count += count_ones(character->spells[0x5e - 0x54]);
+            count += count_ones(character->spells[0x5f - 0x54]);
+            count += count_ones(character->spells[0x60 - 0x54]);
+            count += count_ones(character->spells[0x61 - 0x54]&0xc0);
+            break;
+        case 12: // geomancer
+            count += count_ones(character->spells[0x61 - 0x54]&0x3f);
+            count += count_ones(character->spells[0x62 - 0x54]);
+            count += count_ones(character->spells[0x63 - 0x54]&0xc0);
+            break;
+    }
+
     return count;
 }
 
