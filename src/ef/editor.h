@@ -64,17 +64,24 @@ typedef struct {
 
 typedef struct {
     uint8_t type;
-    char text[19];
+    char* text;
     uint8_t flags;
 } text_entry_t;
 
 typedef struct {
-    unsigned char code[5];
+    uint8_t id;
+    char* text;
+    uint8_t uses;
+} item_name_t;
+
+
+typedef struct {
+    char code[5];
     uint8_t offset;
     uint8_t bit;
     uint8_t playerclass;
     uint8_t level;
-    unsigned char description[24];
+    char* description;
 } spellinfo_t;
 
 /*typedef struct {
@@ -94,11 +101,17 @@ typedef struct {
 char* get_class_name(uint8_t cl);
 char* get_race_name(uint8_t rc);
 char* get_item_name(uint8_t id);
-uint8_t get_item_flags(uint8_t id);
+uint8_t get_item_uses(uint8_t id);
+uint8_t get_index_itemid(uint8_t id);
+uint8_t get_itemid_by_index(uint8_t index);
+uint8_t get_item_count();
+uint8_t get_alphabetical_index(uint8_t letter);
 
 spellinfo_t* spells_list(uint8_t clss);
 uint8_t spells_amount(uint8_t clss);
 uint8_t count_spells(character_info_t* character, uint8_t clss);
+bool has_spell(char* spelldata, spellinfo_t* spell);
+void toggle_spell(char* spelldata, spellinfo_t* spell);
 
 char convert_char_bd3_to_editor(char c);
 uint8_t cprint_name(uint8_t x, uint8_t y, char* name);
@@ -113,6 +126,9 @@ uint8_t write_sectors_save(char* base);
 uint8_t write_sectors_storage(char* base);
 uint8_t write_sectors_camp(char* base);
 void load_sectors(char* base);
+
+
+bool process_character_list(char* data, uint8_t type);
 
 
 #endif

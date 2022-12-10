@@ -33,7 +33,7 @@ CC65FLAGS=-t $(TARGET) -O
 #EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
 EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o 
 STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o build/ef/io-1541.o
-EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o build/ef/io-1541.o
+EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o build/ef/io-1541.o build/ef/editor_list.o
 IMPORT_UTIL64_FILES=build/ef/util64-da.o build/ef/io-sectortable-da.o build/ef/util64-additional.o build/ef/io-1541.o
 
 # all

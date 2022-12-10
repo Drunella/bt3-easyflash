@@ -117,12 +117,12 @@ bool getunumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original)
 
     textcolor(COLOR_GRAY2);
     cclearxy(0,24,40);
-    //              123456789012345678901234567890123456789
-    cputsxy( 1,24, "( )cancel  (     )accept  (   )clear");
+    //              0123456789012345678901234567890123456789
+    cputsxy( 0,24, "( )cancel (     )accept       (   )clear");
     textcolor(COLOR_WHITE);
-    cputcxy(2,24, 0x5f);
-    cputsxy(13,24, "Enter");
-    cputsxy(28,24, "CLR");
+    cputcxy(1,24, 0x5f);
+    cputsxy(11,24, "Enter");
+    cputsxy(31,24, "CLR");
     
     n = 0;
     content[0] = 0;

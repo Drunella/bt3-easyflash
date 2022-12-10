@@ -224,6 +224,23 @@ spellinfo_t* spells_list(uint8_t clss)
 }
 
 
+bool has_spell(char* spelldata, spellinfo_t* spell) 
+{
+    bool has = false;
+    if (spelldata[spell->offset - 0x54] & spell->bit) has = true;
+    return has;
+}
+
+void toggle_spell(char* spelldata, spellinfo_t* spell)
+{
+    if (has_spell(spelldata, spell)) {
+        spelldata[spell->offset - 0x54] &= ~spell->bit;
+    } else {
+        spelldata[spell->offset - 0x54] |= spell->bit;
+    }
+}
+
+
 /*uint8_t count_spells(character_info_t* character, uint8_t clss)
 {
     uint8_t i, amount, count;

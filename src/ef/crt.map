@@ -18,7 +18,7 @@
 # storage block a: save game
 40 f character.bin 0x8000 0x600 0x21600
 
-# storage block b: unknown
+# storage block b: storage
 48 f character.bin 0x8000 0x400 0x21c00
 
 # storeage block c: refugee camp

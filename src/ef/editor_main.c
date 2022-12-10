@@ -133,11 +133,12 @@ void draw_editor_characterlist_frame()
     cputcxy(39,14+CAMP_HEIGHT,0xfd);  // lower right
     cputsxy(2,5, "[Save Game]");
     cputsxy(2,13, "[Refugee Camp]");
-    cputsxy(1,24, "( )back  (     )select   (    )up/down");
+    //             0123456789012345678901234567890123456789
+    cputsxy(0,24, "( )exit (     )select          (    )nav");
     textcolor(COLOR_WHITE);
-    cputcxy(2,24, 0x5f);
-    cputsxy(11,24, "Enter");
-    cputsxy(27,24, "CRSR");
+    cputcxy(1,24, 0x5f);
+    cputsxy(9,24, "Enter");
+    cputsxy(32,24, "CRSR");
     textcolor(COLOR_GRAY2);
 }
 
@@ -163,7 +164,7 @@ void draw_editor_characterlist(uint8_t index)
         revers(0);
     }
     
-    // start offset
+     // start offset
     if (index >= amount_save+camp_offset+CAMP_HEIGHT) camp_offset += index - (amount_save+camp_offset+CAMP_HEIGHT) + 1;
     if (index < amount_save+camp_offset) {
         if (amount_save+camp_offset - index >= camp_offset) camp_offset = 0;
@@ -228,7 +229,7 @@ void main(void)
             repaint = false;
         }
 
-        gotoxy(20,24); cprintf("sf1=%d sfi=%d", sizeof(character_info_t), sizeof(item_t)); // debug
+//        gotoxy(20,24); cprintf("sf1=%d sfi=%d", sizeof(character_info_t), sizeof(item_t)); // debug
 
         retval = cgetc();
 //        gotoxy(0,24); cprintf("cgetc: %x (%c)", retval, retval); // debug

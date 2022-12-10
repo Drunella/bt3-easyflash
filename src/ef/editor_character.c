@@ -36,10 +36,10 @@ transition_t common_transitions[] = {
     { 0x00, 0x02, 0x07, 0x04, 0x00 },  //  3, luck
     { 0x00, 0x03, 0x07, 0x05, 0x00 },  //  4, exp
     { 0x00, 0x04, 0x08, 0x08, 0x00 },  //  5, gold
-    { 0x00, 0x00, 0x0b, 0x07, 0x01 },  //  6, max cond
-    { 0x00, 0x06, 0x0c, 0x08, 0x02 },  //  7, max sppt
-    { 0x00, 0x07, 0x11, 0x09, 0x05 },  //  8, int
-    { 0x00, 0x08, 0x12, 0x1e, 0x05 },  //  9, con
+    { 0x00, 0x00, 0x0b, 0x07, 0x01 },  //  6, int
+    { 0x00, 0x06, 0x0c, 0x08, 0x02 },  //  7, con
+    { 0x00, 0x07, 0x11, 0x09, 0x05 },  //  8, max cond
+    { 0x00, 0x08, 0x12, 0x1e, 0x05 },  //  9, max sppt
     { 0x00, 0x00, 0x00, 0x0b, 0x06 },  //  a, item 1
     { 0x00, 0x0a, 0x00, 0x0c, 0x06 },  //  b, item 2
     { 0x00, 0x0b, 0x00, 0x0d, 0x07 },  //  c, item 3
@@ -148,7 +148,7 @@ void draw_editor_characterdisplay(character_info_t* content)
 
 bool process_field_8u(uint8_t* data, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
 {
-    bool changed = false;
+    bool changed = 0;
     uint32_t v = (uint32_t)*data;
     if (edit && selected) {
         changed = getunumberxy(x, y, len, &v);
@@ -216,12 +216,20 @@ bool process_field_32u(uint32_t* data, uint8_t x, uint8_t y, uint8_t len, bool s
 
 bool process_field_item(item_t* item, uint8_t x, uint8_t y, uint8_t len, bool selected, bool edit)
 {
+    uint8_t data;
     uint8_t n, f;
     bool changed = false;
     if (edit && selected) {
-        // changed = getunumberxy(x, y, len, &v);
-        // ### edit item ###
-        // if (changed) *data = v;
+        changed = process_character_list(&data, 0xff);
+        if (changed) {
+            item->flags = 0; // ### is this allowed? ###
+            item->type = data;
+            item->uses = get_item_uses(data);
+            if (item->uses == 0) {
+                item->uses = 0xff;
+                item->flags |= 0x02;
+            }
+        }
     }
     if (selected) revers(1);
     textcolor(COLOR_WHITE);
@@ -237,10 +245,10 @@ bool process_field_item(item_t* item, uint8_t x, uint8_t y, uint8_t len, bool se
         textcolor(COLOR_WHITE);
         gotoxy(x+1, y);
         n = cprintf("%s", get_item_name(item->type)); // name
-        cclearxy(x+n, y, len-n);
+        cclearxy(x+n+1, y, len-n-1);
         // uses is type dependant
-        f = get_item_flags(item->type);
-        if (f == 1) {
+        f = get_item_uses(item->type);
+        if (f > 0) {
             if (item->uses<0xff) { // uses
                 gotoxy(x+15, y);
                 cprintf("#%d", item->uses);
@@ -250,27 +258,6 @@ bool process_field_item(item_t* item, uint8_t x, uint8_t y, uint8_t len, bool se
         cclearxy(x, y, len);
     }
 
-//    cclearxy(x, y, len);
-//    gotoxy(x, y); cprintf("%lu", *data);
-    textcolor(COLOR_GRAY2);
-    revers(0);
-    return changed;
-}
-
-bool process_field_spells(uint8_t x, uint8_t y, uint8_t clss, uint8_t amount, uint8_t max, bool selected, bool edit)
-{
-    bool changed = false;
-    spellinfo_t* list = spells_list(clss);
-    
-    if (edit && selected) {
-        // ### edit item ###
-        // ### change ###
-    }
-    
-    if (selected) revers(1);
-    textcolor(COLOR_WHITE);
-    gotoxy(x,y);
-    cprintf("%2d/%2d", amount, max);
     textcolor(COLOR_GRAY2);
     revers(0);
     return changed;
@@ -313,15 +300,73 @@ void recalculate_intermediates(character_info_t* content)
                      max_archmage_spells + max_chronomancer_spells + max_geomancer_spells + max_misc_spells;
 }    
 
+bool process_field_spells(uint8_t x, uint8_t y, uint8_t clss, bool selected, character_info_t* content, bool edit)
+{
+    bool changed = false;
+    uint8_t count, max;
+    //spellinfo_t* list = spells_list(clss);
+    
+    if (edit && selected) {
+        changed = process_character_list(content->spells, clss);
+        if (changed) recalculate_intermediates(content);
+    }
+    
+    switch(clss) {
+        case 3:
+            count = conjurer_spells;
+            max = max_conjurer_spells;
+            break;
+        case 4:
+            count = magician_spells;
+            max = max_magician_spells;
+            break;
+        case 2:
+            count = sorcerer_spells;
+            max = max_sorcerer_spells;
+            break;
+        case 1:
+            count = wizard_spells;
+            max = max_wizard_spells;
+            break;
+        case 10:
+            count = archmage_spells;
+            max = max_archmage_spells;
+            break;
+        case 11:
+            count = chronomancer_spells;
+            max = max_chronomancer_spells;
+            break;
+        case 12:
+            count = geomancer_spells;
+            max = max_geomancer_spells;
+            break;
+        case 0:
+            count = misc_spells;
+            max = max_misc_spells;
+            break;
+        default:
+            count = 0; max = 0;
+            break;
+    }
+    
+    if (selected) revers(1);
+    textcolor(COLOR_WHITE);
+    gotoxy(x,y);
+    cprintf("%2d/%2d", count, max);
+    textcolor(COLOR_GRAY2);
+    revers(0);
+    return changed;
+}
+
 
 bool draw_editor_charactercontent(character_info_t* content, uint8_t position, bool edit)
 {
-    uint8_t i, value;
+    uint8_t i, value, retval = 0;
     uint16_t percent, v16;
     bool changed;
     
     textcolor(COLOR_GRAY2);
-    changed = false;
+    changed = 0;
 
     changed |= process_field_8u(&content->strength,      6, 4, 4, (position == 1), edit);
     changed |= process_field_8u(&content->intelligence, 15, 4, 4, (position == 6), edit);
@@ -362,17 +407,19 @@ bool draw_editor_charactercontent(character_info_t* content, uint8_t position, b
     if (content->playerclass==1 || content->playerclass==2 || content->playerclass==3 ||
         content->playerclass==4 || content->playerclass==10 || content->playerclass==11 ||
         content->playerclass==12) {
+        changed |= process_field_spells(24, 18, 3, (position==0x16), content, edit); // conjurer 3
+        changed |= process_field_spells(34, 18, 4, (position==0x1b), content, edit); // magician 4
+        changed |= process_field_spells(24, 19, 2, (position==0x17), content, edit); // sorcerer 2
+        changed |= process_field_spells(34, 19, 1, (position==0x1c), content, edit); // wizard 1
+        changed |= process_field_spells(24, 20, 10,(position==0x18), content, edit); // archmage 10
+        changed |= process_field_spells(34, 20, 12,(position==0x1d), content, edit); // geomancer 12
+        changed |= process_field_spells(28, 21, 11,(position==0x19), content, edit); // chronomancer 11
+        changed |= process_field_spells(28, 22, 0, (position==0x1a), content, edit); // misc 0
+        //if (changed) recalculate_intermediates(content);
         gotoxy(30,16); cprintf("%3d/%3d", all_spells, max_all_spells);
-        changed |= process_field_spells(24, 18, 3, conjurer_spells, max_conjurer_spells, (position==0x16), edit); // conjurer 3
-        changed |= process_field_spells(34, 18, 4, magician_spells, max_magician_spells, (position==0x1b), edit); // magician 4
-        changed |= process_field_spells(24, 19, 2, sorcerer_spells, max_sorcerer_spells, (position==0x17), edit); // sorcerer 2
-        changed |= process_field_spells(34, 19, 1, wizard_spells, max_wizard_spells, (position==0x1c), edit); // wizard 1
-        changed |= process_field_spells(24, 20, 10, archmage_spells, max_archmage_spells, (position==0x18), edit); // archmage 10
-        changed |= process_field_spells(34, 20, 12, geomancer_spells, max_geomancer_spells, (position==0x1d), edit); // geomancer 12
-        changed |= process_field_spells(28, 21, 11, chronomancer_spells, max_chronomancer_spells, (position==0x19), edit); // chronomancer 11
-        changed |= process_field_spells(28, 22, 0, misc_spells, max_misc_spells, (position==0x1a), edit); // misc 0
     }
         
+    // skills for rogue
     if (content->playerclass == 5) {
         changed |= process_field_8u(&(content->classdata[0]), 8, 15, 3, (position==0x1e), edit);
         v16 = (uint16_t)content->classdata[0];
@@ -396,27 +443,28 @@ bool draw_editor_charactercontent(character_info_t* content, uint8_t position, b
     }
 
     // skills for hunter
-    if (content->playerclass==8) {
+    if (content->playerclass == 8) {
+        changed |= process_field_8u(&(content->classdata[0]), 8, 15, 3, (position==0x1e), edit);
         v16 = (uint16_t)content->classdata[0];
-        percent = (v16*100) / 255;
-        gotoxy( 8, 15); cprintf("%3d (%3d%%)", v16, percent);
+        percent = (v16*100) / 256;
+        gotoxy( 12, 15); cprintf("(%d%%)", percent);
     }
     
+    //if (changed) retval |= 0x01;
     return changed;
 }
 
 void draw_status_characterdisplay(bool changed)
 {
-// ###    cclearxy(0,24,40);
     //             0123456789012345678901234567890123456789
-    cputsxy(0,24, "( )back          (     )edit  (    )nav");
-    if (changed) cputsxy( 8,24, "(  )save");
+    cputsxy(0,24, "( )back (     )edit            (    )nav");
+    if (changed) cputsxy( 22,24,        "(  )save");
     
     textcolor(COLOR_WHITE);
     cputcxy(1,24, 0x5f);
-    if (changed) cputsxy( 9,24, "F7");
-    cputsxy(18,24, "Enter");
-    cputsxy(31,24, "CRSR");
+    if (changed) cputsxy(23,24, "F7");
+    cputsxy(9,24, "Enter");
+    cputsxy(32,24, "CRSR");
     textcolor(COLOR_GRAY2);
 }
 
@@ -432,10 +480,12 @@ bool is_move_allowed(character_info_t* content, uint8_t restriction)
         if (content->playerclass==1 || content->playerclass==2 || content->playerclass==3 ||
             content->playerclass==4 || content->playerclass==10 || content->playerclass==11 ||
             content->playerclass==12) return true;
-    } else if (restriction & 0x20) {
+    }
+    if (restriction & 0x20) {
         // only for rogue
         if (content->playerclass==5) return true;
-    } else if (restriction & 0x40) {
+    }
+    if (restriction & 0x40) {
         // only for hunter
         if (content->playerclass==8) return true;
     }
@@ -517,7 +567,6 @@ void character_main(character_entry_t* character)
     // we assume the wrappers are installed at $b7xx
 
     // init
-    clrscr();
     textcolor(COLOR_GRAY2);
     repaint = 1;
     changed = false;
@@ -525,7 +574,7 @@ void character_main(character_entry_t* character)
     memset(&common_transitions[0], 0, sizeof(transition_t));
     edit = false;
 
-    // prepare
+    clrscr();
     draw_editor_characterdisplay(character->content);
     recalculate_intermediates(character->content);
 
@@ -533,8 +582,7 @@ void character_main(character_entry_t* character)
     
     for (;;) {
         if (repaint > 0) {
-            if (draw_editor_charactercontent(character->content, position, edit)) changed = true;
-            //if (changed) recalculate_intermediates(character->content);
+            changed |= draw_editor_charactercontent(character->content, position, edit);
             edit = false;
             if (repaint == 1) draw_status_characterdisplay(changed);
             repaint = 0;
@@ -543,7 +591,7 @@ void character_main(character_entry_t* character)
 //        gotoxy(20,24); cprintf("%d,%d chars", amount_save, amount_camp); // debug
 
         retval = cgetc();
-        gotoxy(0,24); cprintf("cgetc: %x (%c)", retval, retval); // debug
+//        gotoxy(0,24); cprintf("cgetc: %x (%c)", retval, retval); // debug
         switch (retval) {
             case CH_F7: // F7
                 if (changed) {
@@ -838,7 +886,7 @@ void main(void)
                 break;
             case 0x13: // enter
                 gotoxy(34,24); cprintf("enter");
-                // ### editor menu
+                // editor menu
                 break;
             case 0x5f: // back arrow
                 cart_reset(); // does not return
