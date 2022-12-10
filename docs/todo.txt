@@ -1,6 +1,24 @@
 Bard's Tale 3
 =============
 
+- reset save game option
+
+- character editor
+
+- reduce amount of flash erases by using all 16 4k areas
+
+- character import (ok)
+  + loader with modified util64
+  => seems to be a lot of work, not worth the time
+  + maybe with a simple wrapper (loading/saving destination)
+  + skip main menu and go straight to transfer characters
+  + on exit, skip the main menu and go back to startmenu
+  + extend the loading ans saving of the storage to both sectors
+  + wrap the loading and saving of the destination sectors
+
+- ask for not saving on party death (ok)
+  + not necessary
+
 - Calculations (ok)
   + boot disk: programs only, these do not take more than 65535 bytes, will allow two erasable flash areas
   + 3 data disks, these disks hold data as a prodos disk, meaning 280 sectors per 512 bytes => 143360
@@ -24,13 +42,6 @@ Bard's Tale 3
   + at start codewheel simple jump to: jmp A89C (change code at 0x0af51 in character disk)
   + 4c 9c a8
 
-- character import (no)
-  + loader with modified util64
-  => seems to be a lot of work, not worth the time
-  => no character import!
-
-- character editor
-
 - savegame backup and restore (ok)
   + store track 18 of character disk as file on easyflash
   + use bd3 fast loader to create character disk?
@@ -43,42 +54,29 @@ Bard's Tale 3
   which sectors wil be changed?
   savegame: 010b, 010c, 010d (1536 bytes)
   camp: 0110, 0111, 0112, 0113, 0114, 0115, 0116, 0117 (4096 bytes)
-  unknown: 010e, 010f
+  storage: 010e, 010f
 
 - saving gamestats and characters (ok)
   character disk
   savegame: sectors: 0x10b, 0x10c, 0x10d (3 sectors: 1536 bytes)
   roster: sectors: 0x110 to 0x117 (8 sectors: 4096 bytes)
-  unknown: 010e, 010f (2 sectors: 1024 bytes)
+  storage: 010e, 010f (2 sectors: 1024 bytes)
 
-- ask for saving on party death
-
-- reduce amount of flash erases by using all 16 4k areas
-
-
-savegame management
-===================
-
-  backup to disk
-  restore from disk
-  import bards tale ii
-  import from bards tale i
-  clear save game
 
 
 File loading from easyflash
 ===========================
 
-- small code to load up to 16 files from easyflash
-- do not use ef filesystem, not necessary, simple system sufficient
-- identify files by number, have a directory for 16 files, takes up on page (256 bytes)
+- small code to load up to 16 or 32 files from easyflash
+- do not use efs filesystem, not necessary, simple system sufficient
+- identify files by number, have a directory for 16 files, takes up one or two pages (256 bytes)
 - directory entry
-  0: id (1); value of ff means no file present
-  1: relative bank number (1)
+  0: id (1); value of ff means no file present, $00 means file invalid
+  1: relative/absolute bank number (1)
   2: bank offset low/high (2)
   4: size (low/high/upper) (3)
   7: load address (low/high) (2)
-  9: init call offset (low/high) (2) ; when value is zero do not call, call may not return
+  9: init call offset (low/high) (2) ; when value is zero do not call, call may not return, calling is optional
   11: reserved (5)
 
                         
@@ -103,7 +101,7 @@ load BARDSUBS1 from prodos filesystem to $6600 (11511)
   2.0 partially overwritten
 
 important subs
-- jsr BE7A ; load prodos sector (sector no in $46/$47)
+- jsr BE7A ; load prodos sector
   $42 mode (1: read, 2: write, 3:?)
   $43
   $44 low address destination buffer
@@ -142,6 +140,12 @@ block 268.0: track=28, sector=13
 block 268.5: track=28, sector=6
 block 269.0: track=28, sector=17
 block 269.5: track=28, sector=10
+
+storage:
+block 270.0: track=28, sector=3
+block 270.5: track=28, sector=14
+block 271.0: track=28, sector=7
+block 271.5: track=29, sector=0
 
 characters:
 block 272.0: track=29, sector=11

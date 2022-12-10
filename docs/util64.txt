@@ -356,9 +356,9 @@ $2313:  AD F0 22   lda $22f0
 $2316:  85 46      sta $46               ; sector
 $2318:  AD F1 22   lda $22f1               
 $231B:  85 47      sta $47               ; sector  
-$231D:  20 08 C2   jsr $c208             ; load prodos sector 
+$231D:  20 08 C2   jsr $c208             ; LOAD prodos sector 
 $2320:  48         pha                     
-$2321:  20 33 23   jsr label_2333          
+$2321:  20 33 23   jsr label_2333        ; restore zeropage
 $2324:  68         pla                     
 $2325:  C9 01      cmp #$01                
 $2327:  60         rts                     
@@ -470,18 +470,21 @@ $23D0:  85 12      sta $12
 $23D2:  B9 E1 23   lda $23e1, y            
 $23D5:  85 13      sta $13                 
 $23D7:  6C 12 00   jmp ( $0012 )           
-$23DA:  8A         txa                     
-$23DB:  8B 95      xaa #$95                
-$23DD:  88         dey                     
-$23DE:  9B 8D EE   tas $ee8d, y            
-$23E1:  23 19      rla ( $19, x)           
-$23E3:  24 EE      bit $ee                 
-$23E5:  23 19      rla ( $19, x)           
-$23E7:  24 66      bit $66                 
-$23E9:  24 3B      bit $3b                 
-$23EB:  24 38      bit $38                 
-$23ED:  24 A5      bit $a5                 
-$23EF:  25 18      and $18                 
+$23DA:  8A 8B 
+95 88 
+9B 8D 
+EE 23 
+19 24 
+EE 23 
+19 24 
+66 24 
+3B 24 
+38 24 
+
+
+
+$23EE   A5 25      lda #$25
+$23EF:  18         clc
 $23F1:  69 01      adc #$01                
 $23F3:  B0 1A      bcs label_240f          
 $23F5:  A0 00      ldy #$00                
@@ -505,7 +508,7 @@ $240F:  A2 8C      ldx #$8c
 $2411:  A0 06      ldy #$06                
 $2413:  20 AA 25   jsr label_25aa          
 $2416:  4C BB 23   jmp label_23bb          
-$2419:!byte $A5,$25,$F0,$F2,$C6,$25,$A5,$25
+$2419:!byte $A5,$25,$F0,$F2,$C6,$25,$A5,$25  ; code
 $2421:!byte $38,$E5,$26,$C9,$10,$90,$05,$C6
 $2429:!byte $26,$20,$0E,$25,$A6,$25,$E8    
 $2430:                                     
@@ -513,9 +516,11 @@ $2430: label_2430
 $2430:  A4 25      ldy $25                 
 $2432:  20 6D 24   jsr label_246d          
 $2435:  4C BB 23   jmp label_23bb          
-$2438:!byte $4C,$0F,$24,$A5,$25,$20,$4E,$24
+$2438:!byte $4C,$0F,$24,$A5,$25,$20,$4E,$24  ; code
 $2440:!byte $A0,$0F,$B1,$44,$99,$00,$02,$88
 $2448:!byte $10,$F8,$A5,$25,$18,$60        
+
+
 $244E:                                     
 $244E: label_244e                          
 $244E:  E6 27      inc $27                 
@@ -809,7 +814,8 @@ $2657: label_2657
 $2657:  A5 B2      lda $b2                 
 $2659:  85 20      sta $20                 
 $265B:  60         rts                     
-$265C:!byte $20,$AE,$25,$20,$C5,$22,$8D,$D2
+
+$265C:!byte $20,$AE,$25,$20,$C5,$22,$8D,$D2  ; code
 $2664:!byte $C5,$C1,$C4,$C9,$CE,$C7,$AE,$AE
 $266C:!byte $AE,$00,$AD,$F0,$22,$8D,$BF,$26
 $2674:!byte $AD,$F1,$22,$8D,$C0,$26,$AD,$15
@@ -1071,107 +1077,25 @@ $28DF:
 $28DF: label_28df                          
 $28DF:  20 AE 25   jsr label_25ae        ; clear screen
 $28E2:  20 C5 22   jsr label_22c5        ; print screen with parameter from current address
-$28E5:  8D 8D C4          
-$28E8:  CF A0 D9          
-$28EB:  CF D5 A0          
-$28EE:  D7 C9             
-$28F0:  D3 C8             
-$28F2:  A0 D4             
-$28F4:  CF A0 D4          
-$28F7:  D2                
-$28F8:  C1 CE             
-$28FA:  D3 C6             
-$28FC:  C5 D2             
-$28FE:  8D C3 C8          
-$2901:  C1 D2             
-$2903:  C1 C3             
-$2905:  D4 C5             
-$2907:  D2                
-$2908:  D3 A0             
-$290A:  C6 D2             
-$290C:  CF CD AE          
-$290F:  AE AE AE          
-$2912:  8D 8D C1          
-$2915:  A9 C2             
-$2917:  C1 D2             
-$2919:  C4 A7             
-$291B:  D3 A0             
-$291D:  D4 C1             
-$291F:  CC C5 A0          
-$2922:  C9 A0             
-$2924:  BA                
-$2925:  A0 D4             
-$2927:  C1 CC             
-$2929:  C5 D3             
-$292B:  A0 CF             
-$292D:  C6 A0             
-$292F:  D4 C8             
-$2931:  C5 A0             
-$2933:  D5 CE             
-$2935:  CB CE             
-$2937:  CF D7 CE          
-$293A:  8D C2 A9          
-$293D:  C2 C1             
-$293F:  D2                
-$2940:  C4 A7             
-$2942:  D3 A0             
-$2944:  D4 C1             
-$2946:  CC C5 A0          
-$2949:  C9 C9             
-$294B:  A0 BA             
-$294D:  A0 D4             
-$294F:  C8                
-$2950:  C5 A0             
-$2952:  C4 C5             
-$2954:  D3 D4             
-$2956:  C9 CE             
-$2958:  D9 A0 CB          
-$295B:  CE C9 C7          
-$295E:  C8                
-$295F:  D4 8D             
-$2961:  C3 A9             
-$2963:  C2 C1             
-$2965:  D2                
-$2966:  C4 A7             
-$2968:  D3 A0             
-$296A:  D4 C1             
-$296C:  CC C5 A0          
-$296F:  C9 C9             
-$2971:  C9 A0             
-$2973:  BA                
-$2974:  A0 D4             
-$2976:  C8                
-$2977:  C5 A0             
-$2979:  D4 C8             
-$297B:  C9 C5             
-$297D:  C6 A0             
-$297F:  CF C6 A0          
-$2982:  C6 C1             
-$2984:  D4 C5             
-$2986:  8D 8D C3          
-$2989:  C8                
-$298A:  CF CF D3          
-$298D:  C5 A0             
-$298F:  A8                
-$2990:  C1 AD             
-$2992:  C3 A9             
-$2994:  A0 CF             
-$2996:  D2                
-$2997:  A0 BC             
-$2999:  AD AD A0          
-$299C:  C6 CF             
-$299E:  D2                
-$299F:  A0 CD             
-$29A1:  C1 C9             
-$29A3:  CE A0 CD          
-$29A6:  C5 CE             
-$29A8:  D5 00             
+8D 8D C4 CF A0 D9 CF D5 A0 D7 C9 D3 C8 A0 D4 CF 
+A0 D4 D2 C1 CE D3 C6 C5 D2 8D C3 C8 C1 D2 C1 C3 
+D4 C5 D2 D3 A0 C6 D2 CF CD AE AE AE AE 8D 8D C1 
+A9 C2 C1 D2 C4 A7 D3 A0 D4 C1 CC C5 A0 C9 A0 BA 
+A0 D4 C1 CC C5 D3 A0 CF C6 A0 D4 C8 C5 A0 D5 CE 
+CB CE CF D7 CE 8D C2 A9 C2 C1 D2 C4 A7 D3 A0 D4 
+C1 CC C5 A0 C9 C9 A0 BA A0 D4 C8 C5 A0 C4 C5 D3 
+D4 C9 CE D9 A0 CB CE C9 C7 C8 D4 8D C3 A9 C2 C1 
+D2 C4 A7 D3 A0 D4 C1 CC C5 A0 C9 C9 C9 A0 BA A0 
+D4 C8 C5 A0 D4 C8 C9 C5 C6 A0 CF C6 A0 C6 C1 D4 
+C5 8D 8D C3 C8 CF CF D3 C5 A0 A8 C1 AD C3 A9 A0 
+CF D2 A0 BC AD AD A0 C6 CF D2 A0 CD C1 C9 CE A0 
+CD C5 CE D5 00 
 
 $29AA: label_29aa                          
 $29AA:  20 90 28   jsr label_2890          ; wait for key pressed
 $29AD:  C9 9B      cmp #$9b                
 $29AF:  D0 03      bne label_29b4          ; return key ?
-$29B1:  4C 12 20   jmp label_2012          
+$29B1:  4C 12 20   jmp label_2012          ; change this to ### JMP to return to calling code or do reset
 $29B4:                                     
 $29B4: label_29b4                          
 $29B4:  C9 C1      cmp #$c1                ; between 'A' and 'C'
@@ -1182,10 +1106,10 @@ $29BC:  38         sec                     ; valid selection
 $29BD:  E9 C1      sbc #$c1                ; A is now 0-2
 $29BF:  8D 14 22   sta $2214               ; selection stored
 $29C2:  20 08 22   jsr label_2208          
-$29C5:  20 AE 21   jsr label_21ae          ; enter bd2 disk and wait for key
+$29C5:  20 AE 21   jsr label_21ae          ; enter source disk and wait for key
 $29C8:  20 9B 30   jsr label_309b          ; load sectors: track 2, sector 0 - 15 from source
 $29CB:  20 3D 31   jsr label_313d          ; (!) copy decode (?) characters
-$29CE:  20 B1 21   jsr label_21b1          ; clear screen & enter destination and wait for key
+$29CE:  20 B1 21   jsr label_21b1          ; clear screen & enter destination and wait for key  ### remove line
 $29D1:  20 63 37   jsr label_3763          ; load prodos sectors of storage and camp
 $29D4:  20 DD 29   jsr label_29dd          ; select characters
 $29D7:  20 66 37   jsr label_3766          ; save characters
@@ -1259,7 +1183,7 @@ $2A5E:  EC E5 E6
 $2A61:  F4 AE               
 $2A63:  00                  
 
-$2A64:  4C 83 22   jmp label_2283       ; print something                       
+$2A64:  4C 83 22   jmp label_2283       ; press any key                       
 $2A67:  60                   
 $2A68:  20 C5 22             
 $2A6B:  D7 E8                
@@ -1604,6 +1528,7 @@ $2D8C:  C8         iny
 $2D8D:  C0 10      cpy #$10                
 $2D8F:  90 F8      bcc label_2d89          
 $2D91:  60         rts                     
+
 $2D92:                                     
 $2D92: label_2d92                          
 $2D92:  A9 00      lda #$00                
@@ -1826,6 +1751,7 @@ $30B7:  1A 31
 $30B9:  EC 30 
 $30Bb:  BD 30 
 
+; load bd3 from disk
 $30Bd:  A9
 $30BE:  10 8D      bpl label_304d          
 $30C0:  F0 22      beq label_30e4          
@@ -1834,7 +1760,7 @@ $30C4:  8D F1 22   sta $22f1
 $30C7:                                     
 $30C7: label_30c7                          
 $30C7:  A9 01      lda #$01                
-$30C9:  20 02 23   jsr label_2302          
+$30C9:  20 02 23   jsr label_2302          ; load prodos sector (loading from source disk)
 $30CC:  90 03      bcc label_30d1          
 $30CE:  4C 7F 2B   jmp label_2b7f          
 $30D1:                                     
@@ -1854,7 +1780,8 @@ $30E4:  AD F1 22   lda $22f1
 $30E7:  E9 01      sbc #$01                
 $30E9:  90 DC      bcc label_30c7          
 $30EB:  60         rts                     
-                                                 
+                       
+; load bd2 from disk?
 ; load sectors: track 2, sector 0 - 15
 $30EC:   A9 02                LDA #$02
 $30EE:   8D 15 C2             STA $C215  ; variable (track number?) 
@@ -2147,8 +2074,8 @@ $377D:  A9 58      lda #$58
 $377F:  8D EF 22   sta $22ef               
 $3782:                                     
 $3782: label_3782                          
-$3782:  A9 01      lda #$01                
-$3784:  20 02 23   jsr label_2302        ; load prodos sector  $0110 to 5800
+$3782:  A9 01      lda #$01              ; will be changed on jump in
+$3784:  20 02 23   jsr label_2302        ; load prodos sector  $0110 to 5800 (load from destination disk) ### here would be easyflash
 $3787:  B0 11      bcs label_379a        ; error
 $3789:  EE EF 22   inc $22ef               
 $378C:  EE EF 22   inc $22ef               
@@ -2161,7 +2088,7 @@ $379A:
 $379A: label_379a                          
 $379A:  4C 7F 2B   jmp label_2b7f          
 
-; ??
+; load storage sector
 $379D:                                     
 $379D: label_379d                          
 $379D:  A9 0E      lda #$0e              ; bd3 sector low
@@ -2172,8 +2099,8 @@ $37A7:  A9 00      lda #$00              ; buffer low
 $37A9:  8D EE 22   sta $22ee               
 $37AC:  A9 BA      lda #$ba              ; buffer high  
 $37AE:  8D EF 22   sta $22ef               
-$37B1:  A9 01      lda #$01              ; mode
-$37B3:  20 02 23   jsr label_2302        ; call load prodos sector with zeropage backup
+$37B1:  A9 01      lda #$01              ; mode (never writing, only loading)
+$37B3:  20 02 23   jsr label_2302        ; call load prodos sector with zeropage backup (load from destination disk) ### here would be easyflash
 $37B6:  B0 E2      bcs label_379a          
 $37B8:  A0 05      ldy #$05                
 $37BA:                                     
@@ -2184,6 +2111,8 @@ $37C0:  D0 04      bne label_37c6
 $37C2:  88         dey                     
 $37C3:  10 F5      bpl label_37ba          
 $37C5:  60         rts                     
+
+
 $37C6:                                     
 $37C6: label_37c6                          
 $37C6:  20 AE 25   jsr label_25ae          
@@ -2221,6 +2150,7 @@ $3807:  00         brk
 $3808:  20 83 22   jsr label_2283          
 $380B:  4C 9D 37   jmp label_379d          
 $380E:!byte $C2,$D5,$D2,$C7,$C5,$D2        
+
 $3814:                                     
 $3814: label_3814                          
 $3814:  A9 02      lda #$02                
@@ -2232,7 +2162,7 @@ $3820:  8D EE 22   sta $22ee
 $3823:  A9 BA      lda #$ba                
 $3825:  8D EF 22   sta $22ef               
 $3828:  A9 01      lda #$01                
-$382A:  20 02 23   jsr label_2302          
+$382A:  20 02 23   jsr label_2302             ; LOAD prodos sector ### here would be easyflash
 $382D:  B0 0E      bcs label_383d          
 $382F:  A0 0E      ldy #$0e                
 $3831:                                     
