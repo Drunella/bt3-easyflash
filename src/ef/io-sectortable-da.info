@@ -28,18 +28,27 @@ GLOBAL {
 
 
 # code segment for code and data
-SEGMENT { START $c000;  END $c9e9; NAME "CODE"; };
+SEGMENT { START $c000;  END $c1ff; NAME "DATA"; };
+SEGMENT { START $c200;  END $c9e9; NAME "CODE"; };
+
 
 # ranges
-RANGE { START $c000;  END $c214; TYPE skip; };
-LABEL { ADDR $c369; NAME "calculate_track_sector"; };
+RANGE { START $c000;  END $c1ff; TYPE bytetable; };
+#RANGE { START $c200;  END $c353; TYPE code; };
+
+RANGE { START $c200;  END $c207; TYPE skip; };
+RANGE { START $c208;  END $c213; TYPE skip; };
 
 LABEL { ADDR $c215; NAME "calc_track_number"; };
 LABEL { ADDR $c216; NAME "calc_sector_number"; };
-RANGE { START $c215;  END $c216; TYPE ByteTable; };
+RANGE { START $c214;  END $c216; TYPE ByteTable; };
 
-RANGE { START $c217;  END $c368; TYPE skip; };
+LABEL { ADDR $c2da; NAME "load_cbm_sector_fastload"; };
+RANGE { START $c217;  END $c353; TYPE code; };
+RANGE { START $c354;  END $c368; TYPE skip; };
 
+
+LABEL { ADDR $c369; NAME "calculate_track_sector"; };
 RANGE { START $c369;  END $c3b1; TYPE code; };
 RANGE { START $c3b2;  END $c3d4; TYPE ByteTable; };
 RANGE { START $c3d5;  END $c3f8; TYPE code; };

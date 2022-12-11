@@ -803,7 +803,7 @@ uint8_t get_index_itemid(uint8_t id)
 {
     uint8_t i, max;
     max = get_item_count();
-    for (i=0;i<256;i++) {
+    for (i=0; i<sizeof(items_indexed); i++) {
         if (items_indexed[i] == id) return i;
     }
     return 0;

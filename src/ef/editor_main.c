@@ -33,7 +33,7 @@ static character_entry_t character_list[MAX_CHARACTERS];
 static uint8_t amount_save;
 static uint8_t amount_camp;
 static uint8_t amount_total;
-static uint8_t character_index;
+//static uint8_t character_index;
 
 
 

@@ -116,7 +116,7 @@ erase_offset  = $df41
         sta $df32
         jmp init_10e
     set_10b_a0:
-        lda #SAVE_10B_BANK   ; set save game is in low chip
+        lda #SAVE_10B_BANK   ; set save game is in high chip
         sta $df00
         sta $df01
         sta $df02

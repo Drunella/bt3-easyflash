@@ -110,7 +110,7 @@ build/ef/import-util64.prg: $(IMPORT_UTIL64_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/import-util64.map -Ln ./build/ef/import-util64.lst -o $@ -C src/ef/import-util64.cfg c64.lib $(IMPORT_UTIL64_FILES)
 
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin build/ef/import-util64.prg build/ef/savegame-orig.bin
+build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader-recomp.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin build/ef/import-util64.prg build/ef/savegame-orig.bin
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
@@ -174,11 +174,6 @@ build/ef/savegame-orig.bin: build/ef/character.bin
 	@mkdir -p ./build/ef
 	dd if=build/ef/character.bin of=build/ef/savegame-orig.bin bs=512 count=13 skip=267
 
-# fastloader 1541 part, track 18 sector 14-17 (371 sectors in)
-build/ef/1541-fastloader.bin: disks/boot.d64
-	@mkdir -p ./build/ef
-	dd if=disks/boot.d64 of=build/ef/1541-fastloader.bin bs=256 count=4 skip=371
-
 # disassemble of prodos 2.0
 build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info src/ef/io-sectortable-exp.inc
 	$(DA65) -i ./src/ef/io-sectortable-da.info -o build/ef/temp1.s
@@ -198,3 +193,19 @@ build/ef/2.0.prg: disks/boot.d64
 # global addresses
 build/ef/global.i: build/ef/loader.map
 	tools/mkglobal.py -v -m ./build/ef/loader.map -o ./build/ef/global.i loadsave_sector_body
+
+
+# fastloader 1541 part, track 18 sector 14-17 (371 sectors in)
+build/ef/1541-fastloader.bin: disks/boot.d64
+	@mkdir -p ./build/ef
+	dd if=disks/boot.d64 of=build/ef/1541-fastloader.bin bs=256 count=4 skip=371
+
+# disassemble of 1541 fastloader
+build/ef/1541-fastloader-da.s: src/ef/1541-fastloader-da.info build/ef/1541-fastloader.bin src/ef/1541-fastloader-patch.sh
+	$(DA65) -i ./src/ef/1541-fastloader-da.info -o build/ef/temp3.s
+	src/ef/1541-fastloader-patch.sh build/ef/temp3.s > build/ef/1541-fastloader-da.s
+	rm -f build/ef/temp3.s
+
+# recompiled fastloader
+build/ef/1541-fastloader-recomp.bin: build/ef/1541-fastloader-da.s
+	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/1541-fastloader-recomp.map -Ln ./build/ef/1541-fastloader-recomp.lst -o $@ -C src/ef/1541-fastloader.cfg c64.lib $^

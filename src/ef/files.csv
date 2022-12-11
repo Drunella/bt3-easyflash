@@ -13,7 +13,7 @@ startmenu.prg,        32,  0x2000,       0x2000,      2
 editor.prg,           33,  0x2000,       0x2000,      2
 track18.bin,          41,  0x0000,       0,           0
 track09-sector14.bin, 42,  0x0000,       0,           0
-1541-fastloader.bin,  44,  0x0000,       0,           0
+1541-fastloader-recomp.bin,  44,  0x0000,       0,           0
 track01-sector00.bin, 45,  0x0000,       0,           0
 track01-sector11.bin, 46,  0x0000,       0,           0
 import-util64.prg,    51,  0x2000,       0x2000,      2
