@@ -204,3 +204,40 @@ void menu_option(char key, char *desc)
     cputs(desc);
     cputs("\r\n");
 }
+
+bool read_cbm_file(uint8_t device, char *filename, void *buffer)
+{
+    if (cbm_load(filename, device, buffer) == 0) {
+        return false;
+    }
+    return true;
+}
+
+bool write_cbm_file(uint8_t device, char *filename, uint16_t loadaddr, void *buffer, uint16_t length)
+{
+    char namebuf[32];
+
+    sprintf(namebuf, "s0:%s", filename);
+    cbm_open(1, device, 15, namebuf);
+    cbm_close(1);
+
+    sprintf(namebuf, "%s,w,p", filename);
+    
+    if (cbm_open(1, device, 2, namebuf)) {
+        return false;
+    }
+
+    if (cbm_write(1, &loadaddr, 2) != 2) {
+        cbm_close(1);
+        return false;
+    }
+
+    if (cbm_write(1, buffer, length) != length) {
+        cbm_close(1);
+        return false;
+    }
+
+    cbm_close(1);
+    return true;
+}
+

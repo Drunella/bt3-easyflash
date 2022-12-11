@@ -14,7 +14,7 @@
 ; limitations under the License.
 ; ----------------------------------------------------------------------------
 
-; important variables in$DFyx
+; important variables in yx
 ; y
 ; 0 : current bank, absolute value
 ; 1 : current offset, absolute value
@@ -24,8 +24,8 @@
 ;  0: game
 ;  1: game
 ;  2: game
-;  3: unknown 
-;  4: unkknown
+;  3: storage
+;  4: storage
 ;  5: camp
 ;  6: camp
 ;  7: camp
@@ -872,14 +872,14 @@ erase_offset  = $df41
 
 
 
-; ### calculate extended source for save zones
-; ### find current save area in its area
-; ### save zone a: low addresses only, save zone b: high addresses only
+;  calculate extended source for save zones
+;  find current save area in its area
+;  save zone a: low addresses only, save zone b: high addresses only
 
-; ### saving of sectors
-; ### find next save area
-; ### if in new block erase old area
-; ### save sector
+;  saving of sectors
+;  find next save area
+;  if in new block erase old area
+;  save sector
 
 
     ;resolve_easyflash_parameters:
@@ -1010,7 +1010,7 @@ erase_offset  = $df41
 
 
 ;    save_sector_body:
-        ; ###
+        ; 
 ;        rts
 
 
@@ -1047,8 +1047,8 @@ erase_offset  = $df41
 ;        lda $ba00, x
 ;        ldy #$37   ; memory map: ef accessible
 ;        sty $01
-;; ###        jsr EAPIWriteFlashInc
-;        clc  ; ###
+;;         jsr EAPIWriteFlashInc
+;        clc  ; 
 ;        bcs save_error
 ;        inx
 ;        bne :-               ; loop 256 times

@@ -63,6 +63,9 @@ char* __fastcall__ device_last_status();
 uint8_t __fastcall__ device_last_statuscode();
 void __fastcall__ device_clear_status();
 
+bool read_cbm_file(uint8_t device, char *filename, void *buffer);
+bool write_cbm_file(uint8_t device, char *filename, uint16_t loadaddr, void *buffer, uint16_t length);
+
 //void load_sectors();
 //uint8_t write_sectors_save();
 //uint8_t write_sectors_storage();

@@ -26,7 +26,7 @@
 
 #define MENU_START_Y 6
 #define MENU_START_X 12
-#define OUTPUT_START_Y 18
+#define OUTPUT_START_Y 21
 
 #define SAVEGAME_ADDR  ((char*)(0x8000))
 #define TEMPMEM_ADDR   ((char*)(0x1000))
@@ -74,7 +74,7 @@ static void print_device(uint8_t x, uint8_t y, uint8_t device)
     cclearxy(x, y, 3);
     gotoxy(x, y);
     textcolor(COLOR_WHITE);
-    cprintf("%d", device); // ### crashes, stack related?
+    cprintf("%d", device); // crashes, stack related?
     textcolor(COLOR_GRAY2);
 }
 
@@ -199,6 +199,7 @@ uint8_t create_character_disk(uint8_t device)
             "valid Bard's Tale III character disk\n\r"
             "will be created.\n\r\n\r");
     anykey(0, wherey());
+    clear_output();
 
     set_ef_diskid(1);
     
@@ -249,7 +250,8 @@ uint8_t create_character_disk(uint8_t device)
     return 1;
 }
 
-uint8_t backup_to_disk(uint8_t device)
+/*
+uint8_t backup_to_character_disk(uint8_t device)
 {
     int i;
     uint8_t retval;
@@ -309,8 +311,9 @@ uint8_t backup_to_disk(uint8_t device)
 
     return 1;
 }
+*/
 
-uint8_t restore_from_disk(uint8_t device)
+uint8_t restore_from_characterdisk(uint8_t device)
 {
     uint8_t i, retval;
     char* dest;
@@ -320,6 +323,7 @@ uint8_t restore_from_disk(uint8_t device)
             "the refugee camp will be overwritten.\n\r\n\r");
     really = sure(0, wherey());
     if (!really) return 0xb0;
+    clear_output();
 
     set_ef_diskid(1);
     
@@ -356,6 +360,78 @@ uint8_t restore_from_disk(uint8_t device)
 }
 
 
+uint8_t restore_from_disk_file(uint8_t device)
+{
+    uint8_t i, retval;
+    char* dest;
+    bool really;
+
+    cprintf("Your save game and all character in\n\r"
+            "the refugee camp will be overwritten.\n\r\n\r");
+    really = sure(0, wherey());
+    if (!really) return 0xb0;
+    clear_output();
+
+    set_ef_diskid(1);
+
+    cprintf("reading savegame ...");
+    // load file from disk
+    if (!read_cbm_file(device, "bd3save", (void*)(SAVEGAME_ADDR))) {
+        cprintf(" failed.\n\r");
+        return 1;
+    }
+    cprintf(" done.\n\r");
+
+    // saving to easyflash
+    cprintf("restoring savegame ...");
+    dest = SAVEGAME_ADDR;
+    for (i=0; i<SAVE_SECTORS/2; i++) {
+        write_ef_sector(i + 0x010b, dest);
+        dest += 0x0200;
+    }
+    
+    cprintf(" done.");
+        
+    return 1;
+}
+
+uint8_t backup_to_disk_file(uint8_t device)
+{
+    int i;
+    uint8_t retval;
+    char* source;
+    int progress = 0;
+    int maxprogress = SAVE_SECTORS + 2;
+
+    cprintf("Please insert a disk into #%d.\n\r", device);
+    cprintf("Do not use your Bard's Tale III\n\r"
+            "character disk.\n\r\n\r");
+    anykey(0, wherey());
+    clear_output();
+
+    set_ef_diskid(1);
+    source = SAVEGAME_ADDR;
+    for (i=0; i<SAVE_SECTORS/2; i++) {
+        retval = read_ef_sector(0x10b + i, source);
+        if (retval != 0) {
+            sprintf(temp_line, "backup failed");
+            print_error(temp_line);
+            return 1;
+        }
+        source += 0x0200;
+    }
+
+    cprintf("writing savegame ...");
+    if (write_cbm_file(device, "bd3save", SAVEGAME_ADDR, (void*)(SAVEGAME_ADDR), 0x1a00)) {
+        cprintf(" done.");
+    } else {
+        cprintf(" failed.");
+    }
+
+    return 1;
+}
+
+
 //void main(void)
 void savegame_main()
 {
@@ -383,11 +459,13 @@ void savegame_main()
             menu_clear(MENU_START_Y, OUTPUT_START_Y);
             menu_option('D', "Device #");
             cputs("\r\n");
-            menu_option('B', "Backup to floppy disk");
+            menu_option('B', "Backup to floppy file");
             cputs("\r\n");
-            menu_option('R', "Restore from floppy disk");
+            menu_option('R', "Restore from floppy file");
             cputs("\r\n");
             menu_option('C', "Create character disk");
+            cputs("\r\n");
+            menu_option('E', "Restore from character disk");
             cputs("\r\n");
             menu_option('I', "Import from Bard's Tale I/II");
             cputs("\r\n");
@@ -419,20 +497,23 @@ void savegame_main()
                 break;
             case 'b':
                 clear_output();
-                repaint = backup_to_disk(device);
+                repaint = backup_to_disk_file(device);
                 break;
             case 'r':
                 clear_output();
-                repaint = restore_from_disk(device);
+                repaint = restore_from_disk_file(device);
                 break;
             case 'c':
                 clear_output();
                 repaint = create_character_disk(device);
                 break;
+            case 'e':
+                clear_output();
+                repaint = restore_from_characterdisk(device);
+                break;
             case 'i':
                 clear_output();
                 repaint = 1;
-                // ### start
                 startup_import(); // does not return
                 break;
         }

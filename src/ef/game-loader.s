@@ -264,7 +264,7 @@ diskswitcher_run = $67cb
 
         ; splash
         cli
-; ###       jsr $4000             ; we ignore the pressed key
+        jsr $4000             ; we ignore the pressed key
 
         lda #$35 
         sta $01  
@@ -340,7 +340,6 @@ diskswitcher_run = $67cb
 
     startup_editor:
         ; load editor
-        ; editor will probably not use any bard's tale 3 code ###
         lda #33
         jsr _load_file       ; load editor
 
