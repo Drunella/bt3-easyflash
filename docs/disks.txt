@@ -4,7 +4,7 @@ Disks
 - all disks are prodos organized disks
 - one prodos sector is 512 bytes
 - two c64 sectors with interleave of 11 sectors
-- disks will be identifies by the last byte of the first prodos sector
+- disks will be identified by the last byte of the first prodos sector
   + 0: boot
   + 1: character
   + 2: dungeon a

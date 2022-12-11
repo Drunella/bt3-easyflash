@@ -25,9 +25,9 @@
 0335   4C 00 03             JMP L0300
 
 0338   20 92 04   L0338     JSR L0492
-033B   20 E9 F5             JSR $F5E9
+033B   20 E9 F5             JSR $F5E9  ; Calculate parity for data buffer
 033E   85 3A                STA $3A
-0340   20 8F F7             JSR $F78F
+0340   20 8F F7             JSR $F78F  ; Convert 260 bytes to 325 bytes group code
 0343   A9 02                LDA #$02
 0345   8D C4 06             STA $06C4
 0348   20 C2 05   L0348     JSR L05C2
@@ -176,11 +176,11 @@
 0470   99 00 01             STA $0100,Y
 0473   C8                   INY
 0474   D0 F4                BNE L046A
-0476   20 E0 F8             JSR $F8E0
+0476   20 E0 F8             JSR $F8E0  ; Decode 69 GCR bytes
 0479   A5 38                LDA $38
 047B   C5 47                CMP $47
 047D   D0 09                BNE L0488
-047F   20 E9 F5             JSR $F5E9
+047F   20 E9 F5             JSR $F5E9  ; Calculate parity for data buffer
 0482   C5 3A                CMP $3A
 0484   D0 02                BNE L0488
 0486   18                   CLC
@@ -231,7 +231,7 @@
 04D7   20 C6 06             JSR L06C6
 04DA   68         L04DA     PLA
 04DB   85 22                STA $22
-04DD   20 4B F2             JSR $F24B
+04DD   20 4B F2             JSR $F24B  ; Establish number of sectors per track
 04E0   85 C5                STA $C5
 04E2   8A                   TXA
 04E3   0A                   ASL A
@@ -280,7 +280,7 @@
 053C   48                   PHA
 053D   A9 07                LDA #$07
 053F   85 31                STA $31
-0541   20 30 FE             JSR $FE30
+0541   20 30 FE             JSR $FE30  ; Convert header in buffer 0 to GCR code
 0544   68                   PLA
 0545   A8                   TAY
 0546   88                   DEY
@@ -289,7 +289,7 @@
 054D   88                   DEY
 054E   C0 FF                CPY #$FF
 0550   D0 F5                BNE L0547
-0552   20 F5 FD             JSR $FDF5
+0552   20 F5 FD             JSR $FDF5  ; Copy data from overflow buffer
 0555   A9 02                LDA #$02
 0557   85 31                STA $31
 0559   60                   RTS
@@ -397,7 +397,7 @@
 060D   C8                   INY
 060E   D0 F5                BNE L0605
 0610   50 FE      L0610     BVC L0610
-0612   20 00 FE             JSR $FE00
+0612   20 00 FE             JSR $FE00  ; Switch to reading
 0615   18                   CLC
 0616   60                   RTS
 
@@ -473,15 +473,15 @@
 069A   D0 B5                BNE L0651
 069C   B8         L069C     CLV
 069D   50 FE      L069D     BVC L069D
-069F   4C 00 FE             JMP $FE00
+069F   4C 00 FE             JMP $FE00  ; Switch to reading
 06A2   A2 00      L06A2     LDX #$00
 06A4   8A                   TXA
 06A5   9D 00 02   L06A5     STA $0200,X
 06A8   E8                   INX
 06A9   D0 FA                BNE L06A5
-06AB   20 E9 F5             JSR $F5E9
+06AB   20 E9 F5             JSR $F5E9  ; Calculate parity for data buffer
 06AE   85 3A                STA $3A
-06B0   20 8F F7             JSR $F78F
+06B0   20 8F F7             JSR $F78F  ; Convert 260 bytes to 325 bytes group code
 06B3   A9 00                LDA #$00
 06B5   85 0F                STA $0F
 06B7   20 C2 05   L06B7     JSR L05C2

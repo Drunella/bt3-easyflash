@@ -1,11 +1,16 @@
 Bard's Tale 3
 =============
 
-- reset save game option
-
-- character editor
+- make the utility sector read and write faster
+  + create character disk
+  + restore from character
+  + backup to character
 
 - reduce amount of flash erases by using all 16 4k areas
+
+- reset save game option (ok)
+
+- character editor (ok)
 
 - character import (ok)
   + loader with modified util64
