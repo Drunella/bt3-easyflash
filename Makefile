@@ -110,7 +110,7 @@ build/ef/import-util64.prg: $(IMPORT_UTIL64_FILES)
 	$(LD65) $(LD65FLAGS) -vm -m ./build/ef/import-util64.map -Ln ./build/ef/import-util64.lst -o $@ -C src/ef/import-util64.cfg c64.lib $(IMPORT_UTIL64_FILES)
 
 # build image dir and data
-build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin build/ef/import-util64.prg
+build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.list build/ef/startmenu.prg build/ef/editor.prg build/ef/track18.bin build/ef/track09-sector14.bin build/ef/1541-fastloader.bin build/ef/track01-sector00.bin build/ef/track01-sector11.bin build/ef/import-util64.prg build/ef/savegame-orig.bin
 	cp src/ef/files.csv build/ef/files.csv
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
@@ -169,6 +169,10 @@ build/ef/track01-sector00.bin: disks/character.d64
 build/ef/track01-sector11.bin: disks/character.d64
 	@mkdir -p ./build/ef
 	dd if=disks/character.d64 of=build/ef/track01-sector11.bin bs=256 count=1 skip=11
+
+build/ef/savegame-orig.bin: build/ef/character.bin
+	@mkdir -p ./build/ef
+	dd if=build/ef/character.bin of=build/ef/savegame-orig.bin bs=512 count=13 skip=267
 
 # fastloader 1541 part, track 18 sector 14-17 (371 sectors in)
 build/ef/1541-fastloader.bin: disks/boot.d64

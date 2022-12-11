@@ -26,7 +26,7 @@
 
 #define MENU_START_Y 6
 #define MENU_START_X 12
-#define OUTPUT_START_Y 21
+#define OUTPUT_START_Y 17
 
 #define SAVEGAME_ADDR  ((char*)(0x8000))
 #define TEMPMEM_ADDR   ((char*)(0x1000))
@@ -250,7 +250,7 @@ uint8_t create_character_disk(uint8_t device)
     return 1;
 }
 
-/*
+
 uint8_t backup_to_character_disk(uint8_t device)
 {
     int i;
@@ -311,9 +311,9 @@ uint8_t backup_to_character_disk(uint8_t device)
 
     return 1;
 }
-*/
 
-uint8_t restore_from_characterdisk(uint8_t device)
+
+uint8_t restore_from_character_disk(uint8_t device)
 {
     uint8_t i, retval;
     char* dest;
@@ -362,7 +362,7 @@ uint8_t restore_from_characterdisk(uint8_t device)
 
 uint8_t restore_from_disk_file(uint8_t device)
 {
-    uint8_t i, retval;
+    uint8_t i;
     char* dest;
     bool really;
 
@@ -422,7 +422,7 @@ uint8_t backup_to_disk_file(uint8_t device)
     }
 
     cprintf("writing savegame ...");
-    if (write_cbm_file(device, "bd3save", SAVEGAME_ADDR, (void*)(SAVEGAME_ADDR), 0x1a00)) {
+    if (write_cbm_file(device, "bd3save", (uint16_t)SAVEGAME_ADDR, (void*)(SAVEGAME_ADDR), 0x1a00)) {
         cprintf(" done.");
     } else {
         cprintf(" failed.");
@@ -432,8 +432,37 @@ uint8_t backup_to_disk_file(uint8_t device)
 }
 
 
-//void main(void)
-void savegame_main()
+uint8_t format_flash()
+{
+    int i;
+    uint8_t retval;
+    char* source;
+    bool really;
+
+    cprintf("This will delete your save game\n\r"
+            "and all characters.\n\r\n\r");
+    really = sure(0, wherey());
+    if (!really) return 0xb0;
+    clear_output();
+
+    // load original savegame
+    source = SAVEGAME_ADDR;
+    retval = load_ef_file_ext(source, 47);
+    
+    // saving to easyflash
+    set_ef_diskid(1);
+    cprintf("formatting savegame ...");
+    for (i=0; i<SAVE_SECTORS/2; i++) {
+        write_ef_sector(i + 0x010b, source);
+        source += 0x0200;
+    }
+    cprintf(" done.");
+
+    return 1;
+}
+
+
+void savegame_restore()
 {
     // we assume eapi already installed at $c000
     // we assume the sector load/save functions are installed at $cxxx
@@ -442,7 +471,6 @@ void savegame_main()
     static uint8_t device = 8;
     uint8_t retval, newdevice;
 
-//    cart_bankout();
     bgcolor(COLOR_BLACK);
     bordercolor(COLOR_BLACK);
     draw_menu();
@@ -459,28 +487,88 @@ void savegame_main()
             menu_clear(MENU_START_Y, OUTPUT_START_Y);
             menu_option('D', "Device #");
             cputs("\r\n");
-            menu_option('B', "Backup to floppy file");
-            cputs("\r\n");
-            menu_option('R', "Restore from floppy file");
-            cputs("\r\n");
-            menu_option('C', "Create character disk");
+            menu_option('R', "Restore from file");
             cputs("\r\n");
             menu_option('E', "Restore from character disk");
-            cputs("\r\n");
-            menu_option('I', "Import from Bard's Tale I/II");
             cputs("\r\n");
             menu_option(0x5f, "Return to main menu");
             print_device(MENU_START_X + 8, MENU_START_Y, device);
             if (repaint & 0x80) clear_output();
             if (repaint & 0x40) print_error(device_last_status());
+            gotoxy(0, OUTPUT_START_Y);
         }
         
         switch (cgetc()) {
 
             case 0x5f:
-                /*clear_output();
-                cart_reset(); // does not return
-                break;*/
+                return;
+            case 'd':
+                clear_output();
+                newdevice = select_device(MENU_START_X, MENU_START_Y + 1);
+                retval = device_present(newdevice);
+                if (retval == 0) {
+                    repaint = 1;
+                    device = newdevice;
+                } else {
+                    sprintf(temp_line, "device %d not present", newdevice);
+                    print_error(temp_line);
+                    repaint = 1;
+                }
+                break;
+            case 'r':
+                clear_output();
+                repaint = restore_from_disk_file(device);
+                break;
+            case 'e':
+                clear_output();
+                repaint = restore_from_character_disk(device);
+                break;
+        }
+    }
+
+}
+
+void savegame_backup()
+{
+    // we assume eapi already installed at $c000
+    // we assume the sector load/save functions are installed at $cxxx
+    // we assume the wrapper are installed at $b7xx
+    static uint8_t repaint = 1;
+    static uint8_t device = 8;
+    uint8_t retval, newdevice;
+
+    bgcolor(COLOR_BLACK);
+    bordercolor(COLOR_BLACK);
+    draw_menu();
+    retval = device_present(device);
+    if (retval != 0) device = 0;
+    device_clear_status();
+
+    while (kbhit()) { // clear all keys
+        cgetc();
+    }
+    
+    for (;;) {
+        if (repaint > 0) {
+            menu_clear(MENU_START_Y, OUTPUT_START_Y);
+            menu_option('D', "Device #");
+            cputs("\r\n");
+            menu_option('B', "Backup to file");
+            cputs("\r\n");
+            menu_option('E', "Backup to character disk");
+            cputs("\r\n");
+            menu_option('C', "Create character disk");
+            cputs("\r\n");
+            menu_option(0x5f, "Return to main menu");
+            print_device(MENU_START_X + 8, MENU_START_Y, device);
+            if (repaint & 0x80) clear_output();
+            if (repaint & 0x40) print_error(device_last_status());
+            gotoxy(0, OUTPUT_START_Y);
+        }
+        
+        switch (cgetc()) {
+
+            case 0x5f:
                 return;
             case 'd':
                 clear_output();
@@ -499,24 +587,78 @@ void savegame_main()
                 clear_output();
                 repaint = backup_to_disk_file(device);
                 break;
-            case 'r':
+            case 'e':
                 clear_output();
-                repaint = restore_from_disk_file(device);
+                repaint = backup_to_character_disk(device);
                 break;
             case 'c':
                 clear_output();
                 repaint = create_character_disk(device);
                 break;
-            case 'e':
+        }
+    }
+
+}
+
+void savegame_main()
+{
+    // we assume eapi already installed at $c000
+    // we assume the sector load/save functions are installed at $cxxx
+    // we assume the wrapper are installed at $b7xx
+    static uint8_t repaint = 1;
+    static uint8_t device = 8;
+
+    bgcolor(COLOR_BLACK);
+    bordercolor(COLOR_BLACK);
+    draw_menu();
+
+    while (kbhit()) { // clear all keys
+        cgetc();
+    }
+    
+    for (;;) {
+        if (repaint > 0) {
+            menu_clear(MENU_START_Y, OUTPUT_START_Y);
+            menu_option('B', "Backup to disk");
+            cputs("\r\n");
+            menu_option('R', "Restore from disk");
+            cputs("\r\n");
+            menu_option('I', "Import from Bard's Tale I/II");
+            cputs("\r");
+            menu_option('F', "Format save game");
+            cputs("\r\n");
+            menu_option(0x5f, "Return to main menu");
+            if (repaint & 0x80) clear_output();
+            if (repaint & 0x40) print_error(device_last_status());
+            gotoxy(0, OUTPUT_START_Y);
+        }
+        
+        switch (cgetc()) {
+
+            case 0x5f:
+                return;
+            case 'b':
                 clear_output();
-                repaint = restore_from_characterdisk(device);
+                savegame_backup();
+                repaint = 1;
+                break;
+            case 'r':
+                clear_output();
+                savegame_restore();
+                repaint = 1;
                 break;
             case 'i':
                 clear_output();
                 repaint = 1;
                 startup_import(); // does not return
                 break;
+            case 'f':
+                clear_output();
+                repaint = 1;
+                format_flash();
+                break;
         }
     }
 
 }
+
