@@ -42,6 +42,13 @@
 .export _device_last_statuscode
 .export _device_clear_status
 
+.export _write_cbm_memory_begin
+.export _write_cbm_memory_end
+.export _write_cbm_memory_data
+.export _execute_cbm_memory
+.export _kill_cbm_fastload
+.export _write_cbm_sector_fastload
+
 .import cbm_read_sector
 .import cbm_write_sector
 .import cbm_device_present
@@ -50,7 +57,19 @@
 .import cbm_device_clear_status
 .import cbm_backup_zeropage
 .import cbm_restore_zeropage
+.import cbm_write_memory_data
+.import cbm_write_memory_begin
+.import cbm_write_memory_end
+.import cbm_execute_memory
 
+.import send_iec_byte_fastload
+.import init_iec_fastload
+.import recv_iec_byte_fastload
+.import loadsave_cbm_sector_fastload
+.import calc_return_value
+.import calc_track_number
+.import calc_sector_number
+.import modetracksector_iec_fastload
 
 
 ; -- easyflash startup -------------------------------------------------------
@@ -221,7 +240,7 @@
 
 ; -- 1541 block io -----------------------------------------------------------
 
-; protect zeropage outside
+; protect zeropage here
 ; parameter:
 ;   $ab: track number
 ;   $ac: sector number
@@ -274,6 +293,7 @@
         pha 
         jsr cbm_restore_zeropage
         pla
+        ldx #$00
         rts
 
 
@@ -297,8 +317,160 @@
         pha
         jsr cbm_restore_zeropage
         pla
+        ldx #$00
         rts
 
+
+    _write_cbm_memory_begin:
+        ; uint8_t __fastcall__ _write_cbm_memory_begin(uint8_t device);
+        pha
+        jsr cbm_backup_zeropage
+        pla
+
+        sta $ad  ; device number in a
+        jsr cbm_write_memory_begin
+
+        pha
+        jsr cbm_restore_zeropage
+        pla
+        ldx #$00
+        rts
+
+
+    _write_cbm_memory_end:
+        ; void __fastcall__ _write_cbm_memory_end();
+        jmp cbm_write_memory_end
+        
+
+    _write_cbm_memory_data:
+        ; uint8_t __fastcall__ write_cbm_memory_data(char* source, char*, destination, uint8_t size);
+        pha
+        jsr cbm_backup_zeropage
+        pla
+        sta $aa  ; size in a
+        jsr popax  ; dest address
+        sta $ab
+        stx $ac
+        jsr popax  ; source address
+        sta $ae
+        stx $af
+
+        jsr cbm_write_memory_data
+
+        pha
+        jsr cbm_restore_zeropage
+        pla
+        ldx #$00
+        rts
+
+
+    _execute_cbm_memory:
+        ; uint8_t __fastcall__ execute_cbm_memory(char* address, uint8_t device);
+        ; address in a/x
+        pha
+        jsr cbm_backup_zeropage
+        pla
+        sta $ad    ; device
+        jsr popax  ; address
+        sta $ae
+        stx $af
+
+        jsr cbm_execute_memory
+
+        pha
+        jsr cbm_restore_zeropage
+        pla
+        ldx #$00
+        rts
+
+
+
+; -- 1541 fastloader -----------------------------------------------------------
+
+.segment "CODE"
+
+    _kill_cbm_fastload:
+        ; void __fastcall__ kill_cbm_fastload();
+        lda $01    ; save memory configuration
+        pha
+        lda $d015  ; save sprite enable register
+        pha
+        lda #$00
+        sta $d015
+
+        sta calc_sector_number
+        lda #18
+        sta calc_track_number        
+        lda #$04  ; additional mode: kill fastloader
+        sta $42
+
+        jsr init_iec_fastload
+        jsr modetracksector_iec_fastload
+
+;        lda #$c7   ; reset bus to default
+;        sta $dd00
+
+        pla
+        sta $d015
+        pla
+        sta $01
+        rts
+
+
+    dummy_vector:
+        rti
+
+    disable_interrupts:
+        sei
+        ; set dummy interrupt
+        ldx #<dummy_vector
+        ldy #>dummy_vector
+        stx $fffa
+        sty $fffb
+        stx $fffe
+        sty $ffff
+        lda #$7f   ; disable interrupts (?)
+        sta $dc0d
+        sta $dd0d
+        lda $dc0d
+        sta $dd0d
+        cli
+        rts
+
+    enable_interrupts:
+        sei
+        lda #$81   ; start timer for interrupts
+        sta $dc0d
+        cli
+        rts
+
+
+    _write_cbm_sector_fastload:
+        ; uint8_t __fastcall__ write_cbm_sector_fastload(char* source, uint8_t track, uint8_t sector)
+        sta calc_sector_number  ; sector in a
+        jsr popa  ; track (a)
+        sta calc_track_number
+        jsr popax  ; address low(a), high(x)
+        sta $44
+        stx $45
+       
+        lda #$02  ; mode 2
+        sta $42
+
+        jsr disable_interrupts
+
+        jsr loadsave_cbm_sector_fastload
+        bcs :+
+
+        jsr enable_interrupts
+        lda calc_return_value  ; return value
+        ldx #$00
+        rts
+
+    :   jsr enable_interrupts
+        lda #$ff  ; generic error
+        ldx #$00
+        rts
 
 
 /*

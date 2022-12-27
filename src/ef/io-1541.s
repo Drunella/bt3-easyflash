@@ -26,7 +26,10 @@
 .export cbm_device_clear_status
 .export cbm_backup_zeropage
 .export cbm_restore_zeropage
-
+.export cbm_write_memory_data
+.export cbm_write_memory_begin
+.export cbm_write_memory_end
+.export cbm_execute_memory
 
 
 ; -- 1541 block io -----------------------------------------------------------
@@ -50,6 +53,20 @@
         ;.byte $0d
     blockio_bp_command_end:
     blockio_bp_command_len = blockio_bp_command_end - blockio_bp_command
+
+    blockio_mw_command:
+        .byte $4d, $2d, $57  ; "M-W"
+    blockio_mw_command_data:
+        .byte $00, $00, $00
+    blockio_mw_command_end:
+    blockio_mw_command_len = blockio_mw_command_end - blockio_mw_command
+
+    blockio_me_command:
+        .byte $4d, $2d, $45  ; "M-E"
+    blockio_me_command_data:
+        .byte $00, $00
+    blockio_me_command_end:
+    blockio_me_command_len = blockio_me_command_end - blockio_me_command
 
     blockio_drivenumber:
         .byte $08
@@ -432,6 +449,129 @@
         pha
         jmp write_sector_ext_close
 
+
+
+    cbm_write_memory_begin:
+        ; protect zeropage outside
+        ; parameter:
+        ;   $ad: device number
+        ; return:
+        ;   A: 0=success, x=error
+        lda #$00
+        ldy #$00
+        ldy #$00
+        jsr $ffbd     ; call SETNAM (no filename)
+
+        lda #$0f      ; file number 15
+        ldx $ad
+        stx blockio_drivenumber
+        ldy #$0f      ; secondary address 15
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN
+        bcs :+        ; if carry set, the file could not be opened
+
+;        ldx #$0f      ; filenumber 15
+;        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
+
+        lda #$00
+        rts
+
+    :   bne :+        ; if a has value, accept as error code
+        lda #$ff      ; error
+    :   rts
+
+
+    cbm_write_memory_end:
+        lda #$0f      ; filenumber 15
+        jsr $ffc3     ; call CLOSE
+
+        jsr $ffcc     ; call CLRCHN
+
+        rts
+
+
+    cbm_write_memory_data:
+        ; protect zeropage outside
+        ; parameter:
+        ;   $aa: size of bytes, max 32
+        ;   $ab: low address in drive
+        ;   $ac: high address in drive
+        ;   $ae: low address of source
+        ;   $af: high address of source
+        ; return:
+        ;   A: 0=success, x=error
+        ldx #$0f      ; filenumber 15
+        jsr $ffc9     ; call CHKOUT (file 15 now used as output)
+
+        lda $ab
+        sta blockio_mw_command_data      ; low address
+        lda $ac
+        sta blockio_mw_command_data + 1  ; high address
+        lda $aa
+        sta blockio_mw_command_data + 2  ; size
+        lda $ae
+        sta cbm_write_memory_data_source_low
+        lda $af
+        sta cbm_write_memory_data_source_high
+
+        ; send command
+        ldy #$00
+    :   lda blockio_mw_command, y  ; get byte from command string
+        jsr $ffd2     ; call CHROUT (send byte through command channel)
+        iny
+        cpy #blockio_mw_command_len
+        bne :-
+
+        ; send data
+        ldy #$00
+    cbm_write_memory_data_source:
+    cbm_write_memory_data_source_low = cbm_write_memory_data_source + 1
+    cbm_write_memory_data_source_high = cbm_write_memory_data_source + 2
+        lda $ffff, y  ; get byte from data source
+        jsr $ffd2     ; call CHROUT
+        iny
+        cpy $aa
+        bne cbm_write_memory_data_source
+
+        jsr $ffcc     ; call CLRCHN
+
+        rts
+
+
+    cbm_execute_memory:
+        ; protect zeropage outside
+        ; parameter:
+        ;   $ad: device number
+        ;   $ae: low address
+        ;   $af: high address
+        ; return:
+        ;   A: 0=success, x=error
+        lda $ae
+        sta blockio_me_command_data
+        lda $af
+        sta blockio_me_command_data + 1
+
+        lda #blockio_me_command_len
+        ldx #<blockio_me_command
+        ldy #>blockio_me_command
+        jsr $ffbd     ; call SETNAM
+
+        lda #$0f      ; file number 15
+        ldx $ad       ; device
+        ldy #$0f      ; secondary address 15
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN
+;        bcs :+        ; if carry set, the file could not be opened
+
+        ;lda #$0f      ; filenumber 15
+        ;sr $ffc3     ; call CLOSE
+        ;jsr $ffcc     ; call CLRCHN
+        jsr $ffe7
+
+        lda #$00
+        rts
 
 
 /*

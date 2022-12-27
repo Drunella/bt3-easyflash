@@ -66,11 +66,18 @@ void __fastcall__ device_clear_status();
 bool read_cbm_file(uint8_t device, char *filename, void *buffer);
 bool write_cbm_file(uint8_t device, char *filename, uint16_t loadaddr, void *buffer, uint16_t length);
 
+void __fastcall__ kill_cbm_fastload();
+uint8_t __fastcall__ write_cbm_sector_fastload(char* source, uint8_t track, uint8_t sector);
+        
 //void load_sectors();
 //uint8_t write_sectors_save();
 //uint8_t write_sectors_storage();
 //uint8_t write_sectors_camp();
 
+uint8_t __fastcall__ write_cbm_memory_begin(uint8_t device);
+void __fastcall__ write_cbm_memory_end();
+uint8_t __fastcall__ write_cbm_memory_data(char* source, char* destination, uint8_t size);
+uint8_t __fastcall__ execute_cbm_memory(char* address, uint8_t device);
 
 void menu_clear(uint8_t start, uint8_t stop);
 void menu_option(char key, char *desc);

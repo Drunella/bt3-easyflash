@@ -170,7 +170,7 @@ def main(argv):
         for e in map:
             a = process(e)
             if args.verbose:
-                print("included: {0} at ${1:04x}".format(e[2], a))
+                print("included: {0} at {1:02x}:{2:04x}".format(e[2], int(e[0]), a))
 
     bin_write(args.outputfile)
     

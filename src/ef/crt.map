@@ -3,6 +3,7 @@
 
 0 f loader.prg 0x8000 0 0
 0 f sector-rom.bin 0xb000 0 0
+0 f ef-name.bin 0xbb00 0 0
 0 f init.prg 0xbf00 0 0
 0 f eapi-am29f040.prg 0xb800 0 0
 

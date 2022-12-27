@@ -28,23 +28,36 @@ GLOBAL {
 
 
 # code segment for code and data
-SEGMENT { START $c000;  END $c1ff; NAME "DATA"; };
+SEGMENT { START $c000;  END $c1ff; NAME "DATA_ALIGNED"; };
 SEGMENT { START $c200;  END $c9e9; NAME "CODE"; };
 
 
 # ranges
 RANGE { START $c000;  END $c1ff; TYPE bytetable; };
-#RANGE { START $c200;  END $c353; TYPE code; };
+LABEL { ADDR $c000; NAME "data_table_c000"; COMMENT "page aligned\n.align 256"; };
+LABEL { ADDR $c100; NAME "data_table_c100"; };
 
+#RANGE { START $c200;  END $c353; TYPE code; };
 RANGE { START $c200;  END $c207; TYPE skip; };
 RANGE { START $c208;  END $c213; TYPE skip; };
 
+LABEL { ADDR $c214; NAME "calc_return_value"; };
 LABEL { ADDR $c215; NAME "calc_track_number"; };
 LABEL { ADDR $c216; NAME "calc_sector_number"; };
 RANGE { START $c214;  END $c216; TYPE ByteTable; };
+LABEL { ADDR $c217; NAME "send_iec_byte_fastload"; };
+LABEL { ADDR $c2bd; NAME "init_iec_fastload"; };
+LABEL { ADDR $c287; NAME "recv_iec_byte_fastload"; };
+LABEL { ADDR $c24e; NAME "modetracksector_iec_fastload"; };
 
-LABEL { ADDR $c2da; NAME "load_cbm_sector_fastload"; };
-RANGE { START $c217;  END $c353; TYPE code; };
+
+LABEL { ADDR $c2da; NAME "loadsave_cbm_sector_fastload"; };
+RANGE { START $c217;  END $c256; TYPE code; };
+
+LABEL { ADDR $c259; NAME "load_highvalue_c257"; COMMENT "patch_line_replace_1"; };
+RANGE { START $c257;  END $c258; TYPE skip; };
+
+RANGE { START $c259;  END $c353; TYPE code; };
 RANGE { START $c354;  END $c368; TYPE skip; };
 
 

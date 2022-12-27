@@ -25,49 +25,39 @@ LD65FLAGS=-t $(TARGET)
 CA65FLAGS=-t $(TARGET) -I . -I build/ef --debug-info
 CC65FLAGS=-t $(TARGET) -O
 #LD65FLAGS=
-#export LD65_LIB=/opt/cc65/share/cc65/lib
 
 .SUFFIXES: .prg .s .c
 .PHONY: clean all easyflash mrproper
 
-#EF_LOADER_FILES=build/ef/menu.o build/ef/util.o build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o
 EF_LOADER_FILES=build/ef/loadeapi.o build/ef/io-loader.o build/ef/game-loader.o build/ef/io-sector.o build/ef/io-loadfile.o build/ef/io-caller.o 
-STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o build/ef/io-1541.o
-EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o build/ef/io-1541.o build/ef/editor_list.o
+STARTMENU_FILES=build/ef/menu.o build/ef/util.o build/ef/util_s.o build/ef/savegame.o build/ef/savegame_map.o build/ef/io-1541.o build/ef/io-sectortable-da.o
+EDITOR_FILES=build/ef/util.o build/ef/util_s.o build/ef/editor_main.o build/ef/editor_character.o build/ef/editor_util.o build/ef/editor_items.o build/ef/editor_spells.o build/ef/io-1541.o build/ef/editor_list.o build/ef/io-sectortable-da.o
 IMPORT_UTIL64_FILES=build/ef/util64-da.o build/ef/io-sectortable-da.o build/ef/util64-additional.o build/ef/io-1541.o
 
 # all
 all: easyflash
 
 # easyflash
-easyflash: build/bd3-easyflash.crt
+easyflash: build/bt3-easyflash.crt
 
 # assemble
 build/%.o: src/%.s
-#	@mkdir -p ./build/temp
 	@mkdir -p ./build/ef
 	$(CA65) $(CA65FLAGS) -g -o $@ $<
 
 # compile
 build/%.s: src/%.c
-#	@mkdir -p ./build/temp
 	@mkdir -p ./build/ef
 	$(CC65) $(CC65FLAGS) -g -o $@ $<
 
 # assemble2
 build/%.o: build/%.s
-#	@mkdir -p ./build/temp
 	@mkdir -p ./build/ef
 	$(CA65) $(CA65FLAGS) -g -o $@ $<
 
-#subdirs:
-#	@mkdir -p ./build/temp 
-#	@mkdir -p ./build/ef
-
 clean:
 	rm -rf build/ef
-#	rm -rf build/temp
-	rm -f build/bd3-easyflash.crt
+	rm -f build/bt3-easyflash.crt
 
 mrproper:
 	rm -rf build
@@ -118,11 +108,12 @@ build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.
 build/ef/bd3-easyflash.bin: build/ef/patched.done build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin build/ef/sector-rom.bin
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
+	cp ./src/ef/ef-name.bin ./build/ef/ef-name.bin
 	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin
 
 # cartdridge crt
-build/bd3-easyflash.crt: build/ef/bd3-easyflash.bin
-	cartconv -b -t easy -o build/bd3-easyflash.crt -i build/ef/bd3-easyflash.bin -n "Bard's Tale III" -p
+build/bt3-easyflash.crt: build/ef/bd3-easyflash.bin
+	cartconv -b -t easy -o build/bt3-easyflash.crt -i build/ef/bd3-easyflash.bin -n "Bard's Tale III" -p
 
 # apply patches
 build/ef/patched.done: build/ef/character.bin
@@ -174,21 +165,24 @@ build/ef/savegame-orig.bin: build/ef/character.bin
 	@mkdir -p ./build/ef
 	dd if=build/ef/character.bin of=build/ef/savegame-orig.bin bs=512 count=13 skip=267
 
+
+# get 2.0.prg
+build/ef/2.0.prg: disks/boot.d64
+	SDL_VIDEODRIVER=dummy c1541 -attach disks/boot.d64 -read 2.0 ./build/ef/2.0.prg
+
 # disassemble of prodos 2.0
-build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info src/ef/io-sectortable-exp.inc
+build/ef/io-sectortable-da.s: build/ef/files.list src/ef/io-sectortable-da.info src/ef/io-sectortable-exp.inc build/ef/2.0.prg src/ef/io-sectortable-patch.sh
 	$(DA65) -i ./src/ef/io-sectortable-da.info -o build/ef/temp1.s
-	cat src/ef/io-sectortable-exp.inc build/ef/temp1.s > build/ef/io-sectortable-da.s
+#	cat src/ef/io-sectortable-exp.inc build/ef/temp1.s > build/ef/io-sectortable-da.s
+	src/ef/io-sectortable-patch.sh src/ef/io-sectortable-exp.inc build/ef/temp1.s > build/ef/io-sectortable-da.s
 	rm -f build/ef/temp1.s
+
 
 # disassemble of util64
 build/ef/util64-da.s: build/ef/global.i src/ef/util64-da.info build/ef/2.0.prg src/ef/util64-patch.sh src/ef/util64-exp.inc
 	$(DA65) -i ./src/ef/util64-da.info -o build/ef/temp2.s
 	src/ef/util64-patch.sh src/ef/util64-exp.inc build/ef/temp2.s > build/ef/util64-da.s
 	rm -f build/ef/temp2.s
-
-# get 2.0.prg
-build/ef/2.0.prg: disks/boot.d64
-	SDL_VIDEODRIVER=dummy c1541 -attach disks/boot.d64 -read 2.0 ./build/ef/2.0.prg
 
 # global addresses
 build/ef/global.i: build/ef/loader.map

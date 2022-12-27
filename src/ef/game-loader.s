@@ -152,7 +152,7 @@ diskswitcher_run = $67cb
         sty $fffb
         stx $fffe
         sty $ffff
-        lda #$7f                    ;   enable interrupts (?)
+        lda #$7f                    ; disable interrupts (?)
         sta $dc0d
         sta $dd0d
         lda $dc0d

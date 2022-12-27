@@ -187,6 +187,113 @@ uint8_t check_bd3_character_disk(uint8_t device)
 }
 
 
+/*void activate_fastloader(uint8_t device)
+{
+    uint8_t retval;
+    int i;
+    char* source;
+    char* drivedest;
+    
+    source = TEMPMEM_ADDR;
+    memset(source, 0, 1024);
+    retval = load_ef_file_ext(source, 44);
+
+    drivedest = (char*)(0x0300);
+    retval = write_cbm_memory_begin(device);
+    if (retval != 0) {
+        gotoxy(0,24); cprintf("retval=%d", retval);
+    }
+    for (i=0; i<32; i++) {
+        retval = write_cbm_memory_data(source, drivedest, 32);
+        source += 32;
+        drivedest += 32;
+    }
+    
+    write_cbm_memory_end();
+    
+    execute_cbm_memory((char*)(0x0300), device); // device does not process regular commands
+}
+
+
+uint8_t create_character_disk_fastloader(uint8_t device)
+{
+    int i;
+    uint8_t retval;
+    char* source;
+    int progress = 0;
+
+    cprintf("Please insert a blank disk into #%d.\n\r", device);
+    cprintf("The disk will be overwritten and a\n\r"
+            "valid Bard's Tale III character disk\n\r"
+            "will be created.\n\r\n\r");
+    anykey(0, wherey());
+    clear_output();
+
+    set_ef_diskid(1);
+    
+    // activate fastloader
+    cprintf("starting fastloader ... ");
+    activate_fastloader(device);
+    cprintf("ok\n\r");
+    
+    // load original track 18
+    source = SAVEGAME_ADDR;
+    load_ef_file_ext(source, 41); // track 18
+    for (i=0; i<19; i++) {
+        retval = write_cbm_sector_fastload(source, 18, (uint8_t)i);
+        if (retval != 0) {
+            retval = 0x40;
+            goto finish;
+        }
+        draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
+        source += 0x0100;
+    }
+    
+    // write character disk && savegame
+    source = SAVEGAME_ADDR;
+    for (i=0; i<ALL_SECTORS/2; i++) {
+        retval = read_ef_sector(i, source);
+        if (retval != 0) {
+            sprintf(temp_line, "backup failed");
+            print_error(temp_line);
+            retval = 1;
+            goto finish;
+        }
+        retval = write_cbm_sector_fastload(source, sectors_all[i*2].track, sectors_all[i*2].sector);
+        if (retval != 0) {
+            retval = 0x40;
+            goto finish;
+        }
+        draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
+        retval = write_cbm_sector_fastload(source+0x0100, sectors_all[i*2+1].track, sectors_all[i*2+1].sector);
+        if (retval != 0) {
+            retval = 0x40;
+            goto finish;
+        }
+        draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
+    }
+    
+    // write original sector with codewheel code
+    source = TEMPMEM_ADDR;
+    load_ef_file_ext(source, 42); // codewheel sector
+    retval = write_cbm_sector_fastload(source, 9, 14);
+    if (retval != 0) {
+        retval = 0x40;
+        goto finish;
+    }
+    draw_progress_write(++progress, ALL_SECTORS + 19 + 1);
+
+    retval = 1;
+finish:
+    cprintf("\n\r");
+    cprintf("stopping fastloader ... ");
+    kill_cbm_fastload();
+    cprintf("ok\n\rfinished.");
+
+    return retval;
+}*/
+
+
 uint8_t create_character_disk(uint8_t device)
 {
     int i;
@@ -257,32 +364,43 @@ uint8_t backup_to_character_disk(uint8_t device)
     uint8_t retval;
     char* source;
     int progress = 0;
-    int maxprogress = SAVE_SECTORS + 2;
+    int maxprogress = SAVE_SECTORS;
 
-    cprintf("Please insert a disk into #%d.\n\r", device);
-    cprintf("You can use a valid\n\r"
-            "Bard's Tale III character disk.\n\r\n\r");
+    cprintf("Please insert a valid Bard's Tale III\n\r"
+            "character disk into #%d.\n\r\n\r", device);
+    //cprintf("Please insert a valid #%d.\n\r", device);
+    //cprintf("You can use a valid\n\r"
+    //        "Bard's Tale III character disk.\n\r\n\r");
     anykey(0, wherey());
 
     set_ef_diskid(1);
 
     // write disk identification
     // track01-sector00.bin: 45; track01-sector11.bin: 46
-    source = TEMPMEM_ADDR;
-    load_ef_file_ext(source, 45);
-    load_ef_file_ext(source + 0x0100, 46);
+    //source = TEMPMEM_ADDR;
+    //load_ef_file_ext(source, 45);
+    //load_ef_file_ext(source + 0x0100, 46);
 
-    retval = write_cbm_sector_ext(source, device, 1, 0);
-    if (retval != 0) return 0x40;
-    draw_progress_write(++progress, maxprogress);
+    //retval = write_cbm_sector_ext(source, device, 1, 0);
+    //if (retval != 0) return 0x40;
+    //draw_progress_write(++progress, maxprogress);
 
-    retval = write_cbm_sector_ext(source + 0x0100, device, 1, 11);
-    if (retval != 0) return 0x40;
-    draw_progress_write(++progress, maxprogress);
+    //retval = write_cbm_sector_ext(source + 0x0100, device, 1, 11);
+    //if (retval != 0) return 0x40;
+    //draw_progress_write(++progress, maxprogress);
     
     // open
     //retval = write_cbm_sector_open(device);
     //if (retval != 0) return 0x40;
+    
+    // test if valid character disk
+    retval = check_bd3_character_disk(device);
+    if (retval == 0xff) {
+        print_error("not a valid character disk");
+        return 1;
+    } else if (retval > 0) {
+        return 0x40;
+    }
     
     // write savegame
     source = SAVEGAME_ADDR;
@@ -319,7 +437,9 @@ uint8_t restore_from_character_disk(uint8_t device)
     char* dest;
     bool really;
 
-    cprintf("Your save game and all character in\n\r"
+    cprintf("Please insert Bard's Tale III\n\r"
+            "character disk into #%d.\n\r", device);
+    cprintf("Your save game and all characters in\n\r"
             "the refugee camp will be overwritten.\n\r\n\r");
     really = sure(0, wherey());
     if (!really) return 0xb0;
@@ -366,7 +486,9 @@ uint8_t restore_from_disk_file(uint8_t device)
     char* dest;
     bool really;
 
-    cprintf("Your save game and all character in\n\r"
+    cprintf("Please insert disk with a previously\n\r"
+            "saved game into #%d.\n\r", device);
+    cprintf("Your save game and all characters in\n\r"
             "the refugee camp will be overwritten.\n\r\n\r");
     really = sure(0, wherey());
     if (!really) return 0xb0;
@@ -501,6 +623,7 @@ void savegame_restore()
         switch (cgetc()) {
 
             case 0x5f:
+                clear_output();
                 return;
             case 'd':
                 clear_output();
@@ -522,6 +645,9 @@ void savegame_restore()
             case 'e':
                 clear_output();
                 repaint = restore_from_character_disk(device);
+                break;
+            default:
+                repaint = 0;
                 break;
         }
     }
@@ -569,6 +695,7 @@ void savegame_backup()
         switch (cgetc()) {
 
             case 0x5f:
+                clear_output();
                 return;
             case 'd':
                 clear_output();
@@ -594,6 +721,15 @@ void savegame_backup()
             case 'c':
                 clear_output();
                 repaint = create_character_disk(device);
+                break;
+/*            case 'x':
+                activate_fastloader(device);
+                break;
+            case 'y':
+                dectivate_fastloader();
+                break;*/
+            default:
+                repaint = 0;
                 break;
         }
     }
@@ -636,6 +772,7 @@ void savegame_main()
         switch (cgetc()) {
 
             case 0x5f:
+                clear_output();
                 return;
             case 'b':
                 clear_output();
@@ -656,6 +793,9 @@ void savegame_main()
                 clear_output();
                 repaint = 1;
                 format_flash();
+                break;
+            default:
+                repaint = 0;
                 break;
         }
     }

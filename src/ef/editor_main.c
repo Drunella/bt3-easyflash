@@ -257,6 +257,8 @@ void main(void)
                 break;
             case 0x5f: // back arrow
                 //cart_reset(); // does not return
+                clrscr();
+                cputsxy(29 , 24, "loading...");
                 startup_startmenu_ext(); // does not return
                 break;
             /*case 'S': // debug 's'
