@@ -36,3 +36,11 @@ Find the crt image in the build sub-directory:
 I did not test the game thoroughly. A lot of functionality is
 unknown to me and therefore I do not know if I missed important
 parts of code to convert.
+
+
+# License and Copyright
+
+The code is © 2023 Drunella, available under an Apache 2.0 license.
+
+The original Bard's Tale III game is © 1988 Interplay Productions.
+No copy of the original game is included in this repository.
