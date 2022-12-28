@@ -3,7 +3,8 @@ This is the source to build an EasyFlash version from original C64
 Bard's Tale III disks.
 
 ## Features
-* Import and export save games
+* Import and export of save games
+* Character editor
 * No codewheel necessary
 
 ## Required Tools
@@ -27,7 +28,7 @@ make
 ```
 
 Find the crt image in the build sub-directory:
-`build/bd3-easyflash.crt`.
+`build/bt3-easyflash.crt`.
 
 
 # Bugs

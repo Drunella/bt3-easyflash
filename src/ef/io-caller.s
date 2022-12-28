@@ -25,7 +25,7 @@
 
 .import loadsave_sector_body
 .import loadfile_body
-.import bd3_current_disk_index
+.import bt3_current_disk_index
 
 .segment "CLEARCLC_CALL"
 
@@ -57,7 +57,7 @@
 
     ; set disk @ $be38
     _set_current_disk:
-        sta bd3_current_disk_index
+        sta bt3_current_disk_index
         rts
 
 

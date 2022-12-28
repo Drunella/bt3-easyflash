@@ -30,7 +30,7 @@
 .import __STARTGAME_SIZE__
 
 diskswitcher_run = $67cb
-.import bd3_current_disk_index
+.import bt3_current_disk_index
 .import loadfile_startaddress
 
 
@@ -98,7 +98,7 @@ diskswitcher_run = $67cb
         ; 67CE   B0 2A      BCS L67FA   ; ? (on error)
         ; 67D0   AD FF BB   LDA $BBFF   ; load diskid
         lda $6ad8  ; variable of expected disk id
-        sta bd3_current_disk_index
+        sta bt3_current_disk_index
         nop
         nop
     diskswitcher_end:

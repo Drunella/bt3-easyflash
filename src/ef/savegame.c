@@ -166,7 +166,7 @@ void draw_progress_read(int progress, int max)
 }
 
 
-uint8_t check_bd3_character_disk(uint8_t device)
+uint8_t check_bt3_character_disk(uint8_t device)
 {
     uint8_t retval;
     char* work = TEMPMEM_ADDR;
@@ -397,7 +397,7 @@ uint8_t backup_to_character_disk(uint8_t device)
     //if (retval != 0) return 0x40;
     
     // test if valid character disk
-    retval = check_bd3_character_disk(device);
+    retval = check_bt3_character_disk(device);
     if (retval == 0xff) {
         print_error("not a valid character disk");
         return 1;
@@ -451,7 +451,7 @@ uint8_t restore_from_character_disk(uint8_t device)
     set_ef_diskid(1);
     
     // test if valid character disk
-    retval = check_bd3_character_disk(device);
+    retval = check_bt3_character_disk(device);
     if (retval == 0xff) {
         print_error("not a valid character disk");
         return 1;

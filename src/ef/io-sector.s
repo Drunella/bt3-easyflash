@@ -50,7 +50,7 @@
 .include "easyflash.i"
 
 
-.export bd3_current_disk_index
+.export bt3_current_disk_index
 .export init_save_storage
 .export loadsave_sector_body
 
@@ -458,9 +458,9 @@ erase_offset  = $df41
         .byte $08
     ef_address_high:
         .byte $80
-    bd3_current_disk_index:
+    bt3_current_disk_index:
         .byte $01            ; 1: character, 2: dungeon a, 3: dungeon b
-    bd3_current_disk:
+    bt3_current_disk:
         .byte 0              ; invalid
         .byte CHARACTER_DISK_BANK  ; start bank for character disk
         .byte DUNGEONA_DISK_BANK   ; start bank for dungeon a
@@ -548,13 +548,13 @@ erase_offset  = $df41
         beq :+
         adc #$08             ; if bit 0 of sector_high is set, add value 8
 
-    :   ldx bd3_current_disk_index     ; bank offset for disk
+    :   ldx bt3_current_disk_index     ; bank offset for disk
         clc
-        adc bd3_current_disk, x
+        adc bt3_current_disk, x
         sta ef_bank          ; no we see the first bank of the specified save area
 
         ; correct bank and offset for saveable banks
-        lda bd3_current_disk_index  ; if disk != 1, then no save
+        lda bt3_current_disk_index  ; if disk != 1, then no save
         cmp #$01
         bne prepare_nosave
 
@@ -779,8 +779,8 @@ erase_offset  = $df41
 ;        lda #sector_map_bank
 ;        jsr easyflash_bankin  ; bank in and set bank
 ;
-;        ldx bd3_current_disk_index  ; offset for disk
-;        lda bd3_current_disk, x
+;        ldx bt3_current_disk_index  ; offset for disk
+;        lda bt3_current_disk, x
 ;        clc
 ;        adc $47              ; add sector id highest bit
 ;        sta table_index_high
@@ -860,9 +860,9 @@ erase_offset  = $df41
 ;        beq :+
 ;        adc #$08             ; if bit 0 of sector_high is set, add value 8
 ;
-;    :   ldx bd3_current_disk_index     ; bank offset for disk
+;    :   ldx bt3_current_disk_index     ; bank offset for disk
 ;        clc
-;        adc bd3_current_disk, x
+;        adc bt3_current_disk, x
 ;        sta ef_bank
 ;
 ;        ;lda #$00
@@ -908,9 +908,9 @@ erase_offset  = $df41
 
         ; no save allowed
 
-;        ldx bd3_current_disk_index     ; bank offset for disk
+;        ldx bt3_current_disk_index     ; bank offset for disk
 ;        clc
-;        adc bd3_current_disk, x
+;        adc bt3_current_disk, x
 ;        sta ef_bank
         
 

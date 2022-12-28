@@ -659,7 +659,7 @@ static uint8_t amount_total;
 static uint8_t character_index;
 
 
-char convert_char_bd3_to_editor(char c)
+char convert_char_bt3_to_editor(char c)
 {
     c = c & 0x7f;
     if (c >= 0x60) c = c - 0x20;
@@ -775,7 +775,7 @@ uint8_t cprint_name(uint8_t x, uint8_t y, char* name)
     for (o=0; o<15; o++) {
         c = name[o];
         if (c == 0xff) break;
-        cputc(convert_char_bd3_to_editor(c));
+        cputc(convert_char_bt3_to_editor(c));
         n++;
     }
     return n;

@@ -296,7 +296,7 @@ def main(argv):
     p.add_argument("-v", dest="verbose", action="store_true", help="Verbose output.")
     p.add_argument("-m", dest="mapfiles", action="append", required=False, help="map file with exported symbols.")
     p.add_argument("-q", dest="dryrun", action="store_true", required=False, help="don't patch, just dryrun.")
-    #p.add_argument("-l", dest="fileslist", action="store", required=False, help="files with the list of bd3 files.")
+    #p.add_argument("-l", dest="fileslist", action="store", required=False, help="files with the list of bt3 files.")
     p.add_argument("-f", dest="filedir", action="store", required=True, help="directory to search files.")
     args = p.parse_args()
 

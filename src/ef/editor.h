@@ -113,7 +113,7 @@ uint8_t count_spells(character_info_t* character, uint8_t clss);
 bool has_spell(char* spelldata, spellinfo_t* spell);
 void toggle_spell(char* spelldata, spellinfo_t* spell);
 
-char convert_char_bd3_to_editor(char c);
+char convert_char_bt3_to_editor(char c);
 uint8_t cprint_name(uint8_t x, uint8_t y, char* name);
 bool getunumberxy(uint8_t x, uint8_t y, uint8_t len, uint32_t* original);
 bool getsnumberxy(uint8_t x, uint8_t y, uint8_t len, int32_t* original);

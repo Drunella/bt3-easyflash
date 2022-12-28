@@ -105,19 +105,19 @@ build/ef/files.dir.bin build/ef/files.data.bin: src/ef/files.csv build/ef/files.
 	tools/mkfiles.py -v -l build/ef/files.csv -f build/ef/ -o build/ef/files.data.bin -d build/ef/files.dir.bin
 
 # cartridge binary
-build/ef/bd3-easyflash.bin: build/ef/patched.done build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin build/ef/sector-rom.bin
+build/ef/bt3-easyflash.bin: build/ef/patched.done build/ef/init.prg build/ef/loader.prg src/ef/eapi-am29f040.prg build/ef/files.dir.bin build/ef/files.data.bin build/ef/character.bin build/ef/dungeona.bin build/ef/dungeonb.bin build/ef/sector-rom.bin
 	cp ./src/ef/crt.map ./build/ef/crt.map
 	cp ./src/ef/eapi-am29f040.prg ./build/ef/eapi-am29f040.prg
 	cp ./src/ef/ef-name.bin ./build/ef/ef-name.bin
-	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bd3-easyflash.bin
+	tools/mkbin.py -v -b ./build/ef -m ./build/ef/crt.map -o ./build/ef/bt3-easyflash.bin
 
 # cartdridge crt
-build/bt3-easyflash.crt: build/ef/bd3-easyflash.bin
-	cartconv -b -t easy -o build/bt3-easyflash.crt -i build/ef/bd3-easyflash.bin -n "Bard's Tale III" -p
+build/bt3-easyflash.crt: build/ef/bt3-easyflash.bin
+	cartconv -b -t easy -o build/bt3-easyflash.crt -i build/ef/bt3-easyflash.bin -n "Bard's Tale III" -p
 
 # apply patches
 build/ef/patched.done: build/ef/character.bin
-	tools/bd3patch.py -f ./build/ef/ -v ./src/ef/*.patch
+	tools/bt3patch.py -f ./build/ef/ -v ./src/ef/*.patch
 	touch ./build/ef/patched.done
 	
 # sanitized disks
