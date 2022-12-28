@@ -1,10 +1,8 @@
 Bard's Tale 3
 =============
 
-- make the utility sector read and write faster
+- make the utility sector read and write faster (not yet working)
   + create character disk
-  + restore from character
-  + backup to character
 
 - reduce amount of flash erases by using all 16 4k areas
 

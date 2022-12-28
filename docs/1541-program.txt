@@ -8,9 +8,9 @@
 030B   A5 0E                LDA $0E
 030D   20 9E 04             JSR L049E
 0310   A5 D1                LDA $D1
-0312   C9 03                CMP #$03
+0312   C9 03                CMP #$03    ; mode 3
 0314   F0 4D                BEQ L0363
-0316   C9 02                CMP #$02
+0316   C9 02                CMP #$02    ; mode 2
 0318   F0 1E                BEQ L0338
 031A   A9 02                LDA #$02
 031C   8D C4 06             STA $06C4
@@ -40,7 +40,7 @@
 035B   A5 D2                LDA $D2
 035D   20 CA 03             JSR L03CA
 0360   4C 00 03             JMP L0300
-0363   A9 01      L0363     LDA #$01
+0363   A9 01      L0363     LDA #$01   ; mode 3
 0365   48         L0365     PHA
 0366   20 9E 04             JSR L049E
 0369   20 2A 06             JSR L062A
@@ -126,7 +126,7 @@
 0406   85 D0                STA $D0
 0408   A2 00                LDX #$00
 040A   A0 00                LDY #$00
-040C   CA         L040C     DEX
+040C   CA         L040C     DEX         ; wait loop
 040D   D0 12                BNE L0421
 040F   88                   DEY
 0410   D0 0F                BNE L0421
@@ -138,7 +138,7 @@
 041E   4E C5 06             LSR $06C5
 0421   AD 00 18   L0421     LDA $1800
 0424   4A                   LSR A
-0425   90 E5                BCC L040C
+0425   90 E5                BCC L040C   ; wait loop
 0427   20 8E 03             JSR L038E
 042A   85 D1                STA $D1
 042C   20 8E 03             JSR L038E

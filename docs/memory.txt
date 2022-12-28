@@ -219,9 +219,9 @@ Cartridge Memory Map
      1800      EAPI
      1900      EAPI       
      1A00      EAPI
-     1B00      
+     1B00      easycart name
      1C00      [files list: 16 files]
-     1D00      [files list: 16 files] -> 32 files
+     1D00      [files list: 32 files]
      1E00      
      1F00      Startup Code & Reset Vector (init.s)
 
@@ -249,7 +249,7 @@ Cartridge Memory Map
 11:0:0000      [files]
 11:1:0000      [files]
 12:0:0000      [files]
-12:1:0000      [files]
+12:1:0000      [files: 256k]
 
 13:0:0000      [character disk]
 13:1:0000      [character disk]
