@@ -187,7 +187,9 @@ uint8_t check_bd3_character_disk(uint8_t device)
 }
 
 
-/*void activate_fastloader(uint8_t device)
+/*
+// ### fastloader ###
+void activate_fastloader(uint8_t device)
 {
     uint8_t retval;
     int i;
@@ -215,6 +217,7 @@ uint8_t check_bd3_character_disk(uint8_t device)
 }
 
 
+// ### fastloader ###
 uint8_t create_character_disk_fastloader(uint8_t device)
 {
     int i;
@@ -498,9 +501,10 @@ uint8_t restore_from_disk_file(uint8_t device)
 
     cprintf("reading savegame ...");
     // load file from disk
-    if (!read_cbm_file(device, "bd3save", (void*)(SAVEGAME_ADDR))) {
+    if (!read_cbm_file(device, "bt3save", (void*)(SAVEGAME_ADDR))) {
         cprintf(" failed.\n\r");
-        return 1;
+        device_get_status(device);
+        return 0x40;
     }
     cprintf(" done.\n\r");
 
@@ -544,10 +548,12 @@ uint8_t backup_to_disk_file(uint8_t device)
     }
 
     cprintf("writing savegame ...");
-    if (write_cbm_file(device, "bd3save", (uint16_t)SAVEGAME_ADDR, (void*)(SAVEGAME_ADDR), 0x1a00)) {
+    if (write_cbm_file(device, "bt3save", (uint16_t)SAVEGAME_ADDR, (void*)(SAVEGAME_ADDR), 0x1a00)) {
         cprintf(" done.");
     } else {
         cprintf(" failed.");
+        device_get_status(device);
+        return 0x40;
     }
 
     return 1;
@@ -561,10 +567,10 @@ uint8_t format_flash()
     char* source;
     bool really;
 
-    cprintf("This will delete your save game\n\r"
-            "and all characters.\n\r\n\r");
+    cprintf("This will delete your save game and\n\r"
+            "all characters in the refugee camp.\n\r\n\r");
     really = sure(0, wherey());
-    if (!really) return 0xb0;
+    if (!really) return 0x80;
     clear_output();
 
     // load original savegame
@@ -722,12 +728,6 @@ void savegame_backup()
                 clear_output();
                 repaint = create_character_disk(device);
                 break;
-/*            case 'x':
-                activate_fastloader(device);
-                break;
-            case 'y':
-                dectivate_fastloader();
-                break;*/
             default:
                 repaint = 0;
                 break;
@@ -791,8 +791,7 @@ void savegame_main()
                 break;
             case 'f':
                 clear_output();
-                repaint = 1;
-                format_flash();
+                repaint = format_flash();
                 break;
             default:
                 repaint = 0;

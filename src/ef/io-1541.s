@@ -21,15 +21,20 @@
 .export cbm_read_sector
 .export cbm_write_sector
 .export cbm_device_present
+.export cbm_device_get_status
 .export cbm_device_last_status
 .export cbm_device_last_statuscode
 .export cbm_device_clear_status
 .export cbm_backup_zeropage
 .export cbm_restore_zeropage
+
+; ### fastloader ###
+/*
 .export cbm_write_memory_data
 .export cbm_write_memory_begin
 .export cbm_write_memory_end
 .export cbm_execute_memory
+*/
 
 
 ; -- 1541 block io -----------------------------------------------------------
@@ -165,6 +170,41 @@
         ; return: A/X (low/high) pointer to status text
         lda #<blockio_status
         ldx #>blockio_status
+        rts
+
+
+    cbm_device_get_status:
+        ; parameter: A:device number
+        pha
+        jsr cbm_device_clear_status
+
+        lda #$00      ; no filename
+        ldx #$00
+        ldy #$00
+        jsr $ffbd     ; call SETNAM
+
+        pla
+        tax           ; device number
+        lda #$0f      ; file number 15
+        ldy #$0f      ; secondary address 15 (error channel)
+        jsr $ffba     ; call SETLFS
+
+        jsr $ffc0     ; call OPEN
+        bcs :+++      ; if carry set, the file could not be opened
+
+        ldx #$0f      ; filenumber 15
+        jsr $ffc6     ; call CHKIN (file 15 now used as input)
+
+    :   jsr $ffb7     ; call READST
+        bne :+
+        jsr $ffcf     ; call CHRIN
+        jsr device_writestatus
+        jmp :-
+    :   jsr cbm_device_last_statuscode
+
+    :   lda #$0f      ; filenumber 15
+        jsr $ffc3     ; call CLOSE
+        jsr $ffcc     ; call CLRCHN
         rts
 
 
@@ -450,6 +490,10 @@
         jmp write_sector_ext_close
 
 
+; ------------------------------------------------------------------------
+; ### fastloader ###
+/*
+.segment "CODE"
 
     cbm_write_memory_begin:
         ; protect zeropage outside
@@ -563,17 +607,14 @@
         jsr $ffba     ; call SETLFS
 
         jsr $ffc0     ; call OPEN
-;        bcs :+        ; if carry set, the file could not be opened
-
-        ;lda #$0f      ; filenumber 15
-        ;sr $ffc3     ; call CLOSE
-        ;jsr $ffcc     ; call CLRCHN
         jsr $ffe7
 
         lda #$00
         rts
+*/
 
 
+; -- attic ---------------------------------------------------------------
 /*
 
     _write_cbm_sector_open:

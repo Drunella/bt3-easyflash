@@ -41,19 +41,14 @@
 .export _device_last_status
 .export _device_last_statuscode
 .export _device_clear_status
-
-.export _write_cbm_memory_begin
-.export _write_cbm_memory_end
-.export _write_cbm_memory_data
-.export _execute_cbm_memory
-.export _kill_cbm_fastload
-.export _write_cbm_sector_fastload
+.export _device_get_status
 
 .import cbm_read_sector
 .import cbm_write_sector
 .import cbm_device_present
 .import cbm_device_last_status
 .import cbm_device_last_statuscode
+.import cbm_device_get_status
 .import cbm_device_clear_status
 .import cbm_backup_zeropage
 .import cbm_restore_zeropage
@@ -61,6 +56,15 @@
 .import cbm_write_memory_begin
 .import cbm_write_memory_end
 .import cbm_execute_memory
+
+; ### fastloader ###
+/*
+.export _write_cbm_memory_begin
+.export _write_cbm_memory_end
+.export _write_cbm_memory_data
+.export _execute_cbm_memory
+.export _kill_cbm_fastload
+.export _write_cbm_sector_fastload
 
 .import send_iec_byte_fastload
 .import init_iec_fastload
@@ -70,6 +74,7 @@
 .import calc_track_number
 .import calc_sector_number
 .import modetracksector_iec_fastload
+*/
 
 
 ; -- easyflash startup -------------------------------------------------------
@@ -87,6 +92,7 @@
 
     _startup_import:
         jmp jt_startup_import
+
 
 
 ; -- easyflash sector io -----------------------------------------------------
@@ -267,6 +273,9 @@
         ; char* __fastcall__ _device_last_status();
         jmp cbm_device_last_status
 
+    _device_get_status:
+        ; void __fastcall_ device_get_status(uint8_t device);
+        jmp cbm_device_get_status
 
     _device_present:
         ; uint8_t __fastcall__ device_present(uint8_t device);
@@ -320,6 +329,14 @@
         ldx #$00
         rts
 
+
+
+; -- 1541 fastloader -----------------------------------------------------------
+
+/*
+; ### fastloader ###
+
+.segment "CODE"
 
     _write_cbm_memory_begin:
         ; uint8_t __fastcall__ _write_cbm_memory_begin(uint8_t device);
@@ -383,11 +400,6 @@
         ldx #$00
         rts
 
-
-
-; -- 1541 fastloader -----------------------------------------------------------
-
-.segment "CODE"
 
     _kill_cbm_fastload:
         ; void __fastcall__ kill_cbm_fastload();
@@ -471,12 +483,13 @@
         lda #$ff  ; generic error
         ldx #$00
         rts
+*/
 
 
+
+
+; -- attic ---------------------------------------------------------------
 /*
-
-; -- 1541 block io -----------------------------------------------------------
-
 .segment "DATA"
 
     blockio_buffer_filename:
