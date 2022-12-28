@@ -5,6 +5,7 @@ https://gamefaqs.gamespot.com/c64/564327-the-bards-tale-3-the-thief-of-fate/faqs
 Reading and Writing of disk sectors on the C64:
 https://codebase64.org/doku.php?id=base:reading_a_sector_from_disk
 https://codebase64.org/doku.php?id=base:writing_a_sector_to_disk
+(and many more examples from codebase64.org)
 -------------------------------------------------------------------------------
 Startup menu:
 (C) 2006-2015 Per Olofsson, available under an Apache 2.0 license.
