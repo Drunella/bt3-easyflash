@@ -104,7 +104,7 @@ char* get_item_name(uint8_t id);
 uint8_t get_item_uses(uint8_t id);
 uint8_t get_index_itemid(uint8_t id);
 uint8_t get_itemid_by_index(uint8_t index);
-uint8_t get_item_count();
+uint8_t get_item_count(void);
 uint8_t get_alphabetical_index(uint8_t letter);
 
 spellinfo_t* spells_list(uint8_t clss);

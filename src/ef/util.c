@@ -40,6 +40,7 @@ uint8_t get_version_minor()
     return version[1];
 }
 
+/*
 static const void * const jumptable[4] = {
     (void*)(JT_STARTUP_STARTMENU),
     (void*)(JT_STARTUP_EDITOR),
@@ -52,23 +53,23 @@ void startup_startmenu_ext()
     goto *jumptable[0];
 }
 
-void startup_editor_ext()
+void startup_editor_ext(void)
 {
     goto *jumptable[1];
 }
 
-void startup_game_ext()
+void startup_game_ext(void)
 {
     goto *jumptable[2];
 }
 
-void startup_import_ext()
+void startup_import_ext(void)
 {
     goto *jumptable[3];
 }
+*/
 
-
-void cart_kill()
+void cart_kill(void)
 {
     __asm__("lda #$37"); // default
     __asm__("sta $01");
@@ -77,7 +78,7 @@ void cart_kill()
 }
 
 
-void cart_bankin()
+void cart_bankin(void)
 {
     __asm__("lda #$37");
     __asm__("sta $01");
@@ -86,7 +87,7 @@ void cart_bankin()
 }
 
 
-void cart_bankout()
+void cart_bankout(void)
 {
     __asm__("lda #$36");
     __asm__("sta $01");
@@ -94,7 +95,7 @@ void cart_bankout()
     __asm__("sta $DE02");
 }
 
-void cart_reset()
+void cart_reset(void)
 {
     __asm__("lda #$a9");  // lda #$35
     __asm__("sta $0100");

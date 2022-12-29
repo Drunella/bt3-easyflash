@@ -259,7 +259,7 @@ void main(void)
                 //cart_reset(); // does not return
                 clrscr();
                 cputsxy(29 , 24, "loading...");
-                startup_startmenu_ext(); // does not return
+                startup_startmenu(); // does not return
                 break;
             /*case 'S': // debug 's'
                 write_sectors_save();
